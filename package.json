@@ -1,0 +1,26 @@
+{
+  "name": "finten",
+  "version": "1.0.0",
+  "description": "The hypotenuse of the smallest pythagorean triples.",
+  "main": "main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FaradayDetu/finten.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FaradayDetu/finten/issues"
+  },
+  "homepage": "https://github.com/FaradayDetu/finten#readme",
+  "dependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/node": "^13.13.5",
+    "axios": "^0.19.2",
+    "ts-node": "^8.10.1",
+    "typescript": "^3.8.3"
+  }
+}
