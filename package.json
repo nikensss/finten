@@ -27,6 +27,6 @@
     "dotenv": "^8.2.0",
     "ora": "^4.0.4",
     "ts-node": "^8.10.1",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.2"
   }
 }

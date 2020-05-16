@@ -1,4 +1,4 @@
-import { default as fs, promises as fsp, PathLike } from 'fs';
+import fs, { PathLike } from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import axios from 'axios';
@@ -43,7 +43,7 @@ class DownloadManager {
     return fs.readdirSync(this.dir).map((n) => path.join(this.dir.toString(), n));
   }
 
-  private log(msg: string) {
+  private log(msg: string): void {
     console.log(chalk.blue(`[DownloadManager] ${msg}`));
   }
 }
