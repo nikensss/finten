@@ -23,7 +23,7 @@ class XBRL {
   }
 
   private log(msg: string) {
-    this.log(chalk.green(`[XBRL] ${msg}`));
+    console.log(chalk.green(`[XBRL] ${msg}`));
   }
 }
 
