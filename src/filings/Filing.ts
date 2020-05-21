@@ -14,4 +14,3 @@ export const asFiling = (name: string): Filing => {
   }
   throw new Error(`Unknown filing type: ${name}`);
 };
-//Object.keys(MyEnum);
