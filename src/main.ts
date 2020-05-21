@@ -1,7 +1,8 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import DownloadManager from './download/DownloadManager';
-import XBRL, { Quarter, Filing } from './XBRL';
+import XBRL, { Quarter } from './XBRL';
+import Filing, { asFiling } from './filings/Filing';
 
 console.log('hello world!');
 console.log(path.join(__dirname));
@@ -16,7 +17,9 @@ console.log(path.join(__dirname));
   const downloadManager = new DownloadManager(process.env.DOWNLOADS_DIRECTORY);
   const xbrl = new XBRL(downloadManager);
 
-  //await xbrl.getIndex(2017, Quarter.QTR2);
+  await xbrl.getIndex(2017, Quarter.QTR2);
+  await xbrl.getIndex(2017, Quarter.QTR3);
+  await xbrl.getIndex(2018, Quarter.QTR1);
   xbrl.parseIndex(Filing.F10K);
 
   // Esquelet:

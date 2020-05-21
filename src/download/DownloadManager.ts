@@ -40,7 +40,7 @@ class DownloadManager {
   }
 
   public listDownloads(): PathLike[] {
-    return fs.readdirSync(this.dir).map((n) => path.join(this.dir.toString(), n));
+    return fs.readdirSync(this.dir);
   }
 
   private log(msg: string): void {
