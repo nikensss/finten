@@ -1,16 +1,17 @@
-import Filing, { asFiling } from './Filing';
+import FormType, { asFiling } from './FormType';
 
 class FilingReportMetadata {
   private _cik: number;
-  private _company: string;
-  private _filing: Filing;
+  private _companyName: string;
+  private _filing: FormType;
   private _submissionDate: Date;
   private _relativePath: string;
 
   constructor(reportMetadata: string) {
+    console.log(`parsing: ${reportMetadata}`);
     const reportArray: string[] = reportMetadata.split('|');
     this._cik = parseInt(reportArray[0]);
-    this._company = reportArray[1];
+    this._companyName = reportArray[1];
     this._filing = asFiling(reportArray[2]);
     this._submissionDate = new Date(reportArray[3]);
     this._relativePath = reportArray[4];
@@ -20,11 +21,11 @@ class FilingReportMetadata {
     return this._cik;
   }
 
-  get company(): string {
-    return this._company;
+  get companyName(): string {
+    return this._companyName;
   }
 
-  get filing(): Filing {
+  get formType(): FormType {
     return this._filing;
   }
 

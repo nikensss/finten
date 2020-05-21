@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import DownloadManager from './download/DownloadManager';
 import XBRL, { Quarter } from './XBRL';
-import Filing, { asFiling } from './filings/Filing';
+import FormType, { asFiling } from './filings/FormType';
 
 console.log('hello world!');
 console.log(path.join(__dirname));
@@ -20,7 +20,7 @@ console.log(path.join(__dirname));
   await xbrl.getIndex(2017, Quarter.QTR2);
   await xbrl.getIndex(2017, Quarter.QTR3);
   await xbrl.getIndex(2018, Quarter.QTR1);
-  xbrl.parseIndex(Filing.F10K);
+  xbrl.parseIndex(FormType.F10K);
 
   // Esquelet:
   // pas 1 - Parsegem totes les https://www.sec.gov/Archives/edgar/full-index/{any}/{QTRN}/
