@@ -17,10 +17,11 @@ console.log(path.join(__dirname));
   const downloadManager = new DownloadManager(process.env.DOWNLOADS_DIRECTORY);
   const xbrl = new XBRL(downloadManager);
 
-  await xbrl.getIndex(2017, Quarter.QTR2);
-  await xbrl.getIndex(2017, Quarter.QTR3);
-  await xbrl.getIndex(2018, Quarter.QTR1);
-  xbrl.parseIndex(FormType.F10K);
+  //await xbrl.getIndex(2017, Quarter.QTR2);
+  //await xbrl.getIndex(2017, Quarter.QTR3);
+  //await xbrl.getIndex(2018, Quarter.QTR1);
+  let filings = xbrl.parseIndex(FormType.F10K);
+  xbrl.getXBRL(await filings);
 
   // Esquelet:
   // pas 1 - Parsegem totes les https://www.sec.gov/Archives/edgar/full-index/{any}/{QTRN}/

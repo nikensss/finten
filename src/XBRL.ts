@@ -19,13 +19,27 @@ class XBRL {
     await this._dm.get(url, `${year}_${quarter}_xbrl.idx`);
   }
 
+  async getXBRL(filings: FilingReportMetadata[]) {
+    for (let filing of filings) {
+      const url = filing.xbrUrl;
+
+      this._dm.get(url, `${filing.companyName}_${filing.submissionDate}.zip`);
+      break;
+    }
+  }
+
   async parseIndex(filing: FormType): Promise<FilingReportMetadata[]> {
     const filings: FilingReportMetadata[] = [];
 
     for (let file of this._dm.listDownloads()) {
       this.log(file.toString());
       let lines = (await fs.readFile(path.join(this._dm.dir.toString(), file.toString()), 'utf8')).split('\n');
-      filings.push(...lines.map((x) => new FilingReportMetadata(x)).filter((x) => x.formType === filing));
+      filings.push(
+        ...lines
+          .filter((x) => x.includes(filing))
+          .map((x) => new FilingReportMetadata(x))
+          .filter((x) => x.formType === filing)
+      );
     }
 
     return filings;

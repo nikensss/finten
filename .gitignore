@@ -105,3 +105,6 @@ dist
 
 # downloads
 downloads
+
+# .ds_store
+.DS_Store

@@ -1,6 +1,8 @@
 enum FormType {
   F10K = '10-K',
-  F8K = '8-K'
+  F8K = '8-K',
+  F10KA = '10-K/A',
+  F10KT = '10-KT'
 }
 
 export default FormType;
