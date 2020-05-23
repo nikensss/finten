@@ -6,6 +6,8 @@ import axios from 'axios';
 class DownloadManager {
   private _directory: PathLike;
 
+  private static activeDownloads: number = 0;
+
   constructor(directory: PathLike) {
     this._directory = directory;
     if (!fs.existsSync(this.dir)) {
@@ -20,8 +22,10 @@ class DownloadManager {
   }
 
   async get(url: string, fileName: string): Promise<void> {
-    this.log(`downloading: ${url}`);
+    this.log(`currently active downloads: ${DownloadManager.activeDownloads}`);
 
+    this.log(`downloading: ${url}`);
+    DownloadManager.activeDownloads += 1;
     const p = path.resolve(this.dir.toString(), fileName);
     const writer = fs.createWriteStream(p);
 
@@ -32,6 +36,7 @@ class DownloadManager {
     });
 
     response.data.pipe(writer);
+    DownloadManager.activeDownloads += 1;
 
     return new Promise((res, rej) => {
       writer.on('finish', res);

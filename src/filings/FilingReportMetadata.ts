@@ -8,7 +8,6 @@ class FilingReportMetadata {
   private _relativePath: string;
 
   constructor(reportMetadata: string) {
-    console.log(`parsing: ${reportMetadata}`);
     const reportArray: string[] = reportMetadata.split('|');
     this._cik = parseInt(reportArray[0]);
     this._companyName = reportArray[1];

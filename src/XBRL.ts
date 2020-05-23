@@ -1,6 +1,3 @@
-// De la llista temporal obtinguida de IndexParser.ts, rep el cik i l'altre numero, fa get de la seguent url:
-// https://www.sec.gov/Archives/edgar/data/{CIK}/{altre-numero}-xbrl.zip
-//https://www.sec.gov/Archives/edgar/full-index/2019/QTR1
 import fs, { promises as fsp } from 'fs';
 import readline from 'readline';
 import path from 'path';
@@ -37,7 +34,7 @@ class XBRL {
 
       for await (const line of rl) {
         if (!xbrlInstanceDocument) {
-          if (line.includes('XBRL INSTANCE DOCUMENT')) {
+          if (line.includes('XBRL INSTANCE')) {
             xbrlInstanceDocument = true;
           }
           continue;
@@ -66,6 +63,7 @@ class XBRL {
     }
     return xmls;
   }
+
   async parseIndex(filing: FormType): Promise<FilingReportMetadata[]> {
     const filings: FilingReportMetadata[] = [];
 
