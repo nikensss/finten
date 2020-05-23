@@ -39,8 +39,8 @@ class DownloadManager {
     });
   }
 
-  public listDownloads(): PathLike[] {
-    return fs.readdirSync(this.dir);
+  public listDownloads(extension?: string): PathLike[] {
+    return fs.readdirSync(this.dir).filter((f) => path.extname(f).toLowerCase() === (extension || ''));
   }
 
   private log(msg: string): void {

@@ -3,6 +3,7 @@ import path from 'path';
 import DownloadManager from './download/DownloadManager';
 import XBRL, { Quarter } from './XBRL';
 import FormType, { asFiling } from './filings/FormType';
+import ParseXbrl from 'parse-xbrl';
 
 console.log('hello world!');
 console.log(path.join(__dirname));
@@ -20,9 +21,13 @@ console.log(path.join(__dirname));
   //await xbrl.getIndex(2017, Quarter.QTR2);
   //await xbrl.getIndex(2017, Quarter.QTR3);
   //await xbrl.getIndex(2018, Quarter.QTR1);
-  let filings = xbrl.parseIndex(FormType.F10K);
-  xbrl.getXBRL(await filings);
-
+  //let filings = await xbrl.parseIndex(FormType.F10K);
+  //filings.forEach((f) => downloadManager.get(f.fullPath, f.fileName));
+  let xmls = await xbrl.parseTxt();
+  for (let xml of xmls) {
+    console.log(`Parsing: ${xml.name}`);
+    console.log('result: ', await ParseXbrl.parseStr(xml.xml));
+  }
   // Esquelet:
   // pas 1 - Parsegem totes les https://www.sec.gov/Archives/edgar/full-index/{any}/{QTRN}/
 
