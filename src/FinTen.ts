@@ -4,14 +4,17 @@ import XBRL, { Quarter } from './XBRL';
 import FormType from './filings/FormType';
 import ParseXbrl from 'parse-xbrl';
 import chalk from 'chalk';
+import FinTenDB from './db/FinTenDB';
 
 class FinTen {
   private dm: DownloadManager;
   private xbrl: XBRL;
+  private db: FinTenDB;
 
   constructor(downloadsDirectory: string) {
     this.dm = new DownloadManager(downloadsDirectory);
     this.xbrl = new XBRL(this.dm);
+    this.db = new FinTenDB();
   }
 
   public static async main(): Promise<void> {
@@ -23,23 +26,31 @@ class FinTen {
 
     const finten = new FinTen(process.env.DOWNLOADS_DIRECTORY);
 
-    // await finten.xbrl.getIndex(2017, Quarter.QTR2);
-    // await finten.xbrl.getIndex(2017, Quarter.QTR3);
-    // await finten.xbrl.getIndex(2018, Quarter.QTR1);
+    // await finten.xbrl.getIndex(2008, Quarter.QTR1);
+    // await finten.xbrl.getIndex(2008, Quarter.QTR2);
+    // await finten.xbrl.getIndex(2008, Quarter.QTR3);
 
-    let filings = await finten.xbrl.parseIndex(FormType.F10K);
-    await Promise.all(filings.map((f) => finten.dm.get(f.fullPath, f.fileName)));
+    // let filings = await finten.xbrl.parseIndex(FormType.F10K);
+    // await Promise.all(filings.map((f) => finten.dm.get(f.fullPath, f.fileName)));
 
     let xmls = await finten.xbrl.parseTxt();
     for (let xml of xmls) {
       FinTen.log(`Parsing: ${xml.name}`);
-      const parsedXml = await ParseXbrl.parseStr(xml.xml);
-      FinTen.log('Result: ', parsedXml);
+      try {
+        const parsedXml = await ParseXbrl.parseStr(xml.xml);
+        await finten.db.create(parsedXml);
+      } catch (ex) {
+        this.exception(ex);
+      }
     }
   }
 
-  public static log(...args: string[]): void {
+  public static log(...args: any[]): void {
     console.log.apply(null, [chalk.bgCyan(`[FinTen] ${args[0]}`), ...args.slice(1)]);
+  }
+
+  public static exception(...args: any[]) {
+    console.log.apply(null, [chalk.bgRed(`[FinTen] {EXCEPTION}`), ...args]);
   }
 }
 

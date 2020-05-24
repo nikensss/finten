@@ -36,7 +36,7 @@ class DownloadManager {
     });
 
     response.data.pipe(writer);
-    DownloadManager.activeDownloads += 1;
+    DownloadManager.activeDownloads -= 1;
 
     return new Promise((res, rej) => {
       writer.on('finish', res);

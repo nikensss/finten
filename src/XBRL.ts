@@ -17,6 +17,10 @@ class XBRL {
     await this._dm.get(url, `${year}_${quarter}_xbrl.idx`);
   }
 
+  /**
+   * Parses all the TXT files from DownloadManager.dir and extracts the XBRL INSTANCE.
+   * The XBRL INSTANCE is a XML string that can be parsed.
+   */
   async parseTxt(): Promise<any> {
     const xmls: any = [];
     for (let file of this._dm.listDownloads('.txt')) {
@@ -64,7 +68,13 @@ class XBRL {
     return xmls;
   }
 
-  async parseIndex(filing: FormType): Promise<FilingReportMetadata[]> {
+  /**
+   * Parses all .idx files in DownloadManager.dir and returns the filing reports' metadata of the
+   * requested form types.
+   *
+   * @param formType the form type to look for.
+   */
+  async parseIndex(formType: FormType): Promise<FilingReportMetadata[]> {
     const filings: FilingReportMetadata[] = [];
 
     for (let file of this._dm.listDownloads('.idx')) {
@@ -74,7 +84,7 @@ class XBRL {
         ...lines.reduce((t, c) => {
           try {
             const frm = new FilingReportMetadata(c);
-            if (frm.formType === filing) t.push(frm);
+            if (frm.formType === formType) t.push(frm);
           } catch (ex) {
             //swallow the error
           }
