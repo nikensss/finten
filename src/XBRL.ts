@@ -66,7 +66,14 @@ class XBRL {
     return xmls;
   }
 
-  async parseIndex(filing: FormType, amount?: number): Promise<FilingReportMetadata[]> {
+  /**
+   * Parses all .idx files in the 'downloads' folder and returns the
+   * FilingReportMetadata's that correspond to the desired form type.
+   *
+   * @param formType Form type to look for
+   * @param amount The amount of filings to return
+   */
+  async parseIndex(formType: FormType, amount?: number): Promise<FilingReportMetadata[]> {
     const filings: FilingReportMetadata[] = [];
 
     for (let file of this.dm.listDownloads('.idx')) {
@@ -76,7 +83,7 @@ class XBRL {
         ...lines.reduce((t, c) => {
           try {
             const frm = new FilingReportMetadata(c);
-            if (frm.formType === filing) t.push(frm);
+            if (frm.formType === formType) t.push(frm);
           } catch (ex) {
             //swallow the error
           }

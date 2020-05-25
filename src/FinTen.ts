@@ -29,10 +29,7 @@ class FinTen {
     // await finten.xbrl.getIndex(2018, Quarter.QTR1);
 
     let filings = await finten.xbrl.parseIndex(FormType.F10K);
-    //add all the 10-K filings to the download queue
-    finten.dm.queue(...filings);
-    //download them as fast as possible
-    await finten.dm.unqueue();
+    await finten.dm.get(...filings);
     FinTen.log('all downloads finished!');
 
     let xmls = await finten.xbrl.parseTxt();

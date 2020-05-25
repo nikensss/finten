@@ -63,14 +63,27 @@ class DownloadManager {
       //which means that 'getting' will always be safe
       //but in order to know if the entire queue has been unqueued, we need to return the
       //aray of promises that is created when we 'get' all those downloads
-      downloads.push(this.get((await this._queue.unqueue()) as Downloadable));
+      downloads.push(this._get((await this._queue.unqueue()) as Downloadable));
       this.then = now;
     }
 
     return Promise.all(downloads);
   }
 
-  private async get(d: Downloadable): Promise<void> {
+  /**
+   * Queues and immediately downloads (respecting the request rate limit) the given collection of Downloadables.
+   * @param d Collection of Downloadables
+   */
+  public async get(...d: Downloadable[]): Promise<void> {
+    this.queue(...d);
+    await this.unqueue();
+  }
+
+  /**
+   * Private implementation that performs the actual HTTP.GET request.
+   * @param d Downloadable to 'GET'
+   */
+  private async _get(d: Downloadable): Promise<void> {
     this.log(`downloading: ${d.url}`);
     DownloadManager.activeDownloads += 1;
     const p = path.resolve(this.dir.toString(), d.fileName);
