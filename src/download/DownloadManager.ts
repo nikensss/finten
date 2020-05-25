@@ -34,6 +34,7 @@ class DownloadManager {
   private static activeDownloads: number = 0;
 
   private _queue: TimedQueue;
+  private then: number = Date.now();
 
   constructor(directory: PathLike, maxDownloadsPerSecond: number) {
     this._directory = directory;
@@ -53,17 +54,20 @@ class DownloadManager {
     this._queue.queue(...d);
   }
 
-  public async unqueueFirst() {
-    const downloadable = await this._queue.unqueue();
-    if (typeof downloadable !== 'undefined') {
-      this.get(downloadable);
-    }
-  }
-
-  public async unqueue() {
+  public async unqueue(): Promise<void[]> {
+    const downloads: Promise<void>[] = [];
     while (!this._queue.empty) {
-      await this.unqueueFirst();
+      const now = Date.now();
+      if (now - this.then <= this._queue.minPeriod) this.warning(`Δt = ${now - this.then} ms`);
+      //unqueueing guarantees a guard time
+      //which means that 'getting' will always be safe
+      //but in order to know if the entire queue has been unqueued, we need to return the
+      //aray of promises that is created when we 'get' all those downloads
+      downloads.push(this.get((await this._queue.unqueue()) as Downloadable));
+      this.then = now;
     }
+
+    return Promise.all(downloads);
   }
 
   private async get(d: Downloadable): Promise<void> {
@@ -97,8 +101,12 @@ class DownloadManager {
     return fs.readdirSync(this.dir).filter((f) => path.extname(f).toLowerCase() === (extension || ''));
   }
 
-  private log(msg: string): void {
-    console.log(chalk.blue(`[DownloadManager] ${msg}`));
+  private log(...args: any[]): void {
+    console.log(chalk.blue(`[DownloadManager]`), ...args);
+  }
+
+  private warning(...args: any[]) {
+    console.log(chalk.bgYellow(`[DownloadManager]`), ...args);
   }
 }
 

@@ -33,17 +33,18 @@ class FinTen {
     finten.dm.queue(...filings);
     //download them as fast as possible
     await finten.dm.unqueue();
+    FinTen.log('all downloads finished!');
 
     let xmls = await finten.xbrl.parseTxt();
     for (let xml of xmls) {
       FinTen.log(`Parsing: ${xml.name}`);
-      const parsedXml = await ParseXbrl.parseStr(xml.xml);
+      //const parsedXml = await ParseXbrl.parseStr(xml.xml);
       //FinTen.log('Result: ', parsedXml);
     }
   }
 
-  public static log(...args: string[]): void {
-    console.log.apply(null, [chalk.bgCyan(`[FinTen] ${args[0]}`), ...args.slice(1)]);
+  private static log(...args: string[]): void {
+    console.log.apply(null, [chalk.bgCyan(`[FinTen] `), ...args]);
   }
 }
 

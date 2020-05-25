@@ -7,21 +7,23 @@ import FormType from './filings/FormType';
 import FilingReportMetadata from './filings/FilingReportMetadata';
 
 class XBRL {
-  private _dm: DownloadManager;
+  private dm: DownloadManager;
+
   constructor(dowloadManager: DownloadManager) {
-    this._dm = dowloadManager;
+    this.dm = dowloadManager;
   }
 
-  getIndex(year: number, quarter: Quarter) {
+  async getIndex(year: number, quarter: Quarter) {
     const url = `https://www.sec.gov/Archives/edgar/full-index/${year}/${quarter}/xbrl.idx`;
-    this._dm.queue({ url, fileName: `${year}_${quarter}_xbrl.idx` });
+    this.dm.queue({ url, fileName: `${year}_${quarter}_xbrl.idx` });
+    await this.dm.unqueue();
   }
 
   async parseTxt(): Promise<any> {
     const xmls: any = [];
-    for (let file of this._dm.listDownloads('.txt')) {
+    for (let file of this.dm.listDownloads('.txt')) {
       this.log(`parsing txt: ${file.toString()}`);
-      const fileStream = fs.createReadStream(path.join(this._dm.dir.toString(), file.toString()));
+      const fileStream = fs.createReadStream(path.join(this.dm.dir.toString(), file.toString()));
 
       const rl = readline.createInterface({
         input: fileStream,
@@ -64,12 +66,12 @@ class XBRL {
     return xmls;
   }
 
-  async parseIndex(filing: FormType): Promise<FilingReportMetadata[]> {
+  async parseIndex(filing: FormType, amount?: number): Promise<FilingReportMetadata[]> {
     const filings: FilingReportMetadata[] = [];
 
-    for (let file of this._dm.listDownloads('.idx')) {
+    for (let file of this.dm.listDownloads('.idx')) {
       this.log(`parsing idx: ${file.toString()}`);
-      let lines = (await fsp.readFile(path.join(this._dm.dir.toString(), file.toString()), 'utf8')).split('\n');
+      let lines = (await fsp.readFile(path.join(this.dm.dir.toString(), file.toString()), 'utf8')).split('\n');
       filings.push(
         ...lines.reduce((t, c) => {
           try {
@@ -83,7 +85,7 @@ class XBRL {
       );
     }
 
-    return filings;
+    return filings.slice(0, amount);
   }
 
   private log(msg: string) {
