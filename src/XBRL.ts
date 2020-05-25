@@ -12,9 +12,9 @@ class XBRL {
     this._dm = dowloadManager;
   }
 
-  async getIndex(year: number, quarter: Quarter) {
+  getIndex(year: number, quarter: Quarter) {
     const url = `https://www.sec.gov/Archives/edgar/full-index/${year}/${quarter}/xbrl.idx`;
-    await this._dm.get(url, `${year}_${quarter}_xbrl.idx`);
+    this._dm.queue(url, `${year}_${quarter}_xbrl.idx`);
   }
 
   async parseTxt(): Promise<any> {

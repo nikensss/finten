@@ -2,11 +2,13 @@ import fs, { PathLike } from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import axios from 'axios';
+import FinTenDownload from './FinTenDownload';
 
 class DownloadManager {
   private _directory: PathLike;
 
   private static activeDownloads: number = 0;
+  private finTenDownloads: FinTenDownload[] = [];
 
   constructor(directory: PathLike) {
     this._directory = directory;
@@ -21,7 +23,11 @@ class DownloadManager {
     return this._directory;
   }
 
-  async get(url: string, fileName: string): Promise<void> {
+  public queue(url: string, fileName: string) {
+    this.finTenDownloads.push(new FinTenDownload(url, fileName));
+  }
+
+  private async get(url: string, fileName: string): Promise<void> {
     this.log(`currently active downloads: ${DownloadManager.activeDownloads}`);
 
     this.log(`downloading: ${url}`);

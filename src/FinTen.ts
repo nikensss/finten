@@ -4,6 +4,7 @@ import XBRL, { Quarter } from './XBRL';
 import FormType from './filings/FormType';
 import ParseXbrl from 'parse-xbrl';
 import chalk from 'chalk';
+import FinTenDownload from './download/FinTenDownload';
 
 class FinTen {
   private dm: DownloadManager;
@@ -28,7 +29,8 @@ class FinTen {
     // await finten.xbrl.getIndex(2018, Quarter.QTR1);
 
     let filings = await finten.xbrl.parseIndex(FormType.F10K);
-    await Promise.all(filings.map((f) => finten.dm.get(f.fullPath, f.fileName)));
+
+    filings.forEach((f) => finten.dm.queue(f.fullPath, f.fileName));
 
     let xmls = await finten.xbrl.parseTxt();
     for (let xml of xmls) {
