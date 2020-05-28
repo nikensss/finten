@@ -105,6 +105,8 @@ dist
 
 # downloads
 downloads
+*.idx
+*.txt
 
 # .ds_store
 .DS_Store

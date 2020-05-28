@@ -2,7 +2,6 @@ import fs, { PathLike } from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import axios from 'axios';
-import FinTenDownload from './Downloadable';
 import Downloadable from './Downloadable';
 import TimedQueue from './TimedQueue';
 
@@ -54,15 +53,15 @@ class DownloadManager {
     this._queue.queue(...d);
   }
 
-  public async unqueue(): Promise<void[]> {
+  public async dequeue(): Promise<void[]> {
     const downloads: Promise<void>[] = [];
     while (!this._queue.empty) {
       const now = Date.now();
       if (now - this.then <= this._queue.minPeriod) this.warning(`Δt = ${now - this.then} ms`);
-      //unqueueing guarantees a guard time
+      //dequeueing guarantees a guard time
       //which means that 'getting' will always be safe
-      //but in order to know if the entire queue has been unqueued, we need to return the
-      //aray of promises that is created when we 'get' all those downloads
+      //but in order to know if the entire queue has been dequeued, we need to return the
+      //array of promises that is created when we 'get' all those downloads
       downloads.push(this._get((await this._queue.unqueue()) as Downloadable));
       this.then = now;
     }
@@ -76,7 +75,27 @@ class DownloadManager {
    */
   public async get(...d: Downloadable[]): Promise<void> {
     this.queue(...d);
-    await this.unqueue();
+    await this.dequeue();
+  }
+
+  /**
+   * Returns all the downloads or all the downloads with the specified extensions.
+   *
+   * @param extension the extension of the file including the '.' (dot)
+   */
+  public listDownloads(extension?: string): PathLike[] {
+    return fs
+      .readdirSync(this.dir)
+      .map((f) => path.join(this.dir.toString(), f.toString()))
+      .filter((f) => path.extname(f).toLowerCase() === (extension || ''));
+  }
+
+  private log(...args: any[]): void {
+    console.log(chalk.blue(`[DownloadManager]`), ...args);
+  }
+
+  private warning(...args: any[]) {
+    console.log(chalk.bgYellow(`[DownloadManager]`), ...args);
   }
 
   /**
@@ -108,18 +127,6 @@ class DownloadManager {
         rej();
       });
     });
-  }
-
-  public listDownloads(extension?: string): PathLike[] {
-    return fs.readdirSync(this.dir).filter((f) => path.extname(f).toLowerCase() === (extension || ''));
-  }
-
-  private log(...args: any[]): void {
-    console.log(chalk.blue(`[DownloadManager]`), ...args);
-  }
-
-  private warning(...args: any[]) {
-    console.log(chalk.bgYellow(`[DownloadManager]`), ...args);
   }
 }
 

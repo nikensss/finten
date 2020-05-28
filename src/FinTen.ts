@@ -1,18 +1,18 @@
 import dotenv from 'dotenv';
-import DownloadManager from './download/DownloadManager';
-import XBRL, { Quarter } from './XBRL';
+import XBRL, { Quarter } from './secgov/XBRL';
 import FormType from './filings/FormType';
 import ParseXbrl from 'parse-xbrl';
 import chalk from 'chalk';
 import Downloadable from './download/Downloadable';
+import SecGov from './secgov/SecGov';
 
 class FinTen {
-  private dm: DownloadManager;
+  private secgov: SecGov;
   private xbrl: XBRL;
 
   constructor(downloadsDirectory: string) {
-    this.dm = new DownloadManager(downloadsDirectory, 10);
-    this.xbrl = new XBRL(this.dm);
+    this.secgov = new SecGov(downloadsDirectory);
+    this.xbrl = new XBRL();
   }
 
   public static async main(): Promise<void> {
@@ -24,15 +24,16 @@ class FinTen {
 
     const finten = new FinTen(process.env.DOWNLOADS_DIRECTORY);
 
-    await finten.xbrl.getIndex(2017, Quarter.QTR2);
-    // await finten.xbrl.getIndex(2017, Quarter.QTR3);
-    // await finten.xbrl.getIndex(2018, Quarter.QTR1);
+    await finten.secgov.getIndex(2017, Quarter.QTR2);
+    // await finten.secgov.getIndex(2017, Quarter.QTR3);
+    // await finten.secgov.getIndex(2018, Quarter.QTR1);
+    
+    let filings = finten.xbrl.parseIndices(finten.secgov.listDownloads('.idx'), FormType.F10K, 10);
 
-    let filings = await finten.xbrl.parseIndex(FormType.F10K);
-    await finten.dm.get(...filings);
+    await finten.secgov.get(...filings);
     FinTen.log('all downloads finished!');
 
-    let xmls = await finten.xbrl.parseTxt();
+    let xmls = await finten.xbrl.parseTxts(finten.secgov.listDownloads('.txt'));
     for (let xml of xmls) {
       FinTen.log(`Parsing: ${xml.name}`);
       //const parsedXml = await ParseXbrl.parseStr(xml.xml);
