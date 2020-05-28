@@ -3,7 +3,6 @@ import XBRL, { Quarter } from './secgov/XBRL';
 import FormType from './filings/FormType';
 import ParseXbrl from 'parse-xbrl';
 import chalk from 'chalk';
-import Downloadable from './download/Downloadable';
 import SecGov from './secgov/SecGov';
 
 class FinTen {
@@ -33,7 +32,7 @@ class FinTen {
     await finten.secgov.get(...filings);
     FinTen.log('all downloads finished!');
 
-    let xmls = await finten.xbrl.parseTxts(finten.secgov.listDownloads('.txt'));
+    let xmls = finten.xbrl.parseTxts(finten.secgov.listDownloads('.txt'));
     for (let xml of xmls) {
       FinTen.log(`Parsing: ${xml.name}`);
       //const parsedXml = await ParseXbrl.parseStr(xml.xml);

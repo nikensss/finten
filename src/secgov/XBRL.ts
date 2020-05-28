@@ -1,5 +1,4 @@
-import fs, { promises as fsp, PathLike } from 'fs';
-import readline from 'readline';
+import fs, { PathLike } from 'fs';
 import chalk from 'chalk';
 import FormType from '../filings/FormType';
 import FilingReportMetadata from '../filings/FilingReportMetadata';
