@@ -33,7 +33,7 @@ class DownloadManager {
   @Speedometer()
   private static activeDownloads: number = 0;
 
-  private _queue: Queue;
+  private q: Queue;
   private then: number = Date.now();
 
   constructor(directory: PathLike, maxDownloadsPerSecond: number) {
@@ -43,7 +43,11 @@ class DownloadManager {
       fs.mkdirSync(this.dir);
       this.log('creation successful!');
     }
-    this._queue = new TimedQueue(maxDownloadsPerSecond);
+    this.q = new TimedQueue(maxDownloadsPerSecond);
+  }
+
+  public use(q: Queue): void {
+    this.q = q;
   }
 
   public get dir(): PathLike {
@@ -58,18 +62,18 @@ class DownloadManager {
   }
 
   public queue(...d: Downloadable[]) {
-    this._queue.queue(...d);
+    this.q.queue(...d);
   }
 
   public async dequeue(): Promise<void> {
     const downloads: Promise<void>[] = [];
-    while (!this._queue.empty) {
+    while (!this.q.empty) {
       //dequeueing guarantees a guard time
       //which means that 'getting' will always be safe
       //but in order to know if the entire queue has been dequeued, we need to return the
       //array of promises that is created when we 'get' all those downloads
       //downloads.push(this._get((await this._queue.unqueue()) as Downloadable));
-      await this._get((await this._queue.dequeue()) as Downloadable);
+      await this._get((await this.q.dequeue()) as Downloadable);
     }
 
     return Promise.resolve();
