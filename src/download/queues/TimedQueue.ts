@@ -1,6 +1,7 @@
-import Downloadable from './Downloadable';
+import Downloadable from '../Downloadable';
+import Queue from './Queue';
 
-class TimedQueue {
+class TimedQueue implements Queue {
   private max: number;
   private _queue: Downloadable[] = [];
 

@@ -3,7 +3,8 @@ import path from 'path';
 import chalk from 'chalk';
 import axios from 'axios';
 import Downloadable from './Downloadable';
-import TimedQueue from './TimedQueue';
+import TimedQueue from './queues/TimedQueue';
+import Queue from './queues/Queue';
 
 function Speedometer() {
   return function (target: any, key: string) {
@@ -32,7 +33,7 @@ class DownloadManager {
   @Speedometer()
   private static activeDownloads: number = 0;
 
-  private _queue: TimedQueue;
+  private _queue: Queue;
   private then: number = Date.now();
 
   constructor(directory: PathLike, maxDownloadsPerSecond: number) {
@@ -57,7 +58,7 @@ class DownloadManager {
     const downloads: Promise<void>[] = [];
     while (!this._queue.empty) {
       const now = Date.now();
-      if (now - this.then <= this._queue.minPeriod) this.warning(`Δt = ${now - this.then} ms`);
+      if (now - this.then <= (this._queue as TimedQueue).minPeriod) this.warning(`Δt = ${now - this.then} ms`);
       //dequeueing guarantees a guard time
       //which means that 'getting' will always be safe
       //but in order to know if the entire queue has been dequeued, we need to return the

@@ -25,8 +25,8 @@ class XBRL {
     return xml;
   }
 
-  parseTxts(paths: PathLike[]): { name: PathLike, xml: string[] }[] {
-    return paths.map(p => ({ name: p, xml: this.parseTxt(p) }));
+  parseTxts(paths: PathLike[]): { name: PathLike; xml: string[] }[] {
+    return paths.map((p) => ({ name: p, xml: this.parseTxt(p) }));
   }
 
   /**
@@ -39,19 +39,24 @@ class XBRL {
   parseIndex(path: PathLike, formType: FormType, amount?: number): FilingReportMetadata[] {
     this.log(`parsing idx: ${path}`);
     let lines = fs.readFileSync(path, 'utf8').split('\n');
-    return lines.reduce((t, c) => {
-      try {
-        const frm = new FilingReportMetadata(c);
-        if (frm.formType === formType) t.push(frm);
-      } catch (ex) {
-        //swallow the error: possible reason is that the FormType is not in the enum
-      }
-      return t;
-    }, [] as FilingReportMetadata[]).slice(0, amount);
+    return lines
+      .reduce((t, c) => {
+        try {
+          const frm = new FilingReportMetadata(c);
+          if (frm.formType === formType) t.push(frm);
+        } catch (ex) {
+          //swallow the error: possible reason is that the FormType is not in the enum
+        }
+        return t;
+      }, [] as FilingReportMetadata[])
+      .slice(0, amount);
   }
 
-  parseIndices(path: PathLike[], formType: FormType, amount?: number): FilingReportMetadata[]{
-    return path.map(p => this.parseIndex(p, formType)).flat().slice(0, amount);
+  parseIndices(path: PathLike[], formType: FormType, amount?: number): FilingReportMetadata[] {
+    return path
+      .map((p) => this.parseIndex(p, formType))
+      .flat()
+      .slice(0, amount);
   }
 
   private log(msg: string) {
