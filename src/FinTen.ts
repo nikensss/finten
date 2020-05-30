@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 import XBRL, { Quarter } from './secgov/XBRL';
 import FormType from './filings/FormType';
-import ParseXbrl from 'parse-xbrl';
 import chalk from 'chalk';
 import FinTenDB from './db/FinTenDB';
 import SecGov from './secgov/SecGov';
@@ -27,10 +26,10 @@ class FinTen {
     const finten = new FinTen(process.env.DOWNLOADS_DIRECTORY);
 
     await finten.secgov.getIndex(2017, Quarter.QTR2);
-    // await finten.secgov.getIndex(2017, Quarter.QTR3);
-    // await finten.secgov.getIndex(2018, Quarter.QTR1);
+    await finten.secgov.getIndex(2017, Quarter.QTR3);
+    await finten.secgov.getIndex(2018, Quarter.QTR1);
 
-    let filings = finten.xbrl.parseIndices(finten.secgov.listDownloads('.idx'), FormType.F10K, 10);
+    let filings = finten.xbrl.parseIndices(finten.secgov.listDownloads('.idx'), FormType.F10K);
 
     await finten.secgov.get(...filings);
     FinTen.log('all downloads finished!');
@@ -39,12 +38,14 @@ class FinTen {
     for (let xml of xmls) {
       FinTen.log(`Parsing: ${xml.name}`);
       try {
-        const parsedXml = await ParseXbrl.parseStr(xml.xml);
+        const parsedXml = await finten.xbrl.parseXBRL(xml.xml);
         await finten.db.create(parsedXml);
       } catch (ex) {
         this.exception(ex);
       }
     }
+
+    finten.secgov.flush();
   }
 
   public static log(...args: any[]): void {

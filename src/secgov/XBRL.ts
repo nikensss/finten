@@ -2,6 +2,7 @@ import fs, { PathLike } from 'fs';
 import chalk from 'chalk';
 import FormType from '../filings/FormType';
 import FilingReportMetadata from '../filings/FilingReportMetadata';
+import ParseXbrl from 'parse-xbrl';
 
 class XBRL {
   constructor() {}
@@ -57,6 +58,10 @@ class XBRL {
       .map((p) => this.parseIndex(p, formType))
       .flat()
       .slice(0, amount);
+  }
+
+  async parseXBRL(xbrl: string): Promise<any> {
+    return await ParseXbrl.parseStr(xbrl);
   }
 
   private log(msg: string) {

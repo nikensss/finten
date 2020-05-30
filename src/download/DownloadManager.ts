@@ -50,24 +50,29 @@ class DownloadManager {
     return this._directory;
   }
 
+  public flush(): void {
+    fs.readdirSync(this.dir).forEach((f) => {
+      this.log(`deleting ${f}`);
+      fs.unlinkSync(path.join(this.dir.toString(), f));
+    });
+  }
+
   public queue(...d: Downloadable[]) {
     this._queue.queue(...d);
   }
 
-  public async dequeue(): Promise<void[]> {
+  public async dequeue(): Promise<void> {
     const downloads: Promise<void>[] = [];
     while (!this._queue.empty) {
-      const now = Date.now();
-      if (now - this.then <= (this._queue as TimedQueue).minPeriod) this.warning(`Δt = ${now - this.then} ms`);
       //dequeueing guarantees a guard time
       //which means that 'getting' will always be safe
       //but in order to know if the entire queue has been dequeued, we need to return the
       //array of promises that is created when we 'get' all those downloads
-      downloads.push(this._get((await this._queue.unqueue()) as Downloadable));
-      this.then = now;
+      //downloads.push(this._get((await this._queue.unqueue()) as Downloadable));
+      await this._get((await this._queue.dequeue()) as Downloadable);
     }
 
-    return Promise.all(downloads);
+    return Promise.resolve();
   }
 
   /**
