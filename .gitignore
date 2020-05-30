@@ -106,6 +106,8 @@ dist
 # downloads
 downloads
 downloads-backup
+*.idx
+*.txt
 
 # .ds_store
 .DS_Store

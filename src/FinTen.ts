@@ -1,19 +1,19 @@
 import dotenv from 'dotenv';
-import DownloadManager from './download/DownloadManager';
-import XBRL, { Quarter } from './XBRL';
+import XBRL, { Quarter } from './secgov/XBRL';
 import FormType from './filings/FormType';
 import ParseXbrl from 'parse-xbrl';
 import chalk from 'chalk';
 import FinTenDB from './db/FinTenDB';
+import SecGov from './secgov/SecGov';
 
 class FinTen {
-  private dm: DownloadManager;
+  private secgov: SecGov;
   private xbrl: XBRL;
   private db: FinTenDB;
 
   constructor(downloadsDirectory: string) {
-    this.dm = new DownloadManager(downloadsDirectory);
-    this.xbrl = new XBRL(this.dm);
+    this.secgov = new SecGov(downloadsDirectory);
+    this.xbrl = new XBRL();
     this.db = new FinTenDB();
   }
 
@@ -26,14 +26,16 @@ class FinTen {
 
     const finten = new FinTen(process.env.DOWNLOADS_DIRECTORY);
 
-    // await finten.xbrl.getIndex(2008, Quarter.QTR1);
-    // await finten.xbrl.getIndex(2008, Quarter.QTR2);
-    // await finten.xbrl.getIndex(2008, Quarter.QTR3);
+    await finten.secgov.getIndex(2017, Quarter.QTR2);
+    // await finten.secgov.getIndex(2017, Quarter.QTR3);
+    // await finten.secgov.getIndex(2018, Quarter.QTR1);
 
-    // let filings = await finten.xbrl.parseIndex(FormType.F10K);
-    // await Promise.all(filings.map((f) => finten.dm.get(f.fullPath, f.fileName)));
+    let filings = finten.xbrl.parseIndices(finten.secgov.listDownloads('.idx'), FormType.F10K, 10);
 
-    let xmls = await finten.xbrl.parseTxt();
+    await finten.secgov.get(...filings);
+    FinTen.log('all downloads finished!');
+
+    let xmls = finten.xbrl.parseTxts(finten.secgov.listDownloads('.txt'));
     for (let xml of xmls) {
       FinTen.log(`Parsing: ${xml.name}`);
       try {
@@ -47,6 +49,8 @@ class FinTen {
 
   public static log(...args: any[]): void {
     console.log.apply(null, [chalk.bgCyan(`[FinTen] ${args[0]}`), ...args.slice(1)]);
+    //const parsedXml = await ParseXbrl.parseStr(xml.xml);
+    //FinTen.log('Result: ', parsedXml);
   }
 
   public static exception(...args: any[]) {

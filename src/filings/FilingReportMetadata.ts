@@ -1,6 +1,7 @@
 import FormType, { asFiling } from './FormType';
+import Downloadable from '../download/Downloadable';
 
-class FilingReportMetadata {
+class FilingReportMetadata implements Downloadable {
   private _cik: number;
   private _companyName: string;
   private _filing: FormType;
@@ -38,6 +39,10 @@ class FilingReportMetadata {
 
   get fullPath(): string {
     return `https://www.sec.gov/Archives/${this.relativePath}`;
+  }
+
+  get url(): string {
+    return this.fullPath;
   }
 
   get fileName(): string {
