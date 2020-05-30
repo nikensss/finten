@@ -25,9 +25,11 @@ class FinTen {
 
     const finten = new FinTen(process.env.DOWNLOADS_DIRECTORY);
 
+    finten.secgov.flush();
+
     await finten.secgov.getIndex(2017, Quarter.QTR2);
-    await finten.secgov.getIndex(2017, Quarter.QTR3);
-    await finten.secgov.getIndex(2018, Quarter.QTR1);
+    // await finten.secgov.getIndex(2017, Quarter.QTR3);
+    // await finten.secgov.getIndex(2018, Quarter.QTR1);
 
     let filings = finten.xbrl.parseIndices(finten.secgov.listDownloads('.idx'), FormType.F10K);
 

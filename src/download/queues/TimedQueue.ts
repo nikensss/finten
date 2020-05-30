@@ -1,34 +1,38 @@
 import Downloadable from '../Downloadable';
 import Queue from './Queue';
+import Timer from '../../time/Timer';
+import chalk from 'chalk';
 
+/**
+ * A TimedQueue is a type of queue from which elements can only be pulled out
+ * with a certain time in between (with a timeout).
+ * 
+ * Can be used in case a public API has a limit of requests per second.
+ */
 class TimedQueue implements Queue {
-  private max: number;
+  private timer: Timer;
   private _queue: Downloadable[] = [];
 
-  constructor(max: number) {
-    this.max = max;
+  constructor(timeout: number) {
+    this.timer = new Timer(timeout);
   }
 
   queue(...d: Downloadable[]) {
     this._queue.push(...d);
   }
 
-  get empty(): boolean {
+  isEmpty(): boolean {
     return this._queue.length === 0;
-  }
-
-  /**
-   * Returns the minimum waiting time between two dequeuing requests.
-   */
-  get minPeriod() {
-    return 1000 / this.max;
   }
 
   /**
    * Return the first element of the queue with guarantees that the limit of API calls per second won't be exceeded.
    */
   async dequeue(): Promise<Downloadable | undefined> {
-    await new Promise((resolve) => setTimeout(resolve, 1000 / this.max));
+    const now = Date.now();
+    await this.timer.waitForTimeout();
+    console.log(chalk.bgRed(`Δt: ${Date.now() - now}`));
+    this.timer.reset();
     return this._queue.shift();
   }
 }

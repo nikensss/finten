@@ -5,10 +5,10 @@ interface Queue {
    * Indicates whether the queue is empty.
    * 
    */
-  empty: boolean;
+  isEmpty(): boolean;
 
   /**
-   * Adds the given element(s) to the queue.
+   * Adds the given elements to the queue.
    * 
    * @param d Element to be added to the queue
    */

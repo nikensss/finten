@@ -4,7 +4,7 @@ import Queue from './Queue';
 class DefaultQueue implements Queue {
   private q: Downloadable[] = [];
 
-  get empty(): boolean {
+  isEmpty(): boolean {
     return this.q.length === 0;
   }
 

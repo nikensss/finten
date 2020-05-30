@@ -5,6 +5,7 @@ import axios from 'axios';
 import Downloadable from './Downloadable';
 import TimedQueue from './queues/TimedQueue';
 import Queue from './queues/Queue';
+import DefaultQueue from './queues/DefaultQueue';
 
 function Speedometer() {
   return function (target: any, key: string) {
@@ -33,17 +34,19 @@ class DownloadManager {
   @Speedometer()
   private static activeDownloads: number = 0;
 
-  private q: Queue;
-  private then: number = Date.now();
+  @Speedometer()
+  private static activeFileWrites: number = 0;
 
-  constructor(directory: PathLike, maxDownloadsPerSecond: number) {
+  private q: Queue;
+
+  constructor(directory: PathLike) {
     this._directory = directory;
     if (!fs.existsSync(this.dir)) {
       this.log(`directory '${this.dir}' doesn't exist, creating...`);
       fs.mkdirSync(this.dir);
       this.log('creation successful!');
     }
-    this.q = new TimedQueue(maxDownloadsPerSecond);
+    this.q = new DefaultQueue();
   }
 
   public use(q: Queue): void {
@@ -65,18 +68,15 @@ class DownloadManager {
     this.q.queue(...d);
   }
 
-  public async dequeue(): Promise<void> {
+  public async dequeue(): Promise<void[]> {
     const downloads: Promise<void>[] = [];
-    while (!this.q.empty) {
-      //dequeueing guarantees a guard time
-      //which means that 'getting' will always be safe
-      //but in order to know if the entire queue has been dequeued, we need to return the
-      //array of promises that is created when we 'get' all those downloads
-      //downloads.push(this._get((await this._queue.unqueue()) as Downloadable));
-      await this._get((await this.q.dequeue()) as Downloadable);
+    while (!this.q.isEmpty()) {
+      downloads.push(this._get((await this.q.dequeue()) as Downloadable));
+      // await this._get((await this.q.dequeue()) as Downloadable);
     }
 
-    return Promise.resolve();
+    return Promise.all(downloads);
+    // return Promise.resolve();
   }
 
   /**
@@ -124,15 +124,18 @@ class DownloadManager {
       responseType: 'stream'
     });
 
+    DownloadManager.activeFileWrites += 1;
     response.data.pipe(writer);
     DownloadManager.activeDownloads -= 1;
 
     return new Promise((res, rej) => {
       writer.on('finish', () => {
+        DownloadManager.activeFileWrites -= 1;
         this.log(`done writting: ${d.fileName}`);
         res();
       });
       writer.on('error', () => {
+        DownloadManager.activeFileWrites -= 1;
         this.log(`error while writting: ${d.fileName}`);
         rej();
       });
