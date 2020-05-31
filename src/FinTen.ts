@@ -4,26 +4,47 @@ import FormType from './filings/FormType';
 import chalk from 'chalk';
 import FinTenDB from './db/FinTenDB';
 import SecGov from './secgov/SecGov';
+import express, { Application } from 'express';
+import bodyParser from 'body-parser';
+import api from './routes/api/api';
 
 class FinTen {
   private secgov: SecGov;
   private xbrl: XBRL;
   private db: FinTenDB;
+  private app: Application;
 
   constructor(downloadsDirectory: string) {
     this.secgov = new SecGov(downloadsDirectory);
     this.xbrl = new XBRL();
     this.db = new FinTenDB();
+    this.app = express();
+    this.app.use(bodyParser.urlencoded({ extended: false }));
+    this.app.use(bodyParser.json());
+  }
+
+  public setDefaultRouting() {
+    this.app.get('/', function (req, res) {
+      res.json({
+        greeting: 'You reached the FinTen API! 🥳'
+      });
+    });
+
+    this.app.use('/api', api);
+  }
+
+  public listen(port: number = 4500) {
+    this.app.listen(port, () => FinTen.log(`Listening on port ${port}!`));
+  }
+
+  public static asAPI() {
+    const finten = FinTen.getInstance();
+    finten.setDefaultRouting();
+    finten.listen(4500);
   }
 
   public static async main(): Promise<void> {
-    const result = dotenv.config();
-
-    if (typeof process.env.DOWNLOADS_DIRECTORY !== 'string') {
-      throw new Error('No downloads directory in .env');
-    }
-
-    const finten = new FinTen(process.env.DOWNLOADS_DIRECTORY);
+    const finten = FinTen.getInstance();
 
     finten.secgov.flush();
 
@@ -58,6 +79,16 @@ class FinTen {
 
   public static exception(...args: any[]) {
     console.log.apply(null, [chalk.bgRed(`[FinTen] {EXCEPTION}`), ...args]);
+  }
+
+  private static getInstance(): FinTen {
+    const result = dotenv.config();
+
+    if (typeof process.env.DOWNLOADS_DIRECTORY !== 'string') {
+      throw new Error('No downloads directory in .env');
+    }
+
+    return new FinTen(process.env.DOWNLOADS_DIRECTORY);
   }
 }
 

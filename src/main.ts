@@ -1,3 +1,3 @@
 import FinTen from './FinTen';
 
-FinTen.main();
+FinTen.asAPI();

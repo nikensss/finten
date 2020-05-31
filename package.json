@@ -5,7 +5,21 @@
   "main": "src/main.ts",
   "scripts": {
     "start": "ts-node src/main.ts",
+    "start:watch": "nodemon",
     "test": "ts-node src/tests/tests.ts"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      ".git",
+      "node_modules"
+    ],
+    "watch": [
+      "src"
+    ],
+    "exec": "npm start",
+    "ext": "ts"
   },
   "repository": {
     "type": "git",
@@ -29,11 +43,13 @@
     "@types/node": "^13.13.5",
     "@types/ora": "^3.2.0",
     "axios": "^0.19.2",
+    "body-parser": "^1.19.0",
     "chalk": "^4.0.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "feathers-nedb": "^5.1.0",
     "nedb": "^1.8.0",
+    "nodemon": "^2.0.4",
     "ora": "^4.0.4",
     "parse-xbrl": "^1.1.5",
     "ts-node": "^8.10.1",
