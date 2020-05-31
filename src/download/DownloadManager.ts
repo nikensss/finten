@@ -68,15 +68,16 @@ class DownloadManager {
     this.q.queue(...d);
   }
 
-  public async dequeue(): Promise<void[]> {
-    const downloads: Promise<void>[] = [];
+  public async dequeue(): Promise<void> {
     while (!this.q.isEmpty()) {
-      downloads.push(this._get((await this.q.dequeue()) as Downloadable));
-      // await this._get((await this.q.dequeue()) as Downloadable);
+      try {
+        await this._get((await this.q.dequeue()) as Downloadable);
+      } catch (ex) {
+        this.warning(`couldn't 'GET': ${ex}`);
+        return Promise.reject();
+      }
     }
-
-    return Promise.all(downloads);
-    // return Promise.resolve();
+    return Promise.resolve();
   }
 
   /**
@@ -134,6 +135,7 @@ class DownloadManager {
         this.log(`done writting: ${d.fileName}`);
         res();
       });
+      writer.on('close', () => this.log(`closing ${d.fileName}`));
       writer.on('error', () => {
         DownloadManager.activeFileWrites -= 1;
         this.log(`error while writting: ${d.fileName}`);
