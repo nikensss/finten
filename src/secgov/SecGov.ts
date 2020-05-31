@@ -19,6 +19,18 @@ class SecGov extends DownloadManager {
     const url = `${SecGov.INDICES_ROOT}/${year}/${quarter}/xbrl.idx`;
     await super.get({ url, fileName: `${year}_${quarter}_xbrl.idx` });
   }
+
+  async getIndices(start: number, end?: number) {
+    end = end ? end : start;
+    if (start > end) throw new Error('start > end 🤯');
+
+    for (let year = start; year <= end; year++) {
+      await this.getIndex(year, Quarter.QTR1);
+      await this.getIndex(year, Quarter.QTR2);
+      await this.getIndex(year, Quarter.QTR3);
+      await this.getIndex(year, Quarter.QTR4);
+    }
+  }
 }
 
 export default SecGov;
