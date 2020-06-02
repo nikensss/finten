@@ -17,7 +17,7 @@ company.get('/names', async (req, res) => {
   });
 
   res.json({
-    names: [...new Set(dbquery.map((r: any) => r.EntityRegistrantName))]
+    names: [...new Set(dbquery.map((r: any) => r.EntityRegistrantName))].sort()
   });
 });
 
@@ -29,7 +29,7 @@ company.get('/tickers', async (req, res) => {
   });
 
   res.json({
-    names: [...new Set(dbquery.map((r: any) => r.TradingSymbol))]
+    names: [...new Set(dbquery.map((r: any) => r.TradingSymbol))].sort()
   });
 });
 

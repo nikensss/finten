@@ -31,7 +31,6 @@ class FinTenDB {
   }
 
   async find(params?: Params) {
-    console.log(params?.query);
     return await this.app.service('secgov').find(params);
   }
 
