@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import XBRL, { Quarter } from './secgov/XBRL';
 import FormType from './filings/FormType';
 import chalk from 'chalk';
-import FinTenDB from './db/FinTenDB';
+import FinTenDB, { fintendb } from './db/FinTenDB';
 import SecGov from './secgov/SecGov';
 import express, { Application } from 'express';
 import bodyParser from 'body-parser';
@@ -17,14 +17,14 @@ class FinTen {
   constructor(downloadsDirectory: string) {
     this.secgov = new SecGov(downloadsDirectory);
     this.xbrl = new XBRL();
-    this.db = new FinTenDB();
+    this.db = fintendb;
     this.app = express();
     this.app.use(bodyParser.urlencoded({ extended: false }));
     this.app.use(bodyParser.json());
   }
 
   public setDefaultRouting() {
-    this.app.get('/', function (req, res) {
+    this.app.get('/', (req, res) => {
       res.json({
         greeting: 'You reached the FinTen API! 🥳'
       });

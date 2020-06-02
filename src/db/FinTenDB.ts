@@ -4,7 +4,7 @@ import express, { Application } from '@feathersjs/express';
 import socketio from '@feathersjs/socketio';
 import service from 'feathers-nedb';
 
-const db = new NeDB({
+const secgov = new NeDB({
   filename: './fintendb/secgov.db',
   autoload: true
 });
@@ -17,11 +17,8 @@ class FinTenDB {
     this.app.use(
       '/secgov',
       service({
-        Model: db,
-        paginate: {
-          default: 2,
-          max: 4
-        }
+        Model: secgov,
+        paginate: false
       })
     );
   }
@@ -34,12 +31,12 @@ class FinTenDB {
   }
 
   async find(params?: Params) {
+    console.log(params?.query);
     return await this.app.service('secgov').find(params);
   }
 
   async exists(o: any): Promise<boolean> {
     const r = await this.find({
-      paginate: false,
       query: {
         EntityCentralIndexKey: o.EntityCentralIndexKey,
         DocumentType: o.DocumentType,
@@ -52,3 +49,5 @@ class FinTenDB {
 }
 
 export default FinTenDB;
+
+export const fintendb = new FinTenDB();

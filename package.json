@@ -5,7 +5,7 @@
   "main": "src/main.ts",
   "scripts": {
     "start": "ts-node src/main.ts",
-    "start:watch": "nodemon",
+    "nodemon": "nodemon",
     "test": "ts-node src/tests/tests.ts"
   },
   "nodemonConfig": {

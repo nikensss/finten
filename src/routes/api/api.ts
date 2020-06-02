@@ -1,5 +1,5 @@
 import { Router } from 'express';
-
+import company from './company/company';
 const api = Router();
 
 api.get('/', (req, res) => {
@@ -7,5 +7,7 @@ api.get('/', (req, res) => {
     message: 'API root 😎'
   });
 });
+
+api.use('/company', company);
 
 export default api;

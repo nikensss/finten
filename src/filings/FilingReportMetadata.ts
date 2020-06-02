@@ -6,7 +6,7 @@ class FilingReportMetadata implements Downloadable {
   private _companyName: string;
   private _filing: FormType;
   private _submissionDate: Date;
-  private _relativePath: string;
+  private _partialPath: string;
 
   constructor(reportMetadata: string) {
     const reportArray: string[] = reportMetadata.split('|');
@@ -14,7 +14,7 @@ class FilingReportMetadata implements Downloadable {
     this._companyName = reportArray[1];
     this._filing = asFiling(reportArray[2]);
     this._submissionDate = new Date(reportArray[3]);
-    this._relativePath = reportArray[4];
+    this._partialPath = reportArray[4];
   }
 
   get cik(): number {
@@ -33,12 +33,12 @@ class FilingReportMetadata implements Downloadable {
     return this._submissionDate;
   }
 
-  get relativePath(): string {
-    return this._relativePath;
+  get partialPath(): string {
+    return this._partialPath;
   }
 
   get fullPath(): string {
-    return `https://www.sec.gov/Archives/${this.relativePath}`;
+    return `https://www.sec.gov/Archives/${this.partialPath}`;
   }
 
   get url(): string {
@@ -46,9 +46,9 @@ class FilingReportMetadata implements Downloadable {
   }
 
   get fileName(): string {
-    const fileName: string | undefined = this.relativePath.split('/').pop();
+    const fileName: string | undefined = this.partialPath.split('/').pop();
     if (typeof fileName === 'undefined') {
-      throw new Error(`Can't retrieve fileName from relative path: ${this.relativePath}`);
+      throw new Error(`Can't retrieve fileName from relative path: ${this.partialPath}`);
     }
     return fileName;
   }
