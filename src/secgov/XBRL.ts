@@ -3,12 +3,16 @@ import chalk from 'chalk';
 import FormType from '../filings/FormType';
 import FilingReportMetadata from '../filings/FilingReportMetadata';
 import ParseXbrl from 'parse-xbrl';
+import DefaultLogger from '../logger/DefaultLogger';
 
 class XBRL {
   constructor() {}
 
   parseTxt(path: PathLike): string {
-    this.log(`parsing txt: ${path}`);
+    DefaultLogger.getInstance().debug(
+      this.constructor.name,
+      `parsing txt: ${path}`
+    );
     const lines = fs.readFileSync(path, 'utf-8').split('\n');
     const xml: string[] = [];
     let i: number = 0;
@@ -21,13 +25,16 @@ class XBRL {
       xml.push(lines[i]);
       i += 1;
     }
-    if (i >= lines.length) throw new Error(`XBRL instance could not be found or incomplete in ${path}`);
+    if (i >= lines.length)
+      throw new Error(
+        `XBRL instance could not be found or incomplete in ${path}`
+      );
 
     return xml.join('\n');
   }
 
   parseTxts(paths: PathLike[]): { name: PathLike; xml: string }[] {
-    return paths.map((p) => ({ name: p, xml: this.parseTxt(p) }));
+    return paths.map(p => ({ name: p, xml: this.parseTxt(p) }));
   }
 
   /**
@@ -37,8 +44,15 @@ class XBRL {
    * @param formType Form type to look for
    * @param amount The amount of filings to return
    */
-  parseIndex(path: PathLike, formType: FormType, amount?: number): FilingReportMetadata[] {
-    this.log(`parsing idx: ${path}`);
+  parseIndex(
+    path: PathLike,
+    formType: FormType,
+    amount?: number
+  ): FilingReportMetadata[] {
+    DefaultLogger.getInstance().debug(
+      this.constructor.name,
+      `parsing idx: ${path}`
+    );
     let lines = fs.readFileSync(path, 'utf8').split('\n');
     return lines
       .reduce((t, c) => {
@@ -46,26 +60,28 @@ class XBRL {
           const frm = new FilingReportMetadata(c);
           if (frm.formType === formType) t.push(frm);
         } catch (ex) {
-          //swallow the error: possible reason is that the FormType is not in the enum
+          if (!ex.message.includes('Unknown filing type')) {
+            DefaultLogger.getInstance().error(this.constructor.name, ex);
+          }
         }
         return t;
       }, [] as FilingReportMetadata[])
       .slice(0, amount);
   }
 
-  parseIndices(path: PathLike[], formType: FormType, amount?: number): FilingReportMetadata[] {
+  parseIndices(
+    path: PathLike[],
+    formType: FormType,
+    amount?: number
+  ): FilingReportMetadata[] {
     return path
-      .map((p) => this.parseIndex(p, formType))
+      .map(p => this.parseIndex(p, formType))
       .flat()
       .slice(0, amount);
   }
 
   async parseXBRL(xbrl: string): Promise<any> {
     return await ParseXbrl.parseStr(xbrl);
-  }
-
-  private log(msg: string) {
-    console.log(chalk.green(`[XBRL] ${msg}`));
   }
 }
 

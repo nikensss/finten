@@ -7,6 +7,8 @@ import SecGov from './secgov/SecGov';
 import express, { Application } from 'express';
 import bodyParser from 'body-parser';
 import api from './routes/api/api';
+import DefaultLogger from './logger/DefaultLogger';
+import { LogLevel } from './logger/LogLevel';
 
 class FinTen {
   private secgov: SecGov;
@@ -34,7 +36,12 @@ class FinTen {
   }
 
   public listen(port: number = 4500) {
-    this.app.listen(port, () => FinTen.log(`Listening on port ${port}!`));
+    this.app.listen(port, () =>
+      DefaultLogger.getInstance().info(
+        this.constructor.name,
+        `Listening on port ${port}!`
+      )
+    );
   }
 
   public static asAPI() {
@@ -52,33 +59,36 @@ class FinTen {
     // await finten.secgov.getIndex(2017, Quarter.QTR3);
     // await finten.secgov.getIndex(2018, Quarter.QTR1);
 
-    let filings = finten.xbrl.parseIndices(finten.secgov.listDownloads('.idx'), FormType.F10K);
+    DefaultLogger.getInstance().setLogLevel(LogLevel.DEBUG);
+
+    let filings = finten.xbrl.parseIndices(
+      finten.secgov.listDownloads('.idx'),
+      FormType.F10K,
+      4
+    );
 
     await finten.secgov.get(...filings);
-    FinTen.log('all downloads finished!');
+    DefaultLogger.getInstance().info(
+      finten.constructor.name,
+      'all downloads finished!'
+    );
+    DefaultLogger.getInstance().setLogLevel(LogLevel.INFO);
 
     let xmls = finten.xbrl.parseTxts(finten.secgov.listDownloads('.txt'));
     for (let xml of xmls) {
-      FinTen.log(`Parsing: ${xml.name}`);
+      DefaultLogger.getInstance().info(
+        finten.constructor.name,
+        `Parsing: ${xml.name}`
+      );
       try {
         const parsedXml = await finten.xbrl.parseXBRL(xml.xml);
         await finten.db.create(parsedXml);
       } catch (ex) {
-        this.exception(ex);
+        DefaultLogger.getInstance().error(finten.constructor.name, ex);
       }
     }
 
     finten.secgov.flush();
-  }
-
-  public static log(...args: any[]): void {
-    console.log.apply(null, [chalk.bgCyan(`[FinTen] ${args[0]}`), ...args.slice(1)]);
-    //const parsedXml = await ParseXbrl.parseStr(xml.xml);
-    //FinTen.log('Result: ', parsedXml);
-  }
-
-  public static exception(...args: any[]) {
-    console.log.apply(null, [chalk.bgRed(`[FinTen] {EXCEPTION}`), ...args]);
   }
 
   private static getInstance(): FinTen {

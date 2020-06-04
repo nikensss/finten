@@ -1,4 +1,4 @@
 declare module 'parse-xbrl' {
-  export function parse(xmlPath: string): any;
-  export function parseStr(xml: string): any;
+  export function parse(filePath: string): any;
+  export function parseStr(xmlContents: string): any;
 }

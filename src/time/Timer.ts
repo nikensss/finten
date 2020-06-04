@@ -1,5 +1,4 @@
 class Timer {
-
   private timeout: number;
   private start: number;
   constructor(timeout: number) {
@@ -16,7 +15,12 @@ class Timer {
   }
 
   async waitForTimeout(): Promise<void> {
-    return await new Promise(res => setTimeout(res, this.timeout));
+    //if the timer is already timed out, immediately return;
+    if (this.isTimeout()) return Promise.resolve();
+    //else, wait the remaining time until timeout
+    return await new Promise(res =>
+      setTimeout(res, this.timeout - (Date.now() - this.start))
+    );
   }
 }
 

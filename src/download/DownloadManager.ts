@@ -1,11 +1,10 @@
 import fs, { PathLike } from 'fs';
 import path from 'path';
-import chalk from 'chalk';
 import axios from 'axios';
 import Downloadable from './Downloadable';
-import TimedQueue from './queues/TimedQueue';
 import Queue from './queues/Queue';
 import DefaultQueue from './queues/DefaultQueue';
+import DefaultLogger from '../logger/DefaultLogger';
 
 function Speedometer() {
   return function (target: any, key: string) {
@@ -15,7 +14,10 @@ function Speedometer() {
 
     const getter = () => val;
     const setter = (next: number) => {
-      console.log(chalk.red(`[Speedometer] ${key}: ${val} → ${next}`));
+      DefaultLogger.getInstance().debug(
+        'Speedometer',
+        `${key}: ${val} → ${next}`
+      );
       val = next;
     };
 
@@ -42,9 +44,15 @@ class DownloadManager {
   constructor(directory: PathLike) {
     this._directory = directory;
     if (!fs.existsSync(this.dir)) {
-      this.log(`directory '${this.dir}' doesn't exist, creating...`);
+      DefaultLogger.getInstance().info(
+        this.constructor.name,
+        `directory '${this.dir}' doesn't exist, creating...`
+      );
       fs.mkdirSync(this.dir);
-      this.log('creation successful!');
+      DefaultLogger.getInstance().info(
+        this.constructor.name,
+        'creation successful!'
+      );
     }
     this.q = new DefaultQueue();
   }
@@ -58,8 +66,8 @@ class DownloadManager {
   }
 
   public flush(): void {
-    fs.readdirSync(this.dir).forEach((f) => {
-      this.log(`deleting ${f}`);
+    fs.readdirSync(this.dir).forEach(f => {
+      DefaultLogger.getInstance().debug(this.constructor.name, `deleting ${f}`);
       fs.unlinkSync(path.join(this.dir.toString(), f));
     });
   }
@@ -73,7 +81,10 @@ class DownloadManager {
       try {
         await this._get((await this.q.dequeue()) as Downloadable);
       } catch (ex) {
-        this.warning(`couldn't 'GET': ${ex}`);
+        DefaultLogger.getInstance().warning(
+          this.constructor.name,
+          `couldn't 'GET': ${ex}`
+        );
         return Promise.reject();
       }
     }
@@ -97,16 +108,8 @@ class DownloadManager {
   public listDownloads(extension?: string): PathLike[] {
     return fs
       .readdirSync(this.dir)
-      .map((f) => path.join(this.dir.toString(), f.toString()))
-      .filter((f) => path.extname(f).toLowerCase() === (extension || ''));
-  }
-
-  private log(...args: any[]): void {
-    console.log(chalk.blue(`[DownloadManager]`), ...args);
-  }
-
-  private warning(...args: any[]) {
-    console.log(chalk.bgYellow(`[DownloadManager]`), ...args);
+      .map(f => path.join(this.dir.toString(), f.toString()))
+      .filter(f => path.extname(f).toLowerCase() === (extension || ''));
   }
 
   /**
@@ -114,7 +117,10 @@ class DownloadManager {
    * @param d Downloadable to 'GET'
    */
   private async _get(d: Downloadable): Promise<void> {
-    this.log(`downloading: ${d.url}`);
+    DefaultLogger.getInstance().info(
+      this.constructor.name,
+      `downloading: ${d.url}`
+    );
     DownloadManager.activeDownloads += 1;
     const p = path.resolve(this.dir.toString(), d.fileName);
     const writer = fs.createWriteStream(p);
@@ -132,13 +138,24 @@ class DownloadManager {
     return new Promise((res, rej) => {
       writer.on('finish', () => {
         DownloadManager.activeFileWrites -= 1;
-        this.log(`done writting: ${d.fileName}`);
+        DefaultLogger.getInstance().info(
+          this.constructor.name,
+          `done writting: ${d.fileName}`
+        );
         res();
       });
-      writer.on('close', () => this.log(`closing ${d.fileName}`));
+      writer.on('close', () =>
+        DefaultLogger.getInstance().debug(
+          this.constructor.name,
+          `closing ${d.fileName}`
+        )
+      );
       writer.on('error', () => {
         DownloadManager.activeFileWrites -= 1;
-        this.log(`error while writting: ${d.fileName}`);
+        DefaultLogger.getInstance().error(
+          this.constructor.name,
+          `error while writting: ${d.fileName}`
+        );
         rej();
       });
     });
