@@ -5,8 +5,10 @@ import Downloadable from './Downloadable';
 import Queue from './queues/Queue';
 import DefaultQueue from './queues/DefaultQueue';
 import DefaultLogger from '../logger/DefaultLogger';
+import { LogLevel } from '../logger/LogLevel';
 
 function Speedometer() {
+  const args = arguments;
   return function (target: any, key: string) {
     //target === parent class
     //key === decorated property
@@ -14,7 +16,7 @@ function Speedometer() {
 
     const getter = () => val;
     const setter = (next: number) => {
-      DefaultLogger.getInstance().debug(
+      DefaultLogger.get('Speedometer').debug(
         'Speedometer',
         `${key}: ${val} → ${next}`
       );
@@ -43,17 +45,23 @@ class DownloadManager {
 
   constructor(directory: PathLike) {
     this._directory = directory;
+
+    DefaultLogger.get(this.constructor.name).setOutput(
+      `logs/${this.constructor.name}.log`
+    );
+
     if (!fs.existsSync(this.dir)) {
-      DefaultLogger.getInstance().info(
+      DefaultLogger.get(this.constructor.name).info(
         this.constructor.name,
         `directory '${this.dir}' doesn't exist, creating...`
       );
       fs.mkdirSync(this.dir);
-      DefaultLogger.getInstance().info(
+      DefaultLogger.get(this.constructor.name).info(
         this.constructor.name,
         'creation successful!'
       );
     }
+
     this.q = new DefaultQueue();
   }
 
@@ -67,7 +75,10 @@ class DownloadManager {
 
   public flush(): void {
     fs.readdirSync(this.dir).forEach(f => {
-      DefaultLogger.getInstance().debug(this.constructor.name, `deleting ${f}`);
+      DefaultLogger.get(this.constructor.name).debug(
+        this.constructor.name,
+        `deleting ${f}`
+      );
       fs.unlinkSync(path.join(this.dir.toString(), f));
     });
   }
@@ -76,28 +87,38 @@ class DownloadManager {
     this.q.queue(...d);
   }
 
-  public async dequeue(): Promise<void> {
+  /**
+   * Starts emptying the queue by 'GET'ting all the elements in it.
+   *
+   * @returns a promise that resolves to the locations of where the downloadbles
+   * were downloaded to.
+   */
+  public async dequeue(): Promise<string[]> {
+    const downloads: string[] = [];
     while (!this.q.isEmpty()) {
       try {
-        await this._get((await this.q.dequeue()) as Downloadable);
+        downloads.push(
+          await this._get((await this.q.dequeue()) as Downloadable)
+        );
       } catch (ex) {
-        DefaultLogger.getInstance().warning(
+        DefaultLogger.get(this.constructor.name).warning(
           this.constructor.name,
           `couldn't 'GET': ${ex}`
         );
-        return Promise.reject();
       }
     }
-    return Promise.resolve();
+    return Promise.resolve(downloads);
   }
 
   /**
-   * Queues and immediately downloads (respecting the request rate limit) the given collection of Downloadables.
+   * Queues and immediately downloads (respecting the request rate limit) the
+   * given collection of Downloadables.
+   *
    * @param d Collection of Downloadables
    */
-  public async get(...d: Downloadable[]): Promise<void> {
+  public async get(...d: Downloadable[]): Promise<string[]> {
     this.queue(...d);
-    await this.dequeue();
+    return this.dequeue();
   }
 
   /**
@@ -115,9 +136,11 @@ class DownloadManager {
   /**
    * Private implementation that performs the actual HTTP.GET request.
    * @param d Downloadable to 'GET'
+   *
+   * @returns a promise that resolves to the location of the downloaded file
    */
-  private async _get(d: Downloadable): Promise<void> {
-    DefaultLogger.getInstance().info(
+  private async _get(d: Downloadable): Promise<string> {
+    DefaultLogger.get(this.constructor.name).info(
       this.constructor.name,
       `downloading: ${d.url}`
     );
@@ -138,21 +161,21 @@ class DownloadManager {
     return new Promise((res, rej) => {
       writer.on('finish', () => {
         DownloadManager.activeFileWrites -= 1;
-        DefaultLogger.getInstance().info(
+        DefaultLogger.get(this.constructor.name).info(
           this.constructor.name,
           `done writting: ${d.fileName}`
         );
-        res();
+        res(p);
       });
       writer.on('close', () =>
-        DefaultLogger.getInstance().debug(
+        DefaultLogger.get(this.constructor.name).debug(
           this.constructor.name,
           `closing ${d.fileName}`
         )
       );
       writer.on('error', () => {
         DownloadManager.activeFileWrites -= 1;
-        DefaultLogger.getInstance().error(
+        DefaultLogger.get(this.constructor.name).error(
           this.constructor.name,
           `error while writting: ${d.fileName}`
         );

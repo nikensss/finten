@@ -1,20 +1,19 @@
 import fs from 'fs';
 import { Logger } from './Logger';
 import { LogLevel } from './LogLevel';
-import chalk from 'chalk';
 import { Writable } from 'stream';
 
 class DefaultLogger implements Logger {
-  private logLevel: LogLevel = LogLevel.INFO;
-  private static instance: DefaultLogger | null = null;
+  private _logLevel: LogLevel = LogLevel.INFO;
   private output: Writable = process.stdout;
+  private static map: Map<string, Logger> = new Map();
   private contructor() {}
 
-  public static getInstance(): DefaultLogger {
-    if (DefaultLogger.instance === null) {
-      DefaultLogger.instance = new DefaultLogger();
+  public static get(className: string): Logger {
+    if (DefaultLogger.map.get(className) === undefined) {
+      DefaultLogger.map.set(className, new DefaultLogger());
     }
-    return DefaultLogger.instance;
+    return DefaultLogger.map.get(className) as DefaultLogger;
   }
 
   setOutput(destinationFile: string): void {
@@ -23,35 +22,40 @@ class DefaultLogger implements Logger {
     });
   }
 
-  setLogLevel(logLevel: LogLevel) {
-    this.logLevel = logLevel;
+  get logLevel(): LogLevel {
+    return this._logLevel;
+  }
+
+  set logLevel(logLevel: LogLevel) {
+    this._logLevel = logLevel;
   }
 
   debug(origin: string, ...message: any[]): void {
-    if (this.logLevel <= LogLevel.DEBUG) {
+    if (this._logLevel <= LogLevel.DEBUG) {
       this.log(`{DEBUG} [${origin}] ${message[0]}`, message.slice(1));
     }
   }
 
   info(origin: string, ...message: any[]): void {
-    if (this.logLevel <= LogLevel.INFO) {
+    if (this._logLevel <= LogLevel.INFO) {
       this.log(`{INFO} [${origin}] ${message[0]}`, message.slice(1));
     }
   }
 
   warning(origin: string, ...message: any[]): void {
-    if (this.logLevel <= LogLevel.WARNING) {
+    if (this._logLevel <= LogLevel.WARNING) {
       this.log(`{WARNING} [${origin}] ${message[0]}`, message.slice(1));
     }
   }
 
   error(origin: string, ...message: any[]): void {
-    if (this.logLevel <= LogLevel.ERROR) {
+    if (this._logLevel <= LogLevel.ERROR) {
       this.log(`{ERROR} [${origin}] ${message[0]}`, message.slice(1));
     }
   }
 
   private log(...args: any[]): void {
+    this.output.write(`${new Date().toLocaleString()}|`);
     this.output.write(args.join(';'));
     this.output.write('\n');
   }

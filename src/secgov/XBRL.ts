@@ -9,7 +9,7 @@ class XBRL {
   constructor() {}
 
   parseTxt(path: PathLike): string {
-    DefaultLogger.getInstance().debug(
+    DefaultLogger.get(this.constructor.name).debug(
       this.constructor.name,
       `parsing txt: ${path}`
     );
@@ -25,10 +25,9 @@ class XBRL {
       xml.push(lines[i]);
       i += 1;
     }
-    if (i >= lines.length)
-      throw new Error(
-        `XBRL instance could not be found or incomplete in ${path}`
-      );
+    if (i >= lines.length) {
+      throw new Error(`XBRL instance not found or incomplete at ${path}`);
+    }
 
     return xml.join('\n');
   }
@@ -49,7 +48,7 @@ class XBRL {
     formType: FormType,
     amount?: number
   ): FilingReportMetadata[] {
-    DefaultLogger.getInstance().debug(
+    DefaultLogger.get(this.constructor.name).debug(
       this.constructor.name,
       `parsing idx: ${path}`
     );
@@ -61,7 +60,10 @@ class XBRL {
           if (frm.formType === formType) t.push(frm);
         } catch (ex) {
           if (!ex.message.includes('Unknown filing type')) {
-            DefaultLogger.getInstance().error(this.constructor.name, ex);
+            DefaultLogger.get(this.constructor.name).error(
+              this.constructor.name,
+              ex
+            );
           }
         }
         return t;

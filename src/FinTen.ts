@@ -23,6 +23,9 @@ class FinTen {
     this.app = express();
     this.app.use(bodyParser.urlencoded({ extended: false }));
     this.app.use(bodyParser.json());
+    DefaultLogger.get(this.constructor.name).setOutput(
+      `logs/${this.constructor.name}.log`
+    );
   }
 
   public setDefaultRouting() {
@@ -37,7 +40,7 @@ class FinTen {
 
   public listen(port: number = 4500) {
     this.app.listen(port, () =>
-      DefaultLogger.getInstance().info(
+      DefaultLogger.get(this.constructor.name).info(
         this.constructor.name,
         `Listening on port ${port}!`
       )
@@ -59,7 +62,7 @@ class FinTen {
     // await finten.secgov.getIndex(2017, Quarter.QTR3);
     // await finten.secgov.getIndex(2018, Quarter.QTR1);
 
-    DefaultLogger.getInstance().setLogLevel(LogLevel.DEBUG);
+    DefaultLogger.get(this.constructor.name).logLevel = LogLevel.DEBUG;
 
     let filings = finten.xbrl.parseIndices(
       finten.secgov.listDownloads('.idx'),
@@ -67,24 +70,42 @@ class FinTen {
       4
     );
 
-    await finten.secgov.get(...filings);
-    DefaultLogger.getInstance().info(
-      finten.constructor.name,
-      'all downloads finished!'
-    );
-    DefaultLogger.getInstance().setLogLevel(LogLevel.INFO);
+    finten.secgov.flush();
+    let txts: string[] = [];
+    let xml: string, xbrl: any;
 
-    let xmls = finten.xbrl.parseTxts(finten.secgov.listDownloads('.txt'));
-    for (let xml of xmls) {
-      DefaultLogger.getInstance().info(
-        finten.constructor.name,
-        `Parsing: ${xml.name}`
-      );
-      try {
-        const parsedXml = await finten.xbrl.parseXBRL(xml.xml);
-        await finten.db.create(parsedXml);
-      } catch (ex) {
-        DefaultLogger.getInstance().error(finten.constructor.name, ex);
+    let partialPaths: string[] = (
+      await finten.db.find({
+        query: {
+          $select: ['partialPath']
+        }
+      })
+    ).map((p: any) => p.partialPath);
+
+    for (let filing of filings) {
+      if (partialPaths.includes(filing.partialPath)) {
+        DefaultLogger.get(finten.constructor.name).info(
+          finten.constructor.name,
+          'skipping download (already in db)'
+        );
+        continue;
+      }
+
+      txts = await finten.secgov.get(filing);
+      for (let txt of txts) {
+        try {
+          xml = finten.xbrl.parseTxt(txt);
+          xbrl = await finten.xbrl.parseXBRL(xml);
+          xbrl.partialPath = filing.partialPath;
+          await finten.db.create(xbrl);
+        } catch (ex) {
+          DefaultLogger.get(this.constructor.name).warning(
+            finten.constructor.name,
+            `Error while parsing txt to XBRL at ${txt}:\n${ex}`
+          );
+        } finally {
+          finten.secgov.flush();
+        }
       }
     }
 
