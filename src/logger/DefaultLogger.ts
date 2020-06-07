@@ -2,11 +2,15 @@ import fs from 'fs';
 import { Logger } from './Logger';
 import { LogLevel } from './LogLevel';
 import { Writable } from 'stream';
+import moment from 'moment';
 
 class DefaultLogger implements Logger {
   private _logLevel: LogLevel = LogLevel.INFO;
-  private output: Writable = process.stdout;
+  private output: Writable = fs.createWriteStream('logs/general.log', {
+    flags: 'a'
+  });
   private static map: Map<string, Logger> = new Map();
+  private static readonly MOMENT_FORMAT: string = 'YYYY/MM/DD HH:mm:ss SSS';
   private contructor() {}
 
   public static get(className: string): Logger {
@@ -55,9 +59,9 @@ class DefaultLogger implements Logger {
   }
 
   private log(...args: any[]): void {
-    this.output.write(`${new Date().toLocaleString()}|`);
-    this.output.write(args.join(';'));
-    this.output.write('\n');
+    this.output.write(
+      `${moment().format(DefaultLogger.MOMENT_FORMAT)}|${args.join(';')}\n`
+    );
   }
 }
 

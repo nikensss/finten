@@ -46,9 +46,9 @@ class DownloadManager {
   constructor(directory: PathLike) {
     this._directory = directory;
 
-    DefaultLogger.get(this.constructor.name).setOutput(
-      `logs/${this.constructor.name}.log`
-    );
+    // DefaultLogger.get(this.constructor.name).setOutput(
+    //   `logs/${this.constructor.name}.log`
+    // );
 
     if (!fs.existsSync(this.dir)) {
       DefaultLogger.get(this.constructor.name).info(

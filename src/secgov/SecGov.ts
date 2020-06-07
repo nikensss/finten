@@ -4,7 +4,8 @@ import TimedQueue from '../download/queues/TimedQueue';
 
 class SecGov extends DownloadManager {
   public static readonly API_ROOT: string = 'https://www.sec.gov/Archives/';
-  public static readonly INDICES_ROOT: string = SecGov.API_ROOT + 'edgar/full-index/';
+  public static readonly INDICES_ROOT: string =
+    SecGov.API_ROOT + 'edgar/full-index/';
   /**
    * The amount of milliseconds between to API calls
    */
@@ -20,8 +21,7 @@ class SecGov extends DownloadManager {
     await super.get({ url, fileName: `${year}_${quarter}_xbrl.idx` });
   }
 
-  async getIndices(start: number, end?: number) {
-    end = end ? end : start;
+  async getIndices(start: number, end: number = start) {
     if (start > end) throw new Error('start > end 🤯');
 
     for (let year = start; year <= end; year++) {

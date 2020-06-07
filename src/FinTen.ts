@@ -1,10 +1,10 @@
 import dotenv from 'dotenv';
-import XBRL, { Quarter } from './secgov/XBRL';
+import XBRL from './secgov/XBRL';
 import FormType from './filings/FormType';
-import chalk from 'chalk';
 import FinTenDB, { fintendb } from './db/FinTenDB';
 import SecGov from './secgov/SecGov';
 import express, { Application } from 'express';
+import { Express } from 'express-serve-static-core';
 import bodyParser from 'body-parser';
 import api from './routes/api/api';
 import DefaultLogger from './logger/DefaultLogger';
@@ -23,9 +23,13 @@ class FinTen {
     this.app = express();
     this.app.use(bodyParser.urlencoded({ extended: false }));
     this.app.use(bodyParser.json());
-    DefaultLogger.get(this.constructor.name).setOutput(
-      `logs/${this.constructor.name}.log`
-    );
+    // this.app.use((req, res, next) => {
+    //   req.finten = this;
+    //   next();
+    // });
+    // DefaultLogger.get(this.constructor.name).setOutput(
+    //   `logs/${this.constructor.name}.log`
+    // );
   }
 
   public setDefaultRouting() {
@@ -48,34 +52,38 @@ class FinTen {
   }
 
   public static asAPI() {
-    const finten = FinTen.getInstance();
+    const finten = FinTen.create();
     finten.setDefaultRouting();
     finten.listen(4500);
   }
 
-  public static async main(): Promise<void> {
-    const finten = FinTen.getInstance();
+  public static create(): FinTen {
+    const result = dotenv.config();
 
-    finten.secgov.flush();
+    if (typeof process.env.DOWNLOADS_DIRECTORY !== 'string') {
+      throw new Error('No downloads directory in .env');
+    }
+    return new FinTen(process.env.DOWNLOADS_DIRECTORY);
+  }
 
-    await finten.secgov.getIndex(2017, Quarter.QTR2);
-    // await finten.secgov.getIndex(2017, Quarter.QTR3);
-    // await finten.secgov.getIndex(2018, Quarter.QTR1);
-
+  public async fill(start: number, end: number = start) {
     DefaultLogger.get(this.constructor.name).logLevel = LogLevel.DEBUG;
+    this.secgov.flush();
 
-    let filings = finten.xbrl.parseIndices(
-      finten.secgov.listDownloads('.idx'),
+    await this.secgov.getIndices(2017);
+
+    let filings = this.xbrl.parseIndices(
+      this.secgov.listDownloads('.idx'),
       FormType.F10K,
-      4
+      8
     );
 
-    finten.secgov.flush();
+    this.secgov.flush();
     let txts: string[] = [];
     let xml: string, xbrl: any;
 
     let partialPaths: string[] = (
-      await finten.db.find({
+      await this.db.find({
         query: {
           $select: ['partialPath']
         }
@@ -84,42 +92,38 @@ class FinTen {
 
     for (let filing of filings) {
       if (partialPaths.includes(filing.partialPath)) {
-        DefaultLogger.get(finten.constructor.name).info(
-          finten.constructor.name,
+        DefaultLogger.get(this.constructor.name).info(
+          this.constructor.name,
           'skipping download (already in db)'
         );
         continue;
       }
 
-      txts = await finten.secgov.get(filing);
+      txts = await this.secgov.get(filing);
       for (let txt of txts) {
         try {
-          xml = finten.xbrl.parseTxt(txt);
-          xbrl = await finten.xbrl.parseXBRL(xml);
+          xml = this.xbrl.parseTxt(txt);
+          xbrl = await this.xbrl.parseXBRL(xml);
           xbrl.partialPath = filing.partialPath;
-          await finten.db.create(xbrl);
+          await this.db.create(xbrl);
         } catch (ex) {
           DefaultLogger.get(this.constructor.name).warning(
-            finten.constructor.name,
+            this.constructor.name,
             `Error while parsing txt to XBRL at ${txt}:\n${ex}`
           );
         } finally {
-          finten.secgov.flush();
+          this.secgov.flush();
         }
       }
     }
 
-    finten.secgov.flush();
+    this.secgov.flush();
   }
 
-  private static getInstance(): FinTen {
-    const result = dotenv.config();
+  public static async main(): Promise<void> {
+    const finten = FinTen.create();
 
-    if (typeof process.env.DOWNLOADS_DIRECTORY !== 'string') {
-      throw new Error('No downloads directory in .env');
-    }
-
-    return new FinTen(process.env.DOWNLOADS_DIRECTORY);
+    finten.fill(2017);
   }
 }
 
