@@ -12,14 +12,10 @@ import { LogLevel } from './logger/LogLevel';
 import FinTenAPI from './FinTenAPI';
 
 class FinTen {
-  private secgov: SecGov;
-  private xbrl: XBRL;
-  private db: FinTenDB;
+  private downloadsDirectory: string;
 
   constructor(downloadsDirectory: string) {
-    this.secgov = new SecGov(downloadsDirectory);
-    this.xbrl = new XBRL();
-    this.db = fintendb;
+    this.downloadsDirectory = downloadsDirectory;
   }
 
   public static asAPI() {
@@ -38,12 +34,16 @@ class FinTen {
 
   public async fill(start: number, end: number = start) {
     DefaultLogger.get(this.constructor.name).logLevel = LogLevel.DEBUG;
-    this.secgov.flush();
 
-    await this.secgov.getIndices(start, end);
+    const secgov = new SecGov(this.downloadsDirectory);
+    const xbrl = new XBRL();
+    const db = new FinTenDB();
+    secgov.flush();
 
-    let filings = this.xbrl.parseIndices(
-      this.secgov.listDownloads('.idx'),
+    await secgov.getIndices(start, end);
+
+    let filings = xbrl.parseIndices(
+      secgov.listDownloads('.idx'),
       FormType.F10K
     );
 
@@ -52,12 +52,12 @@ class FinTen {
       `found ${filings.length} 10-K filings`
     );
 
-    this.secgov.flush();
+    secgov.flush();
     let txts: string[] = [];
-    let xml: string, xbrl: any;
+    let xml: string, parsedXbrl: any;
 
     let partialPaths: string[] = (
-      await this.db.find({
+      await db.find({
         query: {
           $select: ['partialPath']
         }
@@ -73,25 +73,25 @@ class FinTen {
         continue;
       }
 
-      txts = await this.secgov.get(filing);
+      txts = await secgov.get(filing);
       for (let txt of txts) {
         try {
-          xml = this.xbrl.parseTxt(txt);
-          xbrl = await this.xbrl.parseXBRL(xml);
-          xbrl.partialPath = filing.partialPath;
-          await this.db.create(xbrl);
+          xml = xbrl.parseTxt(txt);
+          parsedXbrl = await xbrl.parseXBRL(xml);
+          parsedXbrl.partialPath = filing.partialPath;
+          await db.create(parsedXbrl);
         } catch (ex) {
           DefaultLogger.get(this.constructor.name).warning(
             this.constructor.name,
             `Error while parsing txt to XBRL at ${txt}:\n${ex}`
           );
         } finally {
-          this.secgov.flush();
+          secgov.flush();
         }
       }
     }
 
-    this.secgov.flush();
+    secgov.flush();
   }
 
   public static async main(): Promise<void> {
