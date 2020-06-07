@@ -9,52 +9,22 @@ import bodyParser from 'body-parser';
 import api from './routes/api/api';
 import DefaultLogger from './logger/DefaultLogger';
 import { LogLevel } from './logger/LogLevel';
+import FinTenAPI from './FinTenAPI';
 
 class FinTen {
   private secgov: SecGov;
   private xbrl: XBRL;
   private db: FinTenDB;
-  private app: Application;
 
   constructor(downloadsDirectory: string) {
     this.secgov = new SecGov(downloadsDirectory);
     this.xbrl = new XBRL();
     this.db = fintendb;
-    this.app = express();
-    this.app.use(bodyParser.urlencoded({ extended: false }));
-    this.app.use(bodyParser.json());
-    // this.app.use((req, res, next) => {
-    //   req.finten = this;
-    //   next();
-    // });
-    // DefaultLogger.get(this.constructor.name).setOutput(
-    //   `logs/${this.constructor.name}.log`
-    // );
-  }
-
-  public setDefaultRouting() {
-    this.app.get('/', (req, res) => {
-      res.json({
-        greeting: 'You reached the FinTen API! 🥳'
-      });
-    });
-
-    this.app.use('/api', api);
-  }
-
-  public listen(port: number = 4500) {
-    this.app.listen(port, () =>
-      DefaultLogger.get(this.constructor.name).info(
-        this.constructor.name,
-        `Listening on port ${port}!`
-      )
-    );
   }
 
   public static asAPI() {
-    const finten = FinTen.create();
-    finten.setDefaultRouting();
-    finten.listen(4500);
+    const fintenAPI = new FinTenAPI();
+    fintenAPI.setRoutes().listen();
   }
 
   public static create(): FinTen {
@@ -70,12 +40,16 @@ class FinTen {
     DefaultLogger.get(this.constructor.name).logLevel = LogLevel.DEBUG;
     this.secgov.flush();
 
-    await this.secgov.getIndices(2017);
+    await this.secgov.getIndices(start, end);
 
     let filings = this.xbrl.parseIndices(
       this.secgov.listDownloads('.idx'),
-      FormType.F10K,
-      8
+      FormType.F10K
+    );
+
+    DefaultLogger.get(this.constructor.name).info(
+      this.constructor.name,
+      `found ${filings.length} 10-K filings`
     );
 
     this.secgov.flush();
@@ -123,7 +97,7 @@ class FinTen {
   public static async main(): Promise<void> {
     const finten = FinTen.create();
 
-    finten.fill(2017);
+    finten.fill(2010, 2019);
   }
 }
 

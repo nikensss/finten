@@ -7,5 +7,5 @@ if (typeof process.env.DOWNLOADS_DIRECTORY !== 'string') {
   throw new Error('No downloads directory in .env');
 }
 
-FinTen.asAPI();
-// FinTen.main();
+// FinTen.asAPI();
+FinTen.main();

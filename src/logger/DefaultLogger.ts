@@ -6,7 +6,7 @@ import moment from 'moment';
 
 class DefaultLogger implements Logger {
   private _logLevel: LogLevel = LogLevel.INFO;
-  private output: Writable = fs.createWriteStream('logs/general.log', {
+  private output: Writable = fs.createWriteStream('logs/.log', {
     flags: 'a'
   });
   private static map: Map<string, Logger> = new Map();
