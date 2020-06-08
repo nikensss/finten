@@ -32,7 +32,7 @@ class FinTen {
     return new FinTen(process.env.DOWNLOADS_DIRECTORY);
   }
 
-  public async fill(start: number, end: number = start) {
+  public async fill(start: number, end?: number, amount?: number) {
     DefaultLogger.get(this.constructor.name).logLevel = LogLevel.DEBUG;
 
     const secgov = new SecGov(this.downloadsDirectory);
@@ -44,7 +44,8 @@ class FinTen {
 
     let filings = xbrl.parseIndices(
       secgov.listDownloads('.idx'),
-      FormType.F10K
+      FormType.F10K,
+      amount
     );
 
     DefaultLogger.get(this.constructor.name).info(
@@ -97,7 +98,7 @@ class FinTen {
   public static async main(): Promise<void> {
     const finten = FinTen.create();
 
-    finten.fill(2010, 2019);
+    finten.fill(2010, 2019, 10);
   }
 }
 

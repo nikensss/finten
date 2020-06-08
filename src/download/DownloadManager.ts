@@ -74,13 +74,25 @@ class DownloadManager {
   }
 
   public flush(): void {
+    DefaultLogger.get(this.constructor.name).info(
+      this.constructor.name,
+      'flushing downloads! 🚾q'
+    );
     fs.readdirSync(this.dir).forEach(f => {
+      const currentPath = path.join(this.dir.toString(), f);
+      if (fs.lstatSync(currentPath).isDirectory()) {
+        this.deldir(currentPath);
+      }
       DefaultLogger.get(this.constructor.name).debug(
         this.constructor.name,
         `deleting ${f}`
       );
-      fs.unlinkSync(path.join(this.dir.toString(), f));
+      fs.unlinkSync(currentPath);
     });
+    DefaultLogger.get(this.constructor.name).info(
+      this.constructor.name,
+      'done flusing 🚽'
+    );
   }
 
   public queue(...d: Downloadable[]) {
@@ -182,6 +194,20 @@ class DownloadManager {
         rej();
       });
     });
+  }
+
+  private deldir(src: PathLike): void {
+    if (!fs.existsSync(src)) return;
+
+    fs.readdirSync(src).forEach(f => {
+      const currentPath = path.join(src.toString(), f);
+      if (fs.lstatSync(currentPath).isDirectory()) {
+        this.deldir(currentPath); // recurse
+      } else {
+        fs.unlinkSync(currentPath); // delete file
+      }
+    });
+    fs.rmdirSync(src);
   }
 }
 
