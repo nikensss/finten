@@ -1,6 +1,10 @@
 import DownloadManager from '../download/DownloadManager';
 import { Quarter } from './XBRL';
 import TimedQueue from '../download/queues/TimedQueue';
+import fs, { PathLike } from 'fs';
+import FilingReportMetadata from '../filings/FilingReportMetadata';
+import FormType from '../filings/FormType';
+import DefaultLogger from '../logger/DefaultLogger';
 
 class SecGov extends DownloadManager {
   public static readonly API_ROOT: string = 'https://www.sec.gov/Archives/';
@@ -30,6 +34,48 @@ class SecGov extends DownloadManager {
       await this.getIndex(year, Quarter.QTR3);
       await this.getIndex(year, Quarter.QTR4);
     }
+  }
+
+  /**
+   * Parses all .idx files in the 'downloads' folder and returns the
+   * FilingReportMetadata's that correspond to the desired form type.
+   *
+   * @param formType Form type to look for
+   * @param amount The amount of filings to return
+   */
+  parseIndex(
+    path: PathLike,
+    formType: FormType,
+    amount?: number
+  ): FilingReportMetadata[] {
+    DefaultLogger.get(this.constructor.name).debug(
+      this.constructor.name,
+      `parsing idx: ${path}`
+    );
+    let lines = fs.readFileSync(path, 'utf8').split('\n');
+    return lines
+      .reduce((t, c) => {
+        try {
+          const frm = new FilingReportMetadata(c);
+          if (frm.formType === formType) t.push(frm);
+        } catch (ex) {
+          if (!ex.message.includes('Unknown filing type')) {
+            DefaultLogger.get(this.constructor.name).error(
+              this.constructor.name,
+              ex
+            );
+          }
+        }
+        return t;
+      }, [] as FilingReportMetadata[])
+      .slice(0, amount);
+  }
+
+  parseIndices(formType: FormType, amount?: number): FilingReportMetadata[] {
+    return this.listDownloads('.idx')
+      .map(p => this.parseIndex(p, formType))
+      .flat()
+      .slice(0, amount);
   }
 }
 

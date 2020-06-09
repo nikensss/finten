@@ -1,11 +1,12 @@
 import express, { Application } from 'express';
 import bodyParser from 'body-parser';
-import DefaultLogger from './logger/DefaultLogger';
+import { default as LOGGER } from './logger/DefaultLogger';
 import api from './routes/api/api';
 
 class FinTenAPI {
   private app: Application;
   private port: number = 3000;
+
   constructor() {
     this.app = express();
     this.app.use(bodyParser.urlencoded({ extended: false }));
@@ -26,7 +27,7 @@ class FinTenAPI {
 
   listen(): FinTenAPI {
     this.app.listen(this.port, () =>
-      DefaultLogger.get(this.constructor.name).info(
+      LOGGER.get(this.constructor.name).info(
         this.constructor.name,
         `Listening on port ${this.port}!`
       )

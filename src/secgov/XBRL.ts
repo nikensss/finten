@@ -1,14 +1,40 @@
 import fs, { PathLike } from 'fs';
-import chalk from 'chalk';
-import FormType from '../filings/FormType';
-import FilingReportMetadata from '../filings/FilingReportMetadata';
 import ParseXbrl from 'parse-xbrl';
 import DefaultLogger from '../logger/DefaultLogger';
 
 class XBRL {
-  constructor() {}
+  private data: any;
 
-  parseTxt(path: PathLike): string {
+  constructor(data: any) {
+    this.data = data;
+  }
+
+  /**
+   * Returns an object that represents the data in the XBRL that was given to it.
+   */
+  get(): any {
+    return this.data;
+  }
+
+  set partialPath(partialPath: string) {
+    this.data.partialPath = partialPath;
+  }
+
+  public static async fromTxts(paths: PathLike[]): Promise<XBRL[]> {
+    return await Promise.all(paths.map(p => XBRL.fromTxt(p)));
+  }
+
+  public static async fromTxt(path: PathLike): Promise<XBRL> {
+    const xml = XBRL.extractXmlFromTxt(path);
+    try {
+      const xbrl = await ParseXbrl.parseStr(xml);
+      return new XBRL(xbrl);
+    } catch (ex) {
+      throw new Error(`Exception while parsing XBRL: ${ex}`);
+    }
+  }
+
+  private static extractXmlFromTxt(path: PathLike): string {
     DefaultLogger.get(this.constructor.name).debug(
       this.constructor.name,
       `parsing txt: ${path}`
@@ -30,60 +56,6 @@ class XBRL {
     }
 
     return xml.join('\n');
-  }
-
-  parseTxts(paths: PathLike[]): { name: PathLike; xml: string }[] {
-    return paths.map(p => ({ name: p, xml: this.parseTxt(p) }));
-  }
-
-  /**
-   * Parses all .idx files in the 'downloads' folder and returns the
-   * FilingReportMetadata's that correspond to the desired form type.
-   *
-   * @param formType Form type to look for
-   * @param amount The amount of filings to return
-   */
-  parseIndex(
-    path: PathLike,
-    formType: FormType,
-    amount?: number
-  ): FilingReportMetadata[] {
-    DefaultLogger.get(this.constructor.name).debug(
-      this.constructor.name,
-      `parsing idx: ${path}`
-    );
-    let lines = fs.readFileSync(path, 'utf8').split('\n');
-    return lines
-      .reduce((t, c) => {
-        try {
-          const frm = new FilingReportMetadata(c);
-          if (frm.formType === formType) t.push(frm);
-        } catch (ex) {
-          if (!ex.message.includes('Unknown filing type')) {
-            DefaultLogger.get(this.constructor.name).error(
-              this.constructor.name,
-              ex
-            );
-          }
-        }
-        return t;
-      }, [] as FilingReportMetadata[])
-      .slice(0, amount);
-  }
-
-  parseIndices(
-    path: PathLike[],
-    formType: FormType,
-    amount?: number
-  ): FilingReportMetadata[] {
-    return path
-      .map(p => this.parseIndex(p, formType))
-      .flat()
-      .slice(0, amount);
-  }
-
-  async parseXBRL(xbrl: string): Promise<any> {
-    return await ParseXbrl.parseStr(xbrl);
   }
 }
 

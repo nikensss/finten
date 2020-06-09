@@ -1,9 +1,12 @@
 import { Router } from 'express';
 import company from './company/company';
 import secgov from './secgov/secgov';
+import DefaultLogger from '../../logger/DefaultLogger';
+
 const api = Router();
 
 api.use((req, res, next) => {
+  console.log(`requested ${req.url}`);
   next();
 });
 

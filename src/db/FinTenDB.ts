@@ -40,7 +40,8 @@ class FinTenDB {
         EntityCentralIndexKey: o.EntityCentralIndexKey,
         DocumentType: o.DocumentType,
         DocumentFiscalYearFocus: o.DocumentFiscalYearFocus,
-        DocumentFiscalPeriodFocus: o.DocumentFiscalPeriodFocus
+        DocumentFiscalPeriodFocus: o.DocumentFiscalPeriodFocus,
+        partialPath: o.partialPath
       }
     });
     return r.length > 0;

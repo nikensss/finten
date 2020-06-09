@@ -3,11 +3,7 @@ import XBRL from './secgov/XBRL';
 import FormType from './filings/FormType';
 import FinTenDB, { fintendb } from './db/FinTenDB';
 import SecGov from './secgov/SecGov';
-import express, { Application } from 'express';
-import { Express } from 'express-serve-static-core';
-import bodyParser from 'body-parser';
-import api from './routes/api/api';
-import DefaultLogger from './logger/DefaultLogger';
+import { default as LOGGER } from './logger/DefaultLogger';
 import { LogLevel } from './logger/LogLevel';
 import FinTenAPI from './FinTenAPI';
 
@@ -33,32 +29,25 @@ class FinTen {
   }
 
   public async fill(start: number, end?: number, amount?: number) {
-    DefaultLogger.get(this.constructor.name).logLevel = LogLevel.DEBUG;
+    LOGGER.get(this.constructor.name).logLevel = LogLevel.DEBUG;
 
     const secgov = new SecGov(this.downloadsDirectory);
-    const xbrl = new XBRL();
-    const db = new FinTenDB();
     secgov.flush();
 
     await secgov.getIndices(start, end);
+    let filings = secgov.parseIndices(FormType.F10K, amount);
 
-    let filings = xbrl.parseIndices(
-      secgov.listDownloads('.idx'),
-      FormType.F10K,
-      amount
-    );
-
-    DefaultLogger.get(this.constructor.name).info(
+    LOGGER.get(this.constructor.name).info(
       this.constructor.name,
       `found ${filings.length} 10-K filings`
     );
 
     secgov.flush();
     let txts: string[] = [];
-    let xml: string, parsedXbrl: any;
+    let xbrl: XBRL;
 
     let partialPaths: string[] = (
-      await db.find({
+      await fintendb.find({
         query: {
           $select: ['partialPath']
         }
@@ -67,7 +56,7 @@ class FinTen {
 
     for (let filing of filings) {
       if (partialPaths.includes(filing.partialPath)) {
-        DefaultLogger.get(this.constructor.name).info(
+        LOGGER.get(this.constructor.name).info(
           this.constructor.name,
           'skipping download (already in db)'
         );
@@ -77,12 +66,11 @@ class FinTen {
       txts = await secgov.get(filing);
       for (let txt of txts) {
         try {
-          xml = xbrl.parseTxt(txt);
-          parsedXbrl = await xbrl.parseXBRL(xml);
-          parsedXbrl.partialPath = filing.partialPath;
-          await db.create(parsedXbrl);
+          xbrl = await XBRL.fromTxt(txt);
+          xbrl.partialPath = filing.partialPath;
+          await fintendb.create(xbrl);
         } catch (ex) {
-          DefaultLogger.get(this.constructor.name).warning(
+          LOGGER.get(this.constructor.name).warning(
             this.constructor.name,
             `Error while parsing txt to XBRL at ${txt}:\n${ex}`
           );
