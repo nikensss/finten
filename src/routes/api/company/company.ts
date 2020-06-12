@@ -12,24 +12,51 @@ company.get('/', (req, res) => {
 company.get('/names', async (req, res) => {
   const dbquery = await fintendb.find({
     query: {
-      $select: ['EntityRegistrantName']
+      $select: ['EntityRegistrantName'],
+      $sort: {
+        EntityRegistrantName: 1
+      }
     }
   });
 
   res.json({
-    names: [...new Set(dbquery.map((r: any) => r.EntityRegistrantName))].sort()
+    names: [...new Set(dbquery.map((d: any) => d.EntityRegistrantName))]
   });
 });
 
 company.get('/tickers', async (req, res) => {
   const dbquery = await fintendb.find({
     query: {
-      $select: ['TradingSymbol']
+      $select: ['TradingSymbol'],
+      $sort: {
+        TradingSymbol: 1
+      }
+    }
+  });
+  res.json({
+    tickers: [...new Set(dbquery.map((d: any) => d.TradingSymbol))]
+  });
+});
+
+company.get('/ticker', async (req, res) => {
+  const { ticker } = req.query;
+
+  if (!ticker || (ticker as string).length === 0) {
+    return res.status(400).json({
+      error: 'no ticker given'
+    });
+  }
+
+  const dbquery = await fintendb.find({
+    paginate: false,
+    query: {
+      TradingSymbol: ticker
     }
   });
 
   res.json({
-    names: [...new Set(dbquery.map((r: any) => r.TradingSymbol))].sort()
+    ticker,
+    data: dbquery
   });
 });
 

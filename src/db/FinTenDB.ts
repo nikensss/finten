@@ -24,15 +24,15 @@ class FinTenDB {
   }
 
   async create(o: any) {
-    if (await this.exists(o)) {
-      return;
-    }
+    if (await this.exists(o)) return;
     await this.app.service('secgov').create(o);
   }
 
   async find(params?: Params) {
     return await this.app.service('secgov').find(params);
   }
+
+  async findDistinct(params?: Params) {}
 
   async exists(o: any): Promise<boolean> {
     const r = await this.find({
