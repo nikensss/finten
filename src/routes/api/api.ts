@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import company from './company/company';
 import secgov from './secgov/secgov';
-import DefaultLogger from '../../logger/DefaultLogger';
+import DefaultLogger from '../../classes/logger/DefaultLogger';
 
 const api = Router();
 

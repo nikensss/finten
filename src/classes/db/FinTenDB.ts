@@ -1,7 +1,6 @@
 import NeDB from 'nedb';
 import feathers, { Params } from '@feathersjs/feathers';
 import express, { Application } from '@feathersjs/express';
-import socketio from '@feathersjs/socketio';
 import service from 'feathers-nedb';
 
 const secgov = new NeDB({

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { fintendb } from '../../../db/FinTenDB';
+import { fintendb } from '../../../classes/db/FinTenDB';
 
 const company = Router();
 

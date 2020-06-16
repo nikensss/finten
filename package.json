@@ -53,7 +53,7 @@
     "nedb": "^1.8.0",
     "nodemon": "^2.0.4",
     "ora": "^4.0.4",
-    "parse-xbrl": "^1.1.5",
+    "parse-xbrl": "https://github.com/nikensss/parse-xbrl.git",
     "ts-node": "^8.10.1",
     "typescript": "^3.9.2"
   }

@@ -1,10 +1,10 @@
 import dotenv from 'dotenv';
-import XBRL from './secgov/XBRL';
-import FormType from './filings/FormType';
-import FinTenDB, { fintendb } from './db/FinTenDB';
-import SecGov from './secgov/SecGov';
-import { default as LOGGER } from './logger/DefaultLogger';
-import { LogLevel } from './logger/LogLevel';
+import XBRL from './classes/secgov/XBRL';
+import FormType from './classes/filings/FormType';
+import FinTenDB, { fintendb } from './classes/db/FinTenDB';
+import SecGov from './classes/secgov/SecGov';
+import { default as LOGGER } from './classes/logger/DefaultLogger';
+import { LogLevel } from './classes/logger/LogLevel';
 import FinTenAPI from './FinTenAPI';
 
 class FinTen {
@@ -86,7 +86,7 @@ class FinTen {
   public static async main(): Promise<void> {
     const finten = FinTen.create();
 
-    finten.fill(2010, 2019, 10);
+    finten.fill(2018, 2019, 4);
   }
 }
 

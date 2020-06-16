@@ -1,6 +1,6 @@
 import express, { Application } from 'express';
 import bodyParser from 'body-parser';
-import { default as LOGGER } from './logger/DefaultLogger';
+import { default as LOGGER } from './classes/logger/DefaultLogger';
 import api from './routes/api/api';
 
 class FinTenAPI {
