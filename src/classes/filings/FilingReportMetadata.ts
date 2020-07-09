@@ -1,4 +1,4 @@
-import FormType, { asFiling } from './FormType';
+import FormType, { byName } from './FormType';
 import Downloadable from '../download/Downloadable';
 
 class FilingReportMetadata implements Downloadable {
@@ -12,7 +12,7 @@ class FilingReportMetadata implements Downloadable {
     const reportArray: string[] = reportMetadata.split('|');
     this._cik = parseInt(reportArray[0]);
     this._companyName = reportArray[1];
-    this._filing = asFiling(reportArray[2]);
+    this._filing = byName(reportArray[2]);
     this._submissionDate = new Date(reportArray[3]);
     this._partialPath = reportArray[4];
   }
@@ -48,7 +48,9 @@ class FilingReportMetadata implements Downloadable {
   get fileName(): string {
     const fileName: string | undefined = this.partialPath.split('/').pop();
     if (typeof fileName === 'undefined') {
-      throw new Error(`Can't retrieve fileName from relative path: ${this.partialPath}`);
+      throw new Error(
+        `Can't retrieve fileName from relative path: ${this.partialPath}`
+      );
     }
     return fileName;
   }

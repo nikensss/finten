@@ -7,7 +7,7 @@ enum FormType {
 
 export default FormType;
 
-export const asFiling = (name: string): FormType => {
+export const byName = (name: string): FormType => {
   type formTypes = keyof typeof FormType;
 
   for (const f in FormType) {

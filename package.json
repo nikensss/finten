@@ -6,7 +6,8 @@
   "scripts": {
     "start": "ts-node src/main.ts",
     "nodemon": "nodemon",
-    "test": "ts-node src/tests/tests.ts"
+    "test": "mocha --require ts-node/register test/**/*.spec.ts",
+    "test-custom": "ts-node src/tests/tests.ts"
   },
   "nodemonConfig": {
     "ignore": [
