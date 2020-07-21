@@ -67,4 +67,23 @@ describe('FilingReportMetadata tests', () => {
       'https://www.sec.gov/Archives/edgar/data/98677/0001558370-20-005994.txt'
     );
   });
+
+  it('should get url', () => {
+    const filingReportMetadata = new FilingReportMetadata(
+      '98677|TOOTSIE ROLL INDUSTRIES INC|10-K|2020-05-08|edgar/data/98677/0001558370-20-005994.txt'
+    );
+
+    const url = filingReportMetadata.url;
+    expect(url).to.be.equal(
+      'https://www.sec.gov/Archives/edgar/data/98677/0001558370-20-005994.txt'
+    );
+  });
+
+  it('should get filename', () => {
+    const filingReportMetadata = new FilingReportMetadata(
+      '98677|TOOTSIE ROLL INDUSTRIES INC|10-K|2020-05-08|edgar/data/98677/0001558370-20-005994.txt'
+    );
+    const filename = filingReportMetadata.fileName;
+    expect(filename).to.be.equal('0001558370-20-005994.txt');
+  });
 });
