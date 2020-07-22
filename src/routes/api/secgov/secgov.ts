@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import FinTen from '../../../FinTen';
 
 const secgovRoutes = Router();
 
@@ -18,7 +19,8 @@ secgovRoutes.get('/add', async (req, res) => {
   }
 
   console.log(`filling database with all the data between ${start} and ${end}`);
-  //req.finten.fill(parseInt(start as string), parseInt(end as string));
+  let finten = new FinTen('downloads');
+  finten.fill(parseInt(start as string), parseInt(end as string));
 
   return res.json({
     start,

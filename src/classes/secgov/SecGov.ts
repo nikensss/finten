@@ -45,7 +45,7 @@ class SecGov extends DownloadManager {
    */
   parseIndex(
     path: PathLike,
-    formType: FormType,
+    formType: FormType[],
     amount?: number
   ): FilingReportMetadata[] {
     DefaultLogger.get(this.constructor.name).debug(
@@ -57,7 +57,7 @@ class SecGov extends DownloadManager {
       .reduce((t, c) => {
         try {
           const frm = new FilingReportMetadata(c);
-          if (frm.formType === formType) t.push(frm);
+          if (formType.includes(frm.formType)) t.push(frm);
         } catch (ex) {
           if (!ex.message.includes('Unknown filing type')) {
             DefaultLogger.get(this.constructor.name).error(
@@ -71,9 +71,9 @@ class SecGov extends DownloadManager {
       .slice(0, amount);
   }
 
-  parseIndices(formType: FormType, amount?: number): FilingReportMetadata[] {
+  parseIndices(formType: FormType[], amount?: number): FilingReportMetadata[] {
     return this.listDownloads('.idx')
-      .map(p => this.parseIndex(p, formType))
+      .map((p) => this.parseIndex(p, formType))
       .flat()
       .slice(0, amount);
   }

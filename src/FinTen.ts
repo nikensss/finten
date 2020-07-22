@@ -35,11 +35,11 @@ class FinTen {
     secgov.flush();
 
     await secgov.getIndices(start, end);
-    let filings = secgov.parseIndices(FormType.F10K, amount);
+    let filings = secgov.parseIndices([FormType.F10K, FormType.F10Q], amount);
 
     LOGGER.get(this.constructor.name).info(
       this.constructor.name,
-      `found ${filings.length} 10-K filings`
+      `found ${filings.length} 10-K or 10-Q filings`
     );
 
     secgov.flush();
