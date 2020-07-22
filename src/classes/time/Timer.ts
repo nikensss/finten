@@ -18,7 +18,7 @@ class Timer {
     //if the timer is already timed out, immediately return;
     if (this.isTimeout()) return Promise.resolve();
     //else, wait the remaining time until timeout
-    return await new Promise((res) =>
+    return await new Promise(res =>
       setTimeout(res, this.timeout - (Date.now() - this.start))
     );
   }
