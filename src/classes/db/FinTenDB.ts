@@ -24,7 +24,7 @@ class FinTenDB {
 
   async create(o: any) {
     if (await this.exists(o)) return;
-    await this.app.service('secgov').create(o);
+    await this.app.service('secgov').create(o['data']);
   }
 
   async find(params?: Params) {
