@@ -4,7 +4,7 @@ import express, { Application } from '@feathersjs/express';
 import service from 'feathers-nedb';
 
 const secgov = new NeDB({
-  filename: './fintendb/secgov.db',
+  filename: './gcloud/fintendb/secgov.db',
   autoload: true
 });
 
