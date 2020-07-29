@@ -7,7 +7,8 @@
     "start": "ts-node src/main.ts",
     "nodemon": "nodemon",
     "test": "mocha --require ts-node/register test/**/*.spec.ts",
-    "test-custom": "ts-node src/tests/tests.ts"
+    "test-custom": "ts-node src/tests/tests.ts",
+    "npmi-container": "rm -rf node_modules && npm i"
   },
   "nodemonConfig": {
     "ignore": [

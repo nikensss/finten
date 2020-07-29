@@ -1,0 +1,12 @@
+{
+  "image": "eu.gcr.io/finten/jarvisdb:latest",
+  "workspaceFolder": "/finten",
+  "extensions": [
+    "mhutchie.git-graph",
+    "eamodio.gitlens",
+    "pkief.material-icon-theme"
+  ],
+  "workspaceMount": "source=/Users/faraday/repos/finten,target=/finten,type=bind,consistency=cached",
+  "appPort": ["3000:3000"],
+  "runArgs": ["--privileged=true"]
+}
