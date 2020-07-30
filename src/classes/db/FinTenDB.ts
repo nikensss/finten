@@ -3,8 +3,12 @@ import feathers, { Params } from '@feathersjs/feathers';
 import express, { Application } from '@feathersjs/express';
 import service from 'feathers-nedb';
 
+if (typeof process.env.DB === 'undefined') {
+  throw new Error('No DB specified!');
+}
+
 const secgov = new NeDB({
-  filename: './gcloud/fintendb/secgov.db',
+  filename: process.env.DB,//'./gcloud/fintendb/secgov.db',
   autoload: true
 });
 
@@ -24,14 +28,14 @@ class FinTenDB {
 
   async create(o: any) {
     if (await this.exists(o)) return;
-    await this.app.service('secgov').create(o['data']);
+    await this.app.service('secgov').create(o);
   }
 
   async find(params?: Params) {
     return await this.app.service('secgov').find(params);
   }
 
-  async findDistinct(params?: Params) {}
+  async findDistinct(params?: Params) { }
 
   async exists(o: any): Promise<boolean> {
     const r = await this.find({

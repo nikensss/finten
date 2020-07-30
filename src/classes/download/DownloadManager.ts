@@ -76,7 +76,7 @@ class DownloadManager {
   public flush(): void {
     DefaultLogger.get(this.constructor.name).info(
       this.constructor.name,
-      'flushing downloads! 🚾q'
+      'flushing downloads! 🚾'
     );
     fs.readdirSync(this.dir).forEach(f => {
       const currentPath = path.join(this.dir.toString(), f);

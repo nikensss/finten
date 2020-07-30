@@ -74,10 +74,9 @@ class FinTen {
             this.constructor.name,
             `Error while parsing txt to XBRL at ${txt}:\n${ex}`
           );
-        } finally {
-          secgov.flush();
         }
       }
+      secgov.flush();
     }
 
     secgov.flush();

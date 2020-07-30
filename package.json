@@ -5,9 +5,11 @@
   "main": "src/main.ts",
   "scripts": {
     "start": "ts-node src/main.ts",
+    "local-db": "DB='fintendb/secgov.db' npm start",
+    "gcloud-db": "DB='./gcloud/fintendb/secgov.db' npm start",
     "nodemon": "nodemon",
-    "test": "mocha --require ts-node/register test/**/*.spec.ts",
-    "test-custom": "ts-node src/tests/tests.ts",
+    "test": "DB='fintendb/secgov.db' mocha debug --require ts-node/register test/**/*.spec.ts",
+    "test-api": "DB='fintendb/secgov.db' mocha --require ts-node/register test/api/**/*.spec.ts",
     "npmi-container": "rm -rf node_modules && npm i"
   },
   "nodemonConfig": {
@@ -45,8 +47,10 @@
     "@types/nedb": "^1.8.9",
     "@types/node": "^13.13.5",
     "@types/ora": "^3.2.0",
+    "@types/supertest": "^2.0.10",
     "axios": "^0.19.2",
     "body-parser": "^1.19.0",
+    "chai-http": "^4.3.0",
     "chalk": "^4.0.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
@@ -56,6 +60,7 @@
     "nodemon": "^2.0.4",
     "ora": "^4.0.4",
     "parse-xbrl": "https://github.com/nikensss/parse-xbrl.git",
+    "supertest": "^4.0.2",
     "ts-node": "^8.10.1",
     "typescript": "^3.9.2"
   },

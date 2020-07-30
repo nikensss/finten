@@ -11,4 +11,5 @@ if (typeof process.env.DOWNLOADS_DIRECTORY !== 'string') {
 // FinTen.main();
 const api = new FinTenAPI();
 api.setRoutes();
-api.listen();
+
+export default api.listen();

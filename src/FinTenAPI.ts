@@ -25,15 +25,13 @@ class FinTenAPI {
     return this;
   }
 
-  listen(): FinTenAPI {
-    this.app.listen(this.port, () =>
+  listen() {
+    return this.app.listen(this.port, () =>
       LOGGER.get(this.constructor.name).info(
         this.constructor.name,
         `Listening on port ${this.port}!`
       )
     );
-
-    return this;
   }
 }
 
