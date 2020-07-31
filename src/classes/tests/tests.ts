@@ -28,17 +28,4 @@
 // stdout.write(chalk.red('writting stuff to stdout\n'));
 // stdout.write(chalk.red('writting stuff to stdout\n'));
 
-let i: number = 0;
-const interval = setInterval(() => {
-  process.stdout.clearLine(0);
-  process.stdout.cursorTo(0);
-  process.stdout.write('Status: ' + i + '%');
-  i += Math.round(Math.random() * 10);
-  if (i > 100) {
-    clearInterval(interval);
-    process.stdout.clearLine(0);
-    process.stdout.cursorTo(0);
-    process.stdout.write('Status: 100%');
-    process.stdout.write('\n');
-  }
-}, 100);
+console.log(process.env.DB);
