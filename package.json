@@ -4,7 +4,7 @@
   "description": "The hypotenuse of the smallest pythagorean triples.",
   "main": "src/main.ts",
   "scripts": {
-    "start": "ts-node src/main.ts",
+    "start": "DB='gcloud/fintendb/secgov.db' ts-node src/main.ts",
     "local-db": "DB='fintendb/secgov.db' npm start",
     "gcloud-db": "DB='./gcloud/fintendb/secgov.db' npm start",
     "nodemon": "nodemon",
