@@ -7,11 +7,7 @@
     "pkief.material-icon-theme",
     "ms-vsliveshare.vsliveshare"
   ],
-  "workspaceMount": "source=/Users/faraday/repos/finten,target=/finten,type=bind,consistency=cached",
-  "appPort": [
-    "3000:3000"
-  ],
-  "runArgs": [
-    "--privileged=true"
-  ]
+  "workspaceMount": "source=/Users/ricard/repos/typescript/finten,target=/finten,type=bind,consistency=cached",
+  "appPort": ["3000:3000"],
+  "runArgs": ["--privileged=true"]
 }
