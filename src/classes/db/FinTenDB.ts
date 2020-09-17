@@ -1,56 +1,71 @@
-import NeDB from 'nedb';
-import feathers, { Params } from '@feathersjs/feathers';
-import express, { Application } from '@feathersjs/express';
-import service from 'feathers-nedb';
-
-if (typeof process.env.DB === 'undefined') {
-  throw new Error('No DB specified!');
-}
-
-const secgov = new NeDB({
-  filename: process.env.DB,
-  autoload: true
-});
+import { Collection, MongoClient } from 'mongodb';
 
 class FinTenDB {
-  private app: Application;
-  constructor() {
-    this.app = express(feathers());
-    this.app.use(express.json());
-    this.app.use(
-      '/secgov',
-      service({
-        Model: secgov,
-        paginate: false
-      })
-    );
+  private static readonly URI: string =
+    'mongodb+srv://' +
+    process.env.user +
+    ':' +
+    process.env.pass +
+    '@dev-cluster' +
+    '.vvwni.azure.mongodb.net/test?retryWrites=true&w=majority';
+  private static readonly DB_NAME = 'secgov';
+  private static instance: FinTenDB | null = null;
+  private client: MongoClient;
+
+  private constructor() {
+    this.client = new MongoClient(FinTenDB.URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
   }
 
-  async create(o: any) {
-    if (await this.exists(o)) return;
-    await this.app.service('secgov').create(o);
+  public static getInstance(): FinTenDB {
+    if (FinTenDB.instance === null) {
+      FinTenDB.instance = new FinTenDB();
+    }
+
+    return FinTenDB.instance;
   }
 
-  async find(params?: Params) {
-    return await this.app.service('secgov').find(params);
+  async insertFiling(filing: any) {
+    await this.insertOne(this.filings, filing);
   }
 
-  async findDistinct(params?: Params) { }
+  async insertLink(link: any) {
+    await this.insertOne(this.visitedLinks, link);
+  }
+
+  async insertOne(collection: Collection, o: any) {
+    await collection.insertOne(o);
+  }
+
+  async findFilings(match: any, select?: any) {
+    return await this.find(this.filings, match, select);
+  }
+
+  async findLinks(match: any, select?: any) {
+    return await this.find(this.visitedLinks, match, select);
+  }
+
+  private async find(collection: Collection, match: any, select: any) {
+    if (!this.client.isConnected()) {
+      await this.client.connect();
+    }
+
+    return await collection.find(match, select).toArray();
+  }
 
   async exists(o: any): Promise<boolean> {
-    const r = await this.find({
-      query: {
-        EntityCentralIndexKey: o.EntityCentralIndexKey,
-        DocumentType: o.DocumentType,
-        DocumentFiscalYearFocus: o.DocumentFiscalYearFocus,
-        DocumentFiscalPeriodFocus: o.DocumentFiscalPeriodFocus,
-        partialPath: o.partialPath
-      }
-    });
-    return r.length > 0;
+    return Promise.resolve(false);
+  }
+
+  private get filings(): Collection {
+    return this.client.db(FinTenDB.DB_NAME).collection('filings');
+  }
+
+  private get visitedLinks() {
+    return this.client.db(FinTenDB.DB_NAME).collection('visited-links');
   }
 }
 
 export default FinTenDB;
-
-export const fintendb = new FinTenDB();

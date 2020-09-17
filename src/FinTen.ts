@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import XBRL from './classes/secgov/XBRL';
 import FormType from './classes/filings/FormType';
-import FinTenDB, { fintendb } from './classes/db/FinTenDB';
+import FinTenDB from './classes/db/FinTenDB';
 import SecGov from './classes/secgov/SecGov';
 import { default as LOGGER } from './classes/logger/DefaultLogger';
 import { LogLevel } from './classes/logger/LogLevel';
@@ -9,6 +9,8 @@ import FinTenAPI from './FinTenAPI';
 
 class FinTen {
   private downloadsDirectory: string;
+
+  private fintendb: FinTenDB = FinTenDB.getInstance();
 
   constructor(downloadsDirectory: string) {
     this.downloadsDirectory = downloadsDirectory;
@@ -43,11 +45,11 @@ class FinTen {
     );
 
     secgov.flush();
-    let txts: string[] = [];
+    let downloadedFilesLocations: string[] = [];
     let xbrl: XBRL;
 
     let partialPaths: string[] = (
-      await fintendb.find({
+      await this.fintendb.findLinks({
         query: {
           $select: ['partialPath']
         }
@@ -63,17 +65,20 @@ class FinTen {
         continue;
       }
 
-      txts = await secgov.get(filing);
-      for (let txt of txts) {
+      downloadedFilesLocations = await secgov.get(filing);
+      for (let downloadedFileLocation of downloadedFilesLocations) {
         try {
-          xbrl = await XBRL.fromTxt(txt);
-          xbrl.partialPath = filing.partialPath;
-          await fintendb.create(xbrl);
+          xbrl = await XBRL.fromTxt(downloadedFileLocation);
+          await this.fintendb.insertFiling(xbrl);
         } catch (ex) {
           LOGGER.get(this.constructor.name).warning(
             this.constructor.name,
-            `Error while parsing txt to XBRL at ${txt}:\n${ex}`
+            `Error while parsing txt to XBRL at ${downloadedFileLocation}:\n${ex}`
           );
+        } finally {
+          //TODO: in case more than one filing is downloaded, only the first
+          //link will be added to the visited-links collection
+          await this.fintendb.insertLink(filing.partialPath);
         }
       }
       secgov.flush();

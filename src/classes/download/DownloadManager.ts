@@ -127,6 +127,8 @@ class DownloadManager {
    * given collection of Downloadables.
    *
    * @param d Collection of Downloadables
+   * @returns an array of string indicating the location in which the
+   * downloadables were downloaded to.
    */
   public async get(...d: Downloadable[]): Promise<string[]> {
     this.queue(...d);

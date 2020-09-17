@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import { fintendb } from '../../../classes/db/FinTenDB';
+import FinTenDB from '../../../classes/db/FinTenDB';
 
 const company = Router();
+const db = FinTenDB.getInstance();
 
 company.get('/', (req, res) => {
   res.json({
@@ -10,14 +11,7 @@ company.get('/', (req, res) => {
 });
 
 company.get('/names', async (req, res) => {
-  const dbquery = await fintendb.find({
-    query: {
-      $select: ['EntityRegistrantName'],
-      $sort: {
-        EntityRegistrantName: 1
-      }
-    }
-  });
+  const dbquery = await db.findFilings({}, { EntityRegistrantName: 1, _id: 0 });
 
   res.json({
     names: [...new Set(dbquery.map((d: any) => d.EntityRegistrantName))]
@@ -25,14 +19,7 @@ company.get('/names', async (req, res) => {
 });
 
 company.get('/tickers', async (req, res) => {
-  const dbquery = await fintendb.find({
-    query: {
-      $select: ['TradingSymbol'],
-      $sort: {
-        TradingSymbol: 1
-      }
-    }
-  });
+  const dbquery = await db.findFilings({}, { TradingSymbol: 1, _id: 0 });
   res.json({
     tickers: [...new Set(dbquery.map((d: any) => d.TradingSymbol))]
   });
@@ -47,11 +34,8 @@ company.get('/ticker', async (req, res) => {
     });
   }
 
-  const dbquery = await fintendb.find({
-    paginate: false,
-    query: {
-      TradingSymbol: ticker
-    }
+  const dbquery = await db.findFilings({
+    TradingSymbol: ticker
   });
 
   res.json({
@@ -70,11 +54,8 @@ company.get('/name', async (req, res) => {
     });
   }
 
-  const dbquery = await fintendb.find({
-    paginate: false,
-    query: {
-      EntityRegistrantName: name
-    }
+  const dbquery = await db.findFilings({
+    EntityRegistrantName: name
   });
 
   res.json({
