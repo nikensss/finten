@@ -1,4 +1,4 @@
-import { Collection, MongoClient } from 'mongodb';
+import { Collection, FilterQuery, MongoClient, SchemaMember } from 'mongodb';
 
 class FinTenDB {
   private static readonly URI: string =
@@ -43,20 +43,30 @@ class FinTenDB {
     await collection.insertOne(o);
   }
 
-  async findFilings(match: any, select?: any) {
+  async findFilings(match: FilterQuery<any>, select?: SchemaMember<any, any>) {
     return await this.find(this.filings, match, select);
   }
 
-  async findVisitedLinks(match: any, select?: any) {
+  async findVisitedLinks(
+    match: FilterQuery<any>,
+    select?: SchemaMember<any, any>
+  ) {
     return await this.find(this.visitedLinks, match, select);
   }
 
-  private async find(collection: Collection, match: any, select?: any) {
+  private async find(
+    collection: Collection,
+    match: FilterQuery<any>,
+    select?: SchemaMember<any, any>
+  ) {
     if (!this.client.isConnected()) {
       await this.client.connect();
     }
 
-    return await collection.find(match, select || {}).toArray();
+    return await collection
+      .find(match)
+      .project(select || {})
+      .toArray();
   }
 
   async exists(o: any): Promise<boolean> {
