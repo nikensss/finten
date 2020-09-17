@@ -31,7 +31,7 @@ class FinTenDB {
     await this.insertOne(this.filings, filing);
   }
 
-  async insertLink(link: any) {
+  async insertVisitedLink(link: any) {
     await this.insertOne(this.visitedLinks, link);
   }
 

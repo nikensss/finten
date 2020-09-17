@@ -5,7 +5,6 @@ import Downloadable from './Downloadable';
 import Queue from './queues/Queue';
 import DefaultQueue from './queues/DefaultQueue';
 import DefaultLogger from '../logger/DefaultLogger';
-import { LogLevel } from '../logger/LogLevel';
 
 function Speedometer() {
   const args = arguments;
@@ -105,8 +104,8 @@ class DownloadManager {
    * @returns a promise that resolves to the locations of where the downloadbles
    * were downloaded to.
    */
-  public async dequeue(): Promise<string[]> {
-    const downloads: string[] = [];
+  public async dequeue(): Promise<Downloadable[]> {
+    const downloads: Downloadable[] = [];
     while (!this.q.isEmpty()) {
       try {
         downloads.push(
@@ -130,7 +129,7 @@ class DownloadManager {
    * @returns an array of string indicating the location in which the
    * downloadables were downloaded to.
    */
-  public async get(...d: Downloadable[]): Promise<string[]> {
+  public async get(...d: Downloadable[]): Promise<Downloadable[]> {
     this.queue(...d);
     return this.dequeue();
   }
@@ -153,14 +152,17 @@ class DownloadManager {
    *
    * @returns a promise that resolves to the location of the downloaded file
    */
-  private async _get(d: Downloadable): Promise<string> {
+  private async _get(d: Downloadable): Promise<Downloadable> {
     DefaultLogger.get(this.constructor.name).info(
       this.constructor.name,
       `downloading: ${d.url}`
     );
     DownloadManager.activeDownloads += 1;
-    const p = path.resolve(this.dir.toString(), d.fileName);
-    const writer = fs.createWriteStream(p);
+    const p: Downloadable = {
+      fileName: path.resolve(this.dir.toString(), d.fileName),
+      url: d.url
+    };
+    const writer = fs.createWriteStream(p.fileName);
 
     const response = await axios({
       url: d.url,

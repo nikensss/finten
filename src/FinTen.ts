@@ -6,6 +6,7 @@ import SecGov from './classes/secgov/SecGov';
 import { default as LOGGER } from './classes/logger/DefaultLogger';
 import { LogLevel } from './classes/logger/LogLevel';
 import FinTenAPI from './FinTenAPI';
+import Downloadable from './classes/download/Downloadable';
 
 class FinTen {
   private downloadsDirectory: string;
@@ -45,7 +46,7 @@ class FinTen {
     );
 
     secgov.flush();
-    let downloadedFilesLocations: string[] = [];
+    let downloadedDownloadables: Downloadable[] = [];
     let xbrl: XBRL;
 
     let partialPaths: string[] = (
@@ -65,20 +66,18 @@ class FinTen {
         continue;
       }
 
-      downloadedFilesLocations = await secgov.get(filing);
-      for (let downloadedFileLocation of downloadedFilesLocations) {
+      downloadedDownloadables = await secgov.get(filing);
+      for (let downloadedDownloadable of downloadedDownloadables) {
         try {
-          xbrl = await XBRL.fromTxt(downloadedFileLocation);
+          xbrl = await XBRL.fromTxt(downloadedDownloadable.fileName);
           await this.fintendb.insertFiling(xbrl);
         } catch (ex) {
           LOGGER.get(this.constructor.name).warning(
             this.constructor.name,
-            `Error while parsing txt to XBRL at ${downloadedFileLocation}:\n${ex}`
+            `Error while parsing txt to XBRL at ${downloadedDownloadable}:\n${ex}`
           );
         } finally {
-          //TODO: in case more than one filing is downloaded, only the first
-          //link will be added to the visited-links collection
-          await this.fintendb.insertLink(filing.partialPath);
+          await this.fintendb.insertVisitedLink(downloadedDownloadable.url);
         }
       }
       secgov.flush();
