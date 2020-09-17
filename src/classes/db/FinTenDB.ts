@@ -36,6 +36,10 @@ class FinTenDB {
   }
 
   async insertOne(collection: Collection, o: any) {
+    if (!this.client.isConnected()) {
+      await this.client.connect();
+    }
+
     await collection.insertOne(o);
   }
 
@@ -43,16 +47,16 @@ class FinTenDB {
     return await this.find(this.filings, match, select);
   }
 
-  async findLinks(match: any, select?: any) {
+  async findVisitedLinks(match: any, select?: any) {
     return await this.find(this.visitedLinks, match, select);
   }
 
-  private async find(collection: Collection, match: any, select: any) {
+  private async find(collection: Collection, match: any, select?: any) {
     if (!this.client.isConnected()) {
       await this.client.connect();
     }
 
-    return await collection.find(match, select).toArray();
+    return await collection.find(match, select || {}).toArray();
   }
 
   async exists(o: any): Promise<boolean> {

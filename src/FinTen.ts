@@ -50,11 +50,7 @@ class FinTen {
     let xbrl: XBRL;
 
     let partialPaths: string[] = (
-      await this.fintendb.findLinks({
-        query: {
-          $select: ['partialPath']
-        }
-      })
+      await this.fintendb.findVisitedLinks({}, { partialPath: 1, _id: 0 })
     ).map((p: any) => p.partialPath);
 
     for (let filing of filings) {
