@@ -8,7 +8,7 @@ if (typeof process.env.DB === 'undefined') {
 }
 
 const secgov = new NeDB({
-  filename: process.env.DB,//'./gcloud/fintendb/secgov.db',
+  filename: process.env.DB,
   autoload: true
 });
 
