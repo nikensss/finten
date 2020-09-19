@@ -58,7 +58,7 @@ class FinTen {
     );
 
     for (let filing of filings) {
-      if (visitedLinks.some(v => v.url === filing.url)) {
+      if (visitedLinks.some(v => v.url.includes(filing.url))) {
         LOGGER.get(this.constructor.name).info(
           this.constructor.name,
           'skipping download'
@@ -71,7 +71,11 @@ class FinTen {
         try {
           xbrl = await XBRL.fromTxt(downloadedDownloadable.fileName);
 
-          await fintendb.insertFiling(xbrl);
+          //FIXME:
+          //the XBRL class is a wrapper around the actual XBRL data. We should
+          //only add the XBRL data, thus do 'xbrl.get()' when adding data to the
+          //database.
+          await fintendb.insertFiling(xbrl.get());
 
           await fintendb.insertVisitedLink({
             url: downloadedDownloadable.url,

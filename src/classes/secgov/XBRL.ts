@@ -10,7 +10,7 @@ class XBRL {
   }
 
   /**
-   * Returns an object that represents the data in the XBRL that was given to it.
+   * Returns the XBRL data.
    */
   get(): any {
     return this.data;
