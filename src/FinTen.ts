@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import XBRL from './classes/secgov/XBRL';
 import FormType from './classes/filings/FormType';
 import FinTenDB from './classes/db/FinTenDB';
@@ -11,8 +10,6 @@ import Downloadable from './classes/download/Downloadable';
 class FinTen {
   private downloadsDirectory: string;
 
-  private fintendb: FinTenDB = FinTenDB.getInstance();
-
   constructor(downloadsDirectory: string) {
     this.downloadsDirectory = downloadsDirectory;
   }
@@ -23,8 +20,6 @@ class FinTen {
   }
 
   public static create(): FinTen {
-    const result = dotenv.config();
-
     if (typeof process.env.DOWNLOADS_DIRECTORY !== 'string') {
       throw new Error('No downloads directory in .env');
     }
@@ -49,15 +44,24 @@ class FinTen {
     let downloadedDownloadables: Downloadable[] = [];
     let xbrl: XBRL;
 
-    let partialPaths: string[] = (
-      await this.fintendb.findVisitedLinks({}, { partialPath: 1, _id: 0 })
-    ).map((p: any) => p.partialPath);
+    type VisitedLink = {
+      url: string;
+      status: string;
+      error: string | null;
+    };
+
+    const fintendb: FinTenDB = await FinTenDB.getInstance();
+
+    let visitedLinks: VisitedLink[] = await fintendb.findVisitedLinks(
+      {},
+      { url: 1, _id: 0 }
+    );
 
     for (let filing of filings) {
-      if (partialPaths.includes(filing.partialPath)) {
+      if (visitedLinks.some(v => v.url === filing.url)) {
         LOGGER.get(this.constructor.name).info(
           this.constructor.name,
-          'skipping download (already in db)'
+          'skipping download'
         );
         continue;
       }
@@ -66,14 +70,25 @@ class FinTen {
       for (let downloadedDownloadable of downloadedDownloadables) {
         try {
           xbrl = await XBRL.fromTxt(downloadedDownloadable.fileName);
-          await this.fintendb.insertFiling(xbrl);
+
+          await fintendb.insertFiling(xbrl);
+
+          await fintendb.insertVisitedLink({
+            url: downloadedDownloadable.url,
+            status: 'ok',
+            error: null
+          });
         } catch (ex) {
           LOGGER.get(this.constructor.name).warning(
             this.constructor.name,
             `Error while parsing txt to XBRL at ${downloadedDownloadable}:\n${ex}`
           );
-        } finally {
-          await this.fintendb.insertVisitedLink(downloadedDownloadable.url);
+
+          await fintendb.insertVisitedLink({
+            url: downloadedDownloadable.url,
+            status: 'error',
+            error: ex.toString()
+          });
         }
       }
       secgov.flush();
@@ -82,6 +97,9 @@ class FinTen {
     secgov.flush();
   }
 
+  /**
+   * @deprecated Use API to interact with FinTen
+   */
   public static async main(): Promise<void> {
     const finten = FinTen.create();
 

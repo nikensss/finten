@@ -3,9 +3,9 @@ import { Collection, FilterQuery, MongoClient, SchemaMember } from 'mongodb';
 class FinTenDB {
   private static readonly URI: string =
     'mongodb+srv://' +
-    process.env.user +
+    process.env.MONGODB_USER +
     ':' +
-    process.env.pass +
+    process.env.MONGODB_PASS +
     '@dev-cluster' +
     '.vvwni.azure.mongodb.net/test?retryWrites=true&w=majority';
   private static readonly DB_NAME = 'secgov';
@@ -19,9 +19,10 @@ class FinTenDB {
     });
   }
 
-  public static getInstance(): FinTenDB {
+  public static async getInstance(): Promise<FinTenDB> {
     if (FinTenDB.instance === null) {
       FinTenDB.instance = new FinTenDB();
+      await FinTenDB.instance.client.connect();
     }
 
     return FinTenDB.instance;
@@ -36,6 +37,7 @@ class FinTenDB {
   }
 
   async insertOne(collection: Collection, o: any) {
+    //TODO: maybe don't check this absolutely every time
     if (!this.client.isConnected()) {
       await this.client.connect();
     }

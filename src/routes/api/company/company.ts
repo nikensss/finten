@@ -2,7 +2,6 @@ import { Router } from 'express';
 import FinTenDB from '../../../classes/db/FinTenDB';
 
 const company = Router();
-const db = FinTenDB.getInstance();
 
 company.get('/', (req, res) => {
   res.json({
@@ -11,6 +10,8 @@ company.get('/', (req, res) => {
 });
 
 company.get('/names', async (req, res) => {
+  const db = await FinTenDB.getInstance();
+
   const dbquery = await db.findFilings({}, { EntityRegistrantName: 1, _id: 0 });
 
   res.json({
@@ -19,6 +20,8 @@ company.get('/names', async (req, res) => {
 });
 
 company.get('/tickers', async (req, res) => {
+  const db = await FinTenDB.getInstance();
+
   const dbquery = await db.findFilings({}, { TradingSymbol: 1, _id: 0 });
   res.json({
     tickers: [...new Set(dbquery.map((d: any) => d.TradingSymbol))]
@@ -33,6 +36,7 @@ company.get('/ticker', async (req, res) => {
       error: 'no ticker given'
     });
   }
+  const db = await FinTenDB.getInstance();
 
   const dbquery = await db.findFilings({
     TradingSymbol: ticker
@@ -53,6 +57,7 @@ company.get('/name', async (req, res) => {
       error: 'no name given'
     });
   }
+  const db = await FinTenDB.getInstance();
 
   const dbquery = await db.findFilings({
     EntityRegistrantName: name
