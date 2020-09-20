@@ -14,11 +14,6 @@ class FinTen {
     this.downloadsDirectory = downloadsDirectory;
   }
 
-  public static asAPI() {
-    const fintenAPI = new FinTenAPI();
-    fintenAPI.setRoutes().listen();
-  }
-
   public static create(): FinTen {
     if (typeof process.env.DOWNLOADS_DIRECTORY !== 'string') {
       throw new Error('No downloads directory in .env');
@@ -26,7 +21,7 @@ class FinTen {
     return new FinTen(process.env.DOWNLOADS_DIRECTORY);
   }
 
-  public async fill(start: number, end?: number, amount?: number) {
+  public async fill(start: number, end: number = start, amount?: number) {
     LOGGER.get(this.constructor.name).logLevel = LogLevel.DEBUG;
 
     const secgov = new SecGov(this.downloadsDirectory);
@@ -42,7 +37,6 @@ class FinTen {
 
     secgov.flush();
     let downloadedDownloadables: Downloadable[] = [];
-    let xbrl: XBRL;
 
     type VisitedLink = {
       url: string;
@@ -77,7 +71,9 @@ class FinTen {
       downloadedDownloadables = await secgov.get(filing);
       for (let downloadedDownloadable of downloadedDownloadables) {
         try {
-          xbrl = await XBRL.fromTxt(downloadedDownloadable.fileName);
+          const xbrl: XBRL = await XBRL.fromTxt(
+            downloadedDownloadable.fileName
+          );
 
           if (xbrl.get().DocumentFiscalYearFocus > (end || start)) {
             LOGGER.get(this.constructor.name).warning(

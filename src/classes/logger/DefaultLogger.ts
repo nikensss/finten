@@ -18,7 +18,7 @@ class DefaultLogger implements Logger {
     if (DefaultLogger.map.get(className) === undefined) {
       DefaultLogger.map.set(className, new DefaultLogger());
     }
-    return DefaultLogger.map.get(className) as DefaultLogger;
+    return DefaultLogger.map.get(className)!;
   }
 
   setOutput(destinationFile: string): void {

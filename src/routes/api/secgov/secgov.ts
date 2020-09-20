@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { default as LOGGER } from '../../../classes/logger/DefaultLogger';
 import FinTen from '../../../FinTen';
 
 const secgovRoutes = Router();
@@ -18,8 +19,12 @@ secgovRoutes.get('/add', async (req, res) => {
     });
   }
 
-  console.log(`filling database with all the data between ${start} and ${end}`);
-  let finten = new FinTen('downloads');
+  LOGGER.get('secgov-routes/add').info(
+    'secgov-routes/add',
+    `filling database with all the data between ${start} and ${end}`
+  );
+
+  const finten = FinTen.create();
   finten.fill(parseInt(start as string), parseInt(end as string));
 
   return res.json({
