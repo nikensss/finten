@@ -57,7 +57,8 @@ class FinTen {
       { url: 1, _id: 0 }
     );
 
-    for (let filing of filings) {
+    for (let n = 1; n <= filings.length; n++) {
+      const filing = filings[n];
       if (visitedLinks.some(v => v.url.includes(filing.url))) {
         LOGGER.get(this.constructor.name).info(
           this.constructor.name,
@@ -65,6 +66,12 @@ class FinTen {
         );
         continue;
       }
+
+      const percentageDownloads = (n / filings.length) * 100;
+      LOGGER.get(this.constructor.name).info(
+        this.constructor.name,
+        `🛎 ${n}/${filings.length} (${percentageDownloads.toFixed(3)} %)`
+      );
 
       downloadedDownloadables = await secgov.get(filing);
       for (let downloadedDownloadable of downloadedDownloadables) {
@@ -82,6 +89,11 @@ class FinTen {
             status: 'ok',
             error: null
           });
+
+          LOGGER.get(this.constructor.name).info(
+            this.constructor.name,
+            `Added filing for fiscal year ${xbrl.get().DocumentFiscalYearFocus}`
+          );
         } catch (ex) {
           LOGGER.get(this.constructor.name).warning(
             this.constructor.name,

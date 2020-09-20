@@ -31,7 +31,7 @@ class TimedQueue implements Queue {
   async dequeue(): Promise<Downloadable | undefined> {
     const now = Date.now();
     await this.timer.waitForTimeout();
-    console.log(chalk.bgRed(`[TimedQueue] Δt: ${Date.now() - now}`));
+    //console.log(chalk.bgRed(`[TimedQueue] Δt: ${Date.now() - now}`));
     this.timer.reset();
     return this._queue.shift();
   }

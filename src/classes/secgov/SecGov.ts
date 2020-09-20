@@ -56,8 +56,8 @@ class SecGov extends DownloadManager {
     return lines
       .reduce((t, c) => {
         try {
-          const frm = new FilingReportMetadata(c);
-          if (formType.includes(frm.formType)) t.push(frm);
+          const frm = new FilingReportMetadata(c); //map
+          if (formType.includes(frm.formType)) t.push(frm); //filter
         } catch (ex) {
           if (!ex.message.includes('Unknown filing type')) {
             DefaultLogger.get(this.constructor.name).error(
@@ -73,7 +73,7 @@ class SecGov extends DownloadManager {
 
   parseIndices(formType: FormType[], amount?: number): FilingReportMetadata[] {
     return this.listDownloads('.idx')
-      .map((p) => this.parseIndex(p, formType))
+      .map(p => this.parseIndex(p, formType))
       .flat()
       .slice(0, amount);
   }
