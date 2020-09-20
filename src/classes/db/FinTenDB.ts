@@ -1,4 +1,10 @@
-import { Collection, FilterQuery, MongoClient, SchemaMember } from 'mongodb';
+import {
+  Collection,
+  FilterQuery,
+  InsertOneWriteOpResult,
+  MongoClient,
+  SchemaMember
+} from 'mongodb';
 
 class FinTenDB {
   private static readonly URI: string =
@@ -8,7 +14,7 @@ class FinTenDB {
     process.env.MONGODB_PASS +
     '@dev-cluster' +
     '.vvwni.azure.mongodb.net/test?retryWrites=true&w=majority';
-  private static readonly DB_NAME = 'secgov';
+  private static readonly DB_NAME: string | undefined = process.env.DB_NAME;
   private static instance: FinTenDB | null = null;
   private client: MongoClient;
 
@@ -20,6 +26,10 @@ class FinTenDB {
   }
 
   public static async getInstance(): Promise<FinTenDB> {
+    if (typeof process.env.DB_NAME !== 'string') {
+      throw new Error('No DB_NAME defined in .env!');
+    }
+
     if (FinTenDB.instance === null) {
       FinTenDB.instance = new FinTenDB();
       await FinTenDB.instance.client.connect();
@@ -28,21 +38,24 @@ class FinTenDB {
     return FinTenDB.instance;
   }
 
-  async insertFiling(filing: any) {
-    await this.insertOne(this.filings, filing);
+  async insertFiling(filing: any): Promise<InsertOneWriteOpResult<any>> {
+    return await this.insertOne(this.filings, filing);
   }
 
-  async insertVisitedLink(link: any) {
-    await this.insertOne(this.visitedLinks, link);
+  async insertVisitedLink(link: any): Promise<InsertOneWriteOpResult<any>> {
+    return await this.insertOne(this.visitedLinks, link);
   }
 
-  async insertOne(collection: Collection, o: any) {
+  async insertOne(
+    collection: Collection,
+    o: any
+  ): Promise<InsertOneWriteOpResult<any>> {
     //TODO: maybe don't check this absolutely every time
     if (!this.client.isConnected()) {
       await this.client.connect();
     }
 
-    await collection.insertOne(o);
+    return await collection.insertOne(o);
   }
 
   async findFilings(match: FilterQuery<any>, select?: SchemaMember<any, any>) {

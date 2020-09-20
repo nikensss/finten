@@ -48,6 +48,7 @@ class FinTen {
       url: string;
       status: string;
       error: string | null;
+      filingId: string | null;
     };
 
     const fintendb: FinTenDB = await FinTenDB.getInstance();
@@ -78,21 +79,32 @@ class FinTen {
         try {
           xbrl = await XBRL.fromTxt(downloadedDownloadable.fileName);
 
+          if (xbrl.get().DocumentFiscalYearFocus > (end || start)) {
+            LOGGER.get(this.constructor.name).warning(
+              this.constructor.name,
+              `Document fiscal year focus of downloaded XBRL > than end date!: ${
+                xbrl.get().DocumentFiscalYearFocus
+              }`
+            );
+          }
           //FIXME:
           //the XBRL class is a wrapper around the actual XBRL data. We should
           //only add the XBRL data, thus do 'xbrl.get()' when adding data to the
           //database.
-          await fintendb.insertFiling(xbrl.get());
+          const result = await fintendb.insertFiling(xbrl.get());
 
           await fintendb.insertVisitedLink({
             url: downloadedDownloadable.url,
             status: 'ok',
-            error: null
+            error: null,
+            filingId: result.insertedId
           });
 
           LOGGER.get(this.constructor.name).info(
             this.constructor.name,
-            `Added filing for fiscal year ${xbrl.get().DocumentFiscalYearFocus}`
+            `Added filing for fiscal year ${
+              xbrl.get().DocumentFiscalYearFocus
+            } (object id: ${result.insertedId})`
           );
         } catch (ex) {
           LOGGER.get(this.constructor.name).warning(
@@ -103,7 +115,8 @@ class FinTen {
           await fintendb.insertVisitedLink({
             url: downloadedDownloadable.url,
             status: 'error',
-            error: ex.toString()
+            error: ex.toString(),
+            filingId: null
           });
         }
       }

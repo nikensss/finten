@@ -28,4 +28,7 @@
 // stdout.write(chalk.red('writting stuff to stdout\n'));
 // stdout.write(chalk.red('writting stuff to stdout\n'));
 
-console.log(process.env.DB);
+console.log(process.env.NO_DB_INSERT);
+if (process.env.NO_DB_INSERT) {
+  console.log('NO_DB_INSERT mode ON! 🦄');
+}
