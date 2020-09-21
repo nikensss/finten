@@ -4,7 +4,6 @@ import FinTenDB from './classes/db/FinTenDB';
 import SecGov from './classes/secgov/SecGov';
 import { default as LOGGER } from './classes/logger/DefaultLogger';
 import { LogLevel } from './classes/logger/LogLevel';
-import FinTenAPI from './FinTenAPI';
 import Downloadable from './classes/download/Downloadable';
 
 class FinTen {
@@ -16,7 +15,7 @@ class FinTen {
 
   public static create(): FinTen {
     if (typeof process.env.DOWNLOADS_DIRECTORY !== 'string') {
-      throw new Error('No downloads directory in .env');
+      throw new Error('No DOWNLOADS_DIRECTORY in .env');
     }
     return new FinTen(process.env.DOWNLOADS_DIRECTORY);
   }
@@ -38,6 +37,7 @@ class FinTen {
     secgov.flush();
     let downloadedDownloadables: Downloadable[] = [];
 
+    //TODO: convert to interface
     type VisitedLink = {
       url: string;
       status: string;
