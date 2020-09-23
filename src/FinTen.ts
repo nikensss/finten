@@ -5,6 +5,7 @@ import SecGov from './classes/secgov/SecGov';
 import { default as LOGGER } from './classes/logger/DefaultLogger';
 import { LogLevel } from './classes/logger/LogLevel';
 import Downloadable from './classes/download/Downloadable';
+import ora from 'ora';
 
 class FinTen {
   private downloadsDirectory: string;
@@ -47,25 +48,26 @@ class FinTen {
 
     const fintendb: FinTenDB = await FinTenDB.getInstance();
 
-    let visitedLinks: VisitedLink[] = await fintendb.findVisitedLinks(
+    const visitedLinks: VisitedLink[] = await fintendb.findVisitedLinks(
       {},
       { url: 1, _id: 0 }
     );
 
-    for (let n = 1; n <= filings.length; n++) {
-      const filing = filings[n];
-      if (visitedLinks.some(v => v.url.includes(filing.url))) {
-        LOGGER.get(this.constructor.name).info(
-          this.constructor.name,
-          'skipping download'
-        );
-        continue;
-      }
+    console.log(`Filings length is ${filings.length}`);
+    const spinner = ora({ text: 'filtering filings', spinner: 'pong' }).start();
+    const unvisitedFilings = filings.filter((f, i, a) => {
+      console.log(i + '/' + a.length);
+      return !visitedLinks.find(v => v.url === f.url);
+    });
+    spinner.succeed();
+    console.log(`Unvisited filings length is ${unvisitedFilings.length}`);
 
-      const percentageDownloads = (n / filings.length) * 100;
+    for (let n = 0; n <= unvisitedFilings.length; n++) {
+      const filing = unvisitedFilings[n];
+      const percentageDownloads = ((n + 1) / unvisitedFilings.length) * 100;
       LOGGER.get(this.constructor.name).info(
         this.constructor.name,
-        `🛎 ${n}/${filings.length} (${percentageDownloads.toFixed(3)} %)`
+        `🛎 ${n + 1}/${unvisitedFilings.length} (${percentageDownloads.toFixed(3)} %)`
       );
 
       downloadedDownloadables = await secgov.get(filing);
@@ -78,8 +80,7 @@ class FinTen {
           if (xbrl.get().DocumentFiscalYearFocus > (end || start)) {
             LOGGER.get(this.constructor.name).warning(
               this.constructor.name,
-              `Document fiscal year focus of downloaded XBRL > than end date!: ${
-                xbrl.get().DocumentFiscalYearFocus
+              `Document fiscal year focus of downloaded XBRL > than end date!: ${xbrl.get().DocumentFiscalYearFocus
               }`
             );
           }
@@ -98,8 +99,7 @@ class FinTen {
 
           LOGGER.get(this.constructor.name).info(
             this.constructor.name,
-            `Added filing for fiscal year ${
-              xbrl.get().DocumentFiscalYearFocus
+            `Added filing for fiscal year ${xbrl.get().DocumentFiscalYearFocus
             } (object id: ${result.insertedId})`
           );
         } catch (ex) {
@@ -122,14 +122,6 @@ class FinTen {
     secgov.flush();
   }
 
-  /**
-   * @deprecated Use API to interact with FinTen
-   */
-  public static async main(): Promise<void> {
-    const finten = FinTen.create();
-
-    finten.fill(2018, 2019, 4);
-  }
 }
 
 export default FinTen;
