@@ -14,8 +14,12 @@ company.get('/names', async (req, res) => {
 
   const dbquery = await db.findFilings({}, { EntityRegistrantName: 1, _id: 0 });
 
+  const names = [
+    ...new Set(dbquery.map((d: any) => d.EntityRegistrantName))
+  ].sort((a, z) => (a <= z ? -1 : 1));
+
   res.json({
-    names: [...new Set(dbquery.map((d: any) => d.EntityRegistrantName))]
+    names
   });
 });
 
@@ -23,8 +27,13 @@ company.get('/tickers', async (req, res) => {
   const db = await FinTenDB.getInstance();
 
   const dbquery = await db.findFilings({}, { TradingSymbol: 1, _id: 0 });
+
+  const tickers = [
+    ...new Set(dbquery.map((d: any) => d.TradingSymbol))
+  ].sort((a, z) => (a <= z ? -1 : 1));
+
   res.json({
-    tickers: [...new Set(dbquery.map((d: any) => d.TradingSymbol))]
+    tickers
   });
 });
 
