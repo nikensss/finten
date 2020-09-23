@@ -12,8 +12,8 @@ class FinTenDB {
     process.env.MONGODB_USER +
     ':' +
     process.env.MONGODB_PASS +
-    '@dev-cluster' +
-    '.vvwni.azure.mongodb.net/test?retryWrites=true&w=majority';
+    '@dev-cluster.vvwni.gcp.mongodb.net/test?retryWrites=true&w=majority';
+
   private static readonly DB_NAME: string | undefined = process.env.DB_NAME;
   private static instance: FinTenDB | null = null;
   private client: MongoClient;
