@@ -25,6 +25,7 @@ secgovRoutes.get('/add', async (req, res) => {
   );
 
   const finten = FinTen.create();
+
   finten.fill(parseInt(start as string), parseInt(end as string));
 
   return res.json({

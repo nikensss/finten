@@ -48,25 +48,35 @@ class FinTen {
 
     const fintendb: FinTenDB = await FinTenDB.getInstance();
 
+    console.log('Getting visited links...');
     const visitedLinks: VisitedLink[] = await fintendb.findVisitedLinks(
       {},
       { url: 1, _id: 0 }
     );
 
-    console.log(`Filings length is ${filings.length}`);
-    const unvisitedFilings = filings.filter((f, i, a) => {
+    LOGGER.get(this.constructor.name).info(
+      this.constructor.name,
+      `Filings length is ${filings.length}`
+    );
+
+    const newAvailableFilings = filings.filter((f, i, a) => {
       console.log('filtered ' + i + '/' + a.length);
       return !visitedLinks.find(v => v.url === f.url);
     });
 
-    for (let n = 0; n <= unvisitedFilings.length; n++) {
-      const filing = unvisitedFilings[n];
-      const percentageDownloads = ((n + 1) / unvisitedFilings.length) * 100;
+    LOGGER.get(this.constructor.name).info(
+      this.constructor.name,
+      `New Filings available: ${newAvailableFilings.length}`
+    );
+
+    for (let n = 0; n < newAvailableFilings.length; n++) {
+      const filing = newAvailableFilings[n];
+      const percentageDownloads = ((n + 1) / newAvailableFilings.length) * 100;
       LOGGER.get(this.constructor.name).info(
         this.constructor.name,
-        `🛎 ${n + 1}/${unvisitedFilings.length} (${percentageDownloads.toFixed(
-          3
-        )} %)`
+        `🛎 ${n + 1}/${
+          newAvailableFilings.length
+        } (${percentageDownloads.toFixed(3)} %)`
       );
 
       downloadedDownloadables = await secgov.get(filing);
@@ -121,6 +131,11 @@ class FinTen {
     }
 
     secgov.flush();
+
+    LOGGER.get(this.constructor.name).info(
+      this.constructor.name,
+      `Done filling!`
+    );
   }
 }
 
