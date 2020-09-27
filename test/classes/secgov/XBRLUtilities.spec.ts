@@ -1,14 +1,14 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import path from 'path';
-import XBRL from '../../../src/classes/secgov/XBRL';
+import XBRLUtilities from '../../../src/classes/secgov/XBRLUtilities';
 
 const should = chai.use(chaiAsPromised).should();
 
 describe('XBRL tests', () => {
   //extractXmlFromTxt
   it('should extract xml', () => {
-    const xml = XBRL.extractXmlFromTxt(
+    const xml = XBRLUtilities.extractXmlFromTxt(
       path.join(__dirname, '1stXBRLvalid.txt')
     );
 
@@ -18,13 +18,13 @@ describe('XBRL tests', () => {
 
   it('should not extract xml', () => {
     expect(() => {
-      XBRL.extractXmlFromTxt(path.join(__dirname, 'NoXBRLS.txt'));
+      XBRLUtilities.extractXmlFromTxt(path.join(__dirname, 'NoXBRLS.txt'));
     }).to.throw('No XBRL found!');
   });
 
   //extractXmlsFromTxt
   it('should extract several xmls', () => {
-    const xmls = XBRL.extractXmlsFromTxt(
+    const xmls = XBRLUtilities.extractXmlsFromTxt(
       path.join(__dirname, '3rdXBRLvalid.txt')
     );
 
@@ -33,7 +33,9 @@ describe('XBRL tests', () => {
 
   // fromTxt
   it('should return one document', done => {
-    const xbrl = XBRL.fromTxt(path.join(__dirname, '1stXBRLvalid.txt'));
+    const xbrl = XBRLUtilities.fromTxt(
+      path.join(__dirname, '1stXBRLvalid.txt')
+    );
     xbrl.then(d => {
       expect(d).to.not.be.undefined;
       done();
@@ -41,7 +43,9 @@ describe('XBRL tests', () => {
   });
 
   it('should return one document again', done => {
-    const xbrl = XBRL.fromTxt(path.join(__dirname, '3rdXBRLvalid.txt'));
+    const xbrl = XBRLUtilities.fromTxt(
+      path.join(__dirname, '3rdXBRLvalid.txt')
+    );
     xbrl.then(d => {
       expect(d).to.not.be.undefined;
       done();
@@ -49,7 +53,7 @@ describe('XBRL tests', () => {
   });
 
   it('should throw error', done => {
-    const xbrl = XBRL.fromTxt(path.join(__dirname, 'NoXBRLS.txt'));
+    const xbrl = XBRLUtilities.fromTxt(path.join(__dirname, 'NoXBRLS.txt'));
     xbrl
       .then(d => {
         done(new Error('Should not be here...'));
