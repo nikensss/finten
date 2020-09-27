@@ -8,8 +8,8 @@
     "prod": "DB_NAME=secgov ts-node -r dotenv/config src/main.ts",
     "test-script": "NO_DB_INSERT=1 ts-node src/classes/tests/tests.ts",
     "nodemon": "nodemon",
-    "test": "mocha debug --require dotenv/config  ts-node/register test/**/*.spec.ts",
-    "test-api": "mocha --require dotenv/config ts-node/register test/api/**/*.spec.ts",
+    "test": "mocha -r dotenv/config  ts-node/register test/classes/**/*.spec.ts",
+    "test-api": "mocha -r dotenv/config ts-node/register test/api/**/*.spec.ts",
     "npmi-container": "rm -rf node_modules && npm i"
   },
   "nodemonConfig": {

@@ -21,27 +21,53 @@ class XBRL {
   }
 
   public static async fromTxts(paths: PathLike[]): Promise<XBRL[]> {
-    return await Promise.all(paths.map(p => XBRL.fromTxt(p)));
+    return await Promise.all(paths.map((p) => XBRL.fromTxt(p)));
   }
 
   public static async fromTxt(path: PathLike): Promise<XBRL> {
-    const xml = XBRL.extractXmlFromTxt(path);
-    try {
-      const xbrl = await ParseXbrl.parseStr(xml);
-      return new XBRL(xbrl);
-    } catch (ex) {
-      throw new Error(`Exception while parsing XBRL: ${ex}`);
+    const xmls: string[] = XBRL.extractXmlsFromTxt(path);
+    const exceptions: string[] = [];
+
+    for (let xml of xmls) {
+      try {
+        const xbrl = await ParseXbrl.parseStr(xml);
+        return new XBRL(xbrl);
+      } catch (ex) {
+        exceptions.push(ex.toString());
+      }
     }
+
+    throw new Error(exceptions.join('\n'));
   }
 
-  private static extractXmlFromTxt(path: PathLike): string {
+  public static extractXmlsFromTxt(path: PathLike): string[] {
+    const xmls: string[] = [];
+
+    let extraction = this.extractXmlFromTxt(path, 0);
+
+    if (extraction.xml.length === 0) {
+      throw new Error('No XBRL in given file.');
+    }
+
+    xmls.push(extraction.xml);
+    while (!extraction.isDone) {
+      extraction = this.extractXmlFromTxt(path, extraction.index);
+    }
+
+    return xmls;
+  }
+
+  public static extractXmlFromTxt(
+    path: PathLike,
+    start: number = 0
+  ): { xml: string; index: number; isDone: boolean } {
     DefaultLogger.get(this.constructor.name).debug(
       this.constructor.name,
       `parsing txt: ${path}`
     );
     const lines = fs.readFileSync(path, 'utf-8').split('\n');
     const xml: string[] = [];
-    let i: number = 0;
+    let i: number = start;
     while (!lines[i].includes('<XBRL>') && i < lines.length) {
       i += 1;
     }
@@ -51,11 +77,8 @@ class XBRL {
       xml.push(lines[i]);
       i += 1;
     }
-    if (i >= lines.length) {
-      throw new Error(`XBRL instance not found or incomplete at ${path}`);
-    }
 
-    return xml.join('\n');
+    return { xml: xml.join('\n'), index: i, isDone: i >= lines.length };
   }
 }
 
