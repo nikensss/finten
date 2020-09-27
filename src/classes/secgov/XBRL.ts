@@ -21,7 +21,7 @@ class XBRL {
   }
 
   public static async fromTxts(paths: PathLike[]): Promise<XBRL[]> {
-    return await Promise.all(paths.map((p) => XBRL.fromTxt(p)));
+    return await Promise.all(paths.map(p => XBRL.fromTxt(p)));
   }
 
   public static async fromTxt(path: PathLike): Promise<XBRL> {
@@ -44,14 +44,18 @@ class XBRL {
     const xmls: string[] = [];
 
     let extraction = this.extractXmlFromTxt(path, 0);
-
-    if (extraction.xml.length === 0) {
-      throw new Error('No XBRL in given file.');
-    }
-
     xmls.push(extraction.xml);
+
     while (!extraction.isDone) {
-      extraction = this.extractXmlFromTxt(path, extraction.index);
+      try {
+        extraction = this.extractXmlFromTxt(path, extraction.index);
+        xmls.push(extraction.xml);
+      } catch (ex) {
+        if (ex.toString() === 'Error: No XBRL found!') {
+          break;
+        }
+        throw ex;
+      }
     }
 
     return xmls;
@@ -68,14 +72,19 @@ class XBRL {
     const lines = fs.readFileSync(path, 'utf-8').split('\n');
     const xml: string[] = [];
     let i: number = start;
-    while (!lines[i].includes('<XBRL>') && i < lines.length) {
+    while (i < lines.length && !lines[i].includes('<XBRL>')) {
       i += 1;
     }
     //we are now at the opnening tag of the XBRL, move one more line to find the XML
     i += 1;
-    while (!lines[i].includes('</XBRL>') && i < lines.length) {
+    while (i < lines.length && !lines[i].includes('</XBRL>')) {
       xml.push(lines[i]);
       i += 1;
+    }
+
+    //TODO: through exception if xml.length === 0
+    if (xml.length === 0) {
+      throw new Error('No XBRL found!');
     }
 
     return { xml: xml.join('\n'), index: i, isDone: i >= lines.length };
