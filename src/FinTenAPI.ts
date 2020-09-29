@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 import bodyParser from 'body-parser';
 import { default as LOGGER } from './classes/logger/DefaultLogger';
 import api from './routes/api/api';
+import cors from 'cors';
 
 class FinTenAPI {
   private app: Application;
@@ -9,6 +10,7 @@ class FinTenAPI {
 
   constructor() {
     this.app = express();
+    this.app.use(cors());
     this.app.use(bodyParser.urlencoded({ extended: false }));
     this.app.use(bodyParser.json());
   }

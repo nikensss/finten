@@ -6,6 +6,7 @@ import { default as LOGGER } from './classes/logger/DefaultLogger';
 import { LogLevel } from './classes/logger/LogLevel';
 import Downloadable from './classes/download/Downloadable';
 import ora from 'ora';
+import XBRLUtilities from './classes/secgov/XBRLUtilities';
 
 class FinTen {
   private downloadsDirectory: string;
@@ -82,7 +83,7 @@ class FinTen {
       downloadedDownloadables = await secgov.get(filing);
       for (let downloadedDownloadable of downloadedDownloadables) {
         try {
-          const xbrl: XBRL = await XBRL.fromTxt(
+          const xbrl: XBRL = await XBRLUtilities.fromTxt(
             downloadedDownloadable.fileName
           );
 
