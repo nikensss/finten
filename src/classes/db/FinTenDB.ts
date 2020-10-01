@@ -3,7 +3,8 @@ import {
   FilterQuery,
   InsertOneWriteOpResult,
   MongoClient,
-  SchemaMember
+  SchemaMember,
+  UpdateQuery
 } from 'mongodb';
 
 class FinTenDB {
@@ -84,8 +85,42 @@ class FinTenDB {
       .toArray();
   }
 
+  public async updateFilings(
+    match: FilterQuery<any>,
+    update: UpdateQuery<any>
+  ) {
+    return await this.update(this.filings, match, update);
+  }
+
+  public async updateVisitedLinks(match: FilterQuery<any>, update: any) {
+    return await this.update(this.visitedLinks, match, { $set: update });
+  }
+
+  public async update(
+    collection: Collection,
+    match: FilterQuery<any>,
+    update: UpdateQuery<any>
+  ) {
+    if (!this.client.isConnected()) {
+      await this.client.connect();
+    }
+
+    return await collection.updateOne(match, update);
+  }
+
+  public async distinct(key: string) {
+    if (!this.client.isConnected()) {
+      await this.client.connect();
+    }
+
+    return await this.client
+      .db(FinTenDB.DB_NAME)
+      .collection('filings')
+      .distinct(key);
+  }
+
   async exists(o: any): Promise<boolean> {
-    return Promise.resolve(false);
+    throw new Error('Unsupported operation');
   }
 
   private get filings(): Collection {

@@ -8,13 +8,26 @@ import Downloadable from './classes/download/Downloadable';
 import ora from 'ora';
 import XBRLUtilities from './classes/secgov/XBRLUtilities';
 
+type VisitedLink = {
+  url: string;
+  status: string;
+  error: string | null;
+  filingId: string | null;
+};
+
 class FinTen {
   private downloadsDirectory: string;
+  private secgov: SecGov;
 
-  constructor(downloadsDirectory: string) {
+  private constructor(downloadsDirectory: string) {
     this.downloadsDirectory = downloadsDirectory;
+    this.secgov = new SecGov(this.downloadsDirectory);
   }
 
+  /**
+   * Creates an instance of FinTen. Use this method to guarantee the use of the
+   * environment variable DOWNLOADS_DIRECTORY.
+   */
   public static create(): FinTen {
     if (typeof process.env.DOWNLOADS_DIRECTORY !== 'string') {
       throw new Error('No DOWNLOADS_DIRECTORY in .env');
@@ -25,27 +38,15 @@ class FinTen {
   public async fill(start: number, end: number = start, amount?: number) {
     LOGGER.get(this.constructor.name).logLevel = LogLevel.DEBUG;
 
-    const secgov = new SecGov(this.downloadsDirectory);
-    secgov.flush();
+    this.secgov.flush();
 
-    await secgov.getIndices(start, end);
-    let filings = secgov.parseIndices([FormType.F10K, FormType.F10Q], amount);
-
-    LOGGER.get(this.constructor.name).info(
-      this.constructor.name,
-      `found ${filings.length} 10-K or 10-Q filings`
+    await this.secgov.getIndices(start, end);
+    let filings = this.secgov.parseIndices(
+      [FormType.F10K, FormType.F10Q],
+      amount
     );
-
-    secgov.flush();
+    this.secgov.flush();
     let downloadedDownloadables: Downloadable[] = [];
-
-    //TODO: convert to interface
-    type VisitedLink = {
-      url: string;
-      status: string;
-      error: string | null;
-      filingId: string | null;
-    };
 
     const fintendb: FinTenDB = await FinTenDB.getInstance();
 
@@ -55,20 +56,10 @@ class FinTen {
       { url: 1, _id: 0 }
     );
 
-    LOGGER.get(this.constructor.name).info(
-      this.constructor.name,
-      `Filings length is ${filings.length}`
-    );
-
     const newAvailableFilings = filings.filter((f, i, a) => {
       console.log('filtered ' + i + '/' + a.length);
       return !visitedLinks.find(v => v.url === f.url);
     });
-
-    LOGGER.get(this.constructor.name).info(
-      this.constructor.name,
-      `New Filings available: ${newAvailableFilings.length}`
-    );
 
     for (let n = 0; n < newAvailableFilings.length; n++) {
       const filing = newAvailableFilings[n];
@@ -80,7 +71,8 @@ class FinTen {
         } (${percentageDownloads.toFixed(3)} %)`
       );
 
-      downloadedDownloadables = await secgov.get(filing);
+      downloadedDownloadables = await this.secgov.get(filing);
+
       for (let downloadedDownloadable of downloadedDownloadables) {
         try {
           const xbrl: XBRL = await XBRLUtilities.fromTxt(
@@ -95,7 +87,7 @@ class FinTen {
               }`
             );
           }
-          //FIXME:
+          //BEWARE:
           //the XBRL class is a wrapper around the actual XBRL data. We should
           //only add the XBRL data, thus do 'xbrl.get()' when adding data to the
           //database.
@@ -128,15 +120,78 @@ class FinTen {
           });
         }
       }
-      secgov.flush();
+      this.secgov.flush();
     }
 
-    secgov.flush();
+    this.secgov.flush();
 
     LOGGER.get(this.constructor.name).info(
       this.constructor.name,
       `Done filling!`
     );
+  }
+
+  public async fix() {
+    throw new Error('Unsupported!');
+
+    LOGGER.get(this.constructor.name).logLevel = LogLevel.DEBUG;
+    LOGGER.get(this.constructor.name).info(
+      this.constructor.name,
+      `Getting broken links`
+    );
+    const fintendb: FinTenDB = await FinTenDB.getInstance();
+
+    const linksWithErrors: VisitedLink[] = await fintendb.findVisitedLinks(
+      { status: 'error' },
+      { url: 1, _id: 0 }
+    );
+
+    const downloadablesWithErros: Downloadable[] = linksWithErrors.map(f => ({
+      url: f.url,
+      fileName: 'filing.txt'
+    }));
+
+    for (let n = 0; n < downloadablesWithErros.length; n++) {
+      const percentageDownloads =
+        ((n + 1) / downloadablesWithErros.length) * 100;
+      LOGGER.get(this.constructor.name).info(
+        this.constructor.name,
+        `🛎 ${n + 1}/${
+          downloadablesWithErros.length
+        } (${percentageDownloads.toFixed(3)} %)`
+      );
+
+      const filings = await this.secgov.get(downloadablesWithErros[n]);
+
+      for (let filing of filings) {
+        try {
+          const xbrl: XBRL = await XBRLUtilities.fromTxt(filing.fileName);
+          const result = await fintendb.insertFiling(xbrl.get());
+
+          await fintendb.updateVisitedLinks(
+            { url: filing.url },
+            {
+              status: 'ok',
+              error: null,
+              filingId: result.insertedId
+            }
+          );
+
+          LOGGER.get(this.constructor.name).info(
+            this.constructor.name,
+            `Could now parse from ${filing.url}!`
+          );
+        } catch (ex) {
+          LOGGER.get(this.constructor.name).info(
+            this.constructor.name,
+            `Could still not parse from ${filing.url}`
+          );
+        }
+      }
+      this.secgov.flush();
+    }
+
+    this.secgov.flush();
   }
 }
 

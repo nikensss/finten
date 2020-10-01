@@ -12,11 +12,7 @@ company.get('/', (req, res) => {
 company.get('/names', async (req, res) => {
   const db = await FinTenDB.getInstance();
 
-  const dbquery = await db.findFilings({}, { EntityRegistrantName: 1, _id: 0 });
-
-  const names = [
-    ...new Set(dbquery.map((d: any) => d.EntityRegistrantName))
-  ].sort((a, z) => (a <= z ? -1 : 1));
+  const names = await db.distinct('EntityRegistrantName');
 
   res.json({
     names
@@ -26,14 +22,20 @@ company.get('/names', async (req, res) => {
 company.get('/tickers', async (req, res) => {
   const db = await FinTenDB.getInstance();
 
-  const dbquery = await db.findFilings({}, { TradingSymbol: 1, _id: 0 });
-
-  const tickers = [
-    ...new Set(dbquery.map((d: any) => d.TradingSymbol))
-  ].sort((a, z) => (a <= z ? -1 : 1));
+  const tickers = await db.distinct('TradingSymbol');
 
   res.json({
     tickers
+  });
+});
+
+company.get('/cik', async (req, res) => {
+  const db = await FinTenDB.getInstance();
+
+  const cik = await db.distinct('EntityCentralIndexKey');
+
+  res.json({
+    cik
   });
 });
 
@@ -45,11 +47,34 @@ company.get('/ticker', async (req, res) => {
       error: 'no ticker given'
     });
   }
-  const db = await FinTenDB.getInstance();
 
-  const dbquery = await db.findFilings({
-    TradingSymbol: ticker
-  });
+  const accessibleTickers = [
+    'AAPL',
+    'GOOG',
+    'FB',
+    'MSFT',
+    'ORCL',
+    'NVDA',
+    'CRM',
+    'IBM',
+    'AMZN',
+    'TSLA',
+    'JPM'
+  ];
+
+  if (!accessibleTickers.includes(ticker as string)) {
+    return res.status(403).json({
+      error: 'forbidden access'
+    });
+  }
+
+  const db = await FinTenDB.getInstance();
+  const dbquery = await db.findFilings(
+    {
+      TradingSymbol: ticker
+    },
+    { _id: 0 }
+  );
 
   res.json({
     ticker,
