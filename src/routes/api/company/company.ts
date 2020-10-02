@@ -22,7 +22,20 @@ company.get('/names', async (req, res) => {
 company.get('/tickers', async (req, res) => {
   const db = await FinTenDB.getInstance();
 
-  const tickers = await db.distinct('TradingSymbol');
+  // const tickers = await db.distinct('TradingSymbol');
+  const tickers = [
+    'AAPL',
+    'AMZN',
+    'CRM',
+    'FB',
+    'GOOG',
+    'IBM',
+    'JPM',
+    'MSFT',
+    'NVDA',
+    'ORCL',
+    'TSLA'
+  ];
 
   res.json({
     tickers
