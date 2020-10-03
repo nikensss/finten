@@ -12,9 +12,9 @@ company.get('/', (req, res) => {
 company.get('/names', async (req, res) => {
   const db = await FinTenDB.getInstance();
 
-  const names = await db.distinct('EntityRegistrantName');
+  const names = await db.distinctFilingKey('EntityRegistrantName');
 
-  res.json({
+  res.status(200).json({
     names
   });
 });
@@ -22,22 +22,9 @@ company.get('/names', async (req, res) => {
 company.get('/tickers', async (req, res) => {
   const db = await FinTenDB.getInstance();
 
-  const tickers = await db.distinct('TradingSymbol');
-  // const tickers = [
-  //   'AAPL',
-  //   'AMZN',
-  //   'CRM',
-  //   'FB',
-  //   'GOOG',
-  //   'IBM',
-  //   'JPM',
-  //   'MSFT',
-  //   'NVDA',
-  //   'ORCL',
-  //   'TSLA'
-  // ];
+  const tickers = await db.distinctFilingKey('TradingSymbol');
 
-  res.json({
+  res.status(200).json({
     tickers
   });
 });
@@ -45,7 +32,7 @@ company.get('/tickers', async (req, res) => {
 company.get('/cik', async (req, res) => {
   const db = await FinTenDB.getInstance();
 
-  const cik = await db.distinct('EntityCentralIndexKey');
+  const cik = await db.distinctFilingKey('EntityCentralIndexKey');
 
   res.json({
     cik
@@ -81,18 +68,21 @@ company.get('/ticker', async (req, res) => {
     });
   }
 
-  const db = await FinTenDB.getInstance();
-  const dbquery = await db.findFilings(
-    {
+  try {
+    const db = await FinTenDB.getInstance();
+    const dbquery = await db.findFilings({
       TradingSymbol: ticker
-    },
-    { _id: 0 }
-  );
+    });
 
-  res.json({
-    ticker,
-    data: dbquery
-  });
+    return res.status(200).json({
+      ticker,
+      data: dbquery
+    });
+  } catch (ex) {
+    return res.status(500).json({
+      error: ex
+    });
+  }
 });
 
 company.get('/name', async (req, res) => {

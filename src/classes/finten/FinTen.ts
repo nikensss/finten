@@ -8,13 +8,8 @@ import Downloadable from '../download/Downloadable';
 import ora from 'ora';
 import XBRLUtilities from '../secgov/XBRLUtilities';
 import FilingReportMetadata from '../filings/FilingReportMetadata';
-
-type VisitedLink = {
-  url: string;
-  status: string;
-  error: string | null;
-  filingId: string | null;
-};
+import { VisitedLink } from '../db/models/VisitedLinkSchema';
+import { Filing } from '../db/models/FilingSchema';
 
 class FinTen {
   private downloadsDirectory: string;
@@ -39,11 +34,7 @@ class FinTen {
   public async fill(start: number, end: number = start, amount?: number) {
     this.logger.logLevel = LogLevel.DEBUG;
 
-    const newFilings = await this.getNewFilingReportMetadatas(
-      start,
-      end,
-      amount
-    );
+    const newFilings = await this.getNewFilings(start, end, amount);
 
     const fintendb = await FinTenDB.getInstance();
 
@@ -72,13 +63,13 @@ class FinTen {
             url: downloadedDownloadable.url,
             status: 'ok',
             error: null,
-            filingId: result.insertedId
+            filingId: result._id
           });
 
           this.logger.info(
             `Added filing for fiscal year ${
               xbrl.get().DocumentFiscalYearFocus
-            } (object id: ${result.insertedId})`
+            } (object id: ${result._id})`
           );
         } catch (ex) {
           this.logger.warning(
@@ -106,7 +97,7 @@ class FinTen {
 
     const linksWithErrors: VisitedLink[] = await fintendb.findVisitedLinks(
       { status: 'error' },
-      { url: 1, _id: 0 }
+      'url'
     );
 
     const downloadablesWithErros: Downloadable[] = linksWithErrors.map(f => ({
@@ -135,7 +126,7 @@ class FinTen {
             {
               status: 'ok',
               error: null,
-              filingId: result.insertedId
+              filingId: result._id
             }
           );
 
@@ -162,17 +153,14 @@ class FinTen {
     );
   }
 
-  private async getNewFilingReportMetadatas(
+  private async getNewFilings(
     start: number,
     end: number,
     amount: number | undefined
   ) {
     const filings = await this.getFilings(start, end, amount);
     const fintendb: FinTenDB = await FinTenDB.getInstance();
-    const visitedLinks: VisitedLink[] = await fintendb.findVisitedLinks(
-      {},
-      { url: 1, _id: 0 }
-    );
+    const visitedLinks: VisitedLink[] = await fintendb.findVisitedLinks();
 
     return filings.filter(f => !visitedLinks.find(v => v.url === f.url));
   }
