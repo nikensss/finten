@@ -4,7 +4,7 @@ import axios from 'axios';
 import Downloadable from './Downloadable';
 import Queue from './queues/Queue';
 import DefaultQueue from './queues/DefaultQueue';
-import DefaultLogger from '../logger/DefaultLogger';
+import { default as LOGGER } from '../logger/DefaultLogger';
 
 function Speedometer() {
   const args = arguments;
@@ -15,7 +15,7 @@ function Speedometer() {
 
     const getter = () => val;
     const setter = (next: number) => {
-      DefaultLogger.get('Speedometer').debug(
+      LOGGER.get('Speedometer').debug(
         'Speedometer',
         `${key}: ${val} → ${next}`
       );
@@ -45,20 +45,16 @@ class DownloadManager {
   constructor(directory: PathLike) {
     this._directory = directory;
 
-    // DefaultLogger.get(this.constructor.name).setOutput(
+    // LOGGER.get(this.constructor.name).setOutput(
     //   `logs/${this.constructor.name}.log`
     // );
 
     if (!fs.existsSync(this.dir)) {
-      DefaultLogger.get(this.constructor.name).info(
-        this.constructor.name,
+      LOGGER.get(this.constructor.name).info(
         `directory '${this.dir}' doesn't exist, creating...`
       );
       fs.mkdirSync(this.dir);
-      DefaultLogger.get(this.constructor.name).info(
-        this.constructor.name,
-        'creation successful!'
-      );
+      LOGGER.get(this.constructor.name).info('creation successful!');
     }
 
     this.q = new DefaultQueue();
@@ -73,25 +69,16 @@ class DownloadManager {
   }
 
   public flush(): void {
-    DefaultLogger.get(this.constructor.name).info(
-      this.constructor.name,
-      'flushing downloads! 🚾'
-    );
+    LOGGER.get(this.constructor.name).info('flushing downloads! 🚾');
     fs.readdirSync(this.dir).forEach(f => {
       const currentPath = path.join(this.dir.toString(), f);
       if (fs.lstatSync(currentPath).isDirectory()) {
         this.deldir(currentPath);
       }
-      DefaultLogger.get(this.constructor.name).debug(
-        this.constructor.name,
-        `deleting ${f}`
-      );
+      LOGGER.get(this.constructor.name).debug(`deleting ${f}`);
       fs.unlinkSync(currentPath);
     });
-    DefaultLogger.get(this.constructor.name).info(
-      this.constructor.name,
-      'done flusing 🚽'
-    );
+    LOGGER.get(this.constructor.name).info('done flusing 🚽');
   }
 
   public queue(...d: Downloadable[]) {
@@ -112,10 +99,7 @@ class DownloadManager {
           await this._get((await this.q.dequeue()) as Downloadable)
         );
       } catch (ex) {
-        DefaultLogger.get(this.constructor.name).warning(
-          this.constructor.name,
-          `couldn't 'GET': ${ex}`
-        );
+        LOGGER.get(this.constructor.name).warning(`couldn't 'GET': ${ex}`);
       }
     }
     return Promise.resolve(downloads);
@@ -153,10 +137,7 @@ class DownloadManager {
    * @returns a promise that resolves to the location of the downloaded file
    */
   private async _get(d: Downloadable): Promise<Downloadable> {
-    DefaultLogger.get(this.constructor.name).info(
-      this.constructor.name,
-      `downloading: ${d.url}`
-    );
+    LOGGER.get(this.constructor.name).info(`downloading: ${d.url}`);
     DownloadManager.activeDownloads += 1;
     const p: Downloadable = {
       fileName: path.resolve(this.dir.toString(), d.fileName),
@@ -177,22 +158,15 @@ class DownloadManager {
     return new Promise((res, rej) => {
       writer.on('finish', () => {
         DownloadManager.activeFileWrites -= 1;
-        DefaultLogger.get(this.constructor.name).info(
-          this.constructor.name,
-          `done writting: ${d.fileName}`
-        );
+        LOGGER.get(this.constructor.name).info(`done writting: ${d.fileName}`);
         res(p);
       });
       writer.on('close', () =>
-        DefaultLogger.get(this.constructor.name).debug(
-          this.constructor.name,
-          `closing ${d.fileName}`
-        )
+        LOGGER.get(this.constructor.name).debug(`closing ${d.fileName}`)
       );
       writer.on('error', () => {
         DownloadManager.activeFileWrites -= 1;
-        DefaultLogger.get(this.constructor.name).error(
-          this.constructor.name,
+        LOGGER.get(this.constructor.name).error(
           `error while writting: ${d.fileName}`
         );
         rej();

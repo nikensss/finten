@@ -1,12 +1,13 @@
-import XBRL from './classes/secgov/XBRL';
-import FormType from './classes/filings/FormType';
-import FinTenDB from './classes/db/FinTenDB';
-import SecGov from './classes/secgov/SecGov';
-import { default as LOGGER } from './classes/logger/DefaultLogger';
-import { LogLevel } from './classes/logger/LogLevel';
-import Downloadable from './classes/download/Downloadable';
+import XBRL from '../secgov/XBRL';
+import FormType from '../filings/FormType';
+import FinTenDB from '../db/FinTenDB';
+import SecGov from '../secgov/SecGov';
+import { default as LOGGER } from '../logger/DefaultLogger';
+import { LogLevel } from '../logger/LogLevel';
+import Downloadable from '../download/Downloadable';
 import ora from 'ora';
-import XBRLUtilities from './classes/secgov/XBRLUtilities';
+import XBRLUtilities from '../secgov/XBRLUtilities';
+import FilingReportMetadata from '../filings/FilingReportMetadata';
 
 type VisitedLink = {
   url: string;
@@ -36,61 +37,35 @@ class FinTen {
   }
 
   public async fill(start: number, end: number = start, amount?: number) {
-    LOGGER.get(this.constructor.name).logLevel = LogLevel.DEBUG;
+    this.logger.logLevel = LogLevel.DEBUG;
 
-    this.secgov.flush();
-
-    await this.secgov.getIndices(start, end);
-    let filings = this.secgov.parseIndices(
-      [FormType.F10K, FormType.F10Q],
+    const newFilings = await this.getNewFilingReportMetadatas(
+      start,
+      end,
       amount
     );
-    this.secgov.flush();
-    let downloadedDownloadables: Downloadable[] = [];
 
-    const fintendb: FinTenDB = await FinTenDB.getInstance();
+    const fintendb = await FinTenDB.getInstance();
 
-    console.log('Getting visited links...');
-    const visitedLinks: VisitedLink[] = await fintendb.findVisitedLinks(
-      {},
-      { url: 1, _id: 0 }
-    );
+    for (let n = 0; n < newFilings.length; n++) {
+      const filing = newFilings[n];
+      this.logPercentage(n, newFilings.length);
 
-    const newAvailableFilings = filings.filter((f, i, a) => {
-      console.log('filtered ' + i + '/' + a.length);
-      return !visitedLinks.find(v => v.url === f.url);
-    });
-
-    for (let n = 0; n < newAvailableFilings.length; n++) {
-      const filing = newAvailableFilings[n];
-      const percentageDownloads = ((n + 1) / newAvailableFilings.length) * 100;
-      LOGGER.get(this.constructor.name).info(
-        this.constructor.name,
-        `🛎 ${n + 1}/${
-          newAvailableFilings.length
-        } (${percentageDownloads.toFixed(3)} %)`
-      );
-
-      downloadedDownloadables = await this.secgov.get(filing);
+      let downloadedDownloadables = await this.secgov.get(filing);
 
       for (let downloadedDownloadable of downloadedDownloadables) {
         try {
-          const xbrl: XBRL = await XBRLUtilities.fromTxt(
+          const xbrl = await XBRLUtilities.fromTxt(
             downloadedDownloadable.fileName
           );
 
           if (xbrl.get().DocumentFiscalYearFocus > (end || start)) {
-            LOGGER.get(this.constructor.name).warning(
-              this.constructor.name,
+            this.logger.warning(
               `Document fiscal year focus of downloaded XBRL > than end date!: ${
                 xbrl.get().DocumentFiscalYearFocus
               }`
             );
           }
-          //BEWARE:
-          //the XBRL class is a wrapper around the actual XBRL data. We should
-          //only add the XBRL data, thus do 'xbrl.get()' when adding data to the
-          //database.
           const result = await fintendb.insertFiling(xbrl.get());
 
           await fintendb.insertVisitedLink({
@@ -100,15 +75,13 @@ class FinTen {
             filingId: result.insertedId
           });
 
-          LOGGER.get(this.constructor.name).info(
-            this.constructor.name,
+          this.logger.info(
             `Added filing for fiscal year ${
               xbrl.get().DocumentFiscalYearFocus
             } (object id: ${result.insertedId})`
           );
         } catch (ex) {
-          LOGGER.get(this.constructor.name).warning(
-            this.constructor.name,
+          this.logger.warning(
             `Error while parsing txt to XBRL at ${downloadedDownloadable}:\n${ex}`
           );
 
@@ -122,23 +95,13 @@ class FinTen {
       }
       this.secgov.flush();
     }
-
     this.secgov.flush();
-
-    LOGGER.get(this.constructor.name).info(
-      this.constructor.name,
-      `Done filling!`
-    );
+    this.logger.info(`Done filling!`);
   }
 
   public async fix() {
-    throw new Error('Unsupported!');
-
-    LOGGER.get(this.constructor.name).logLevel = LogLevel.DEBUG;
-    LOGGER.get(this.constructor.name).info(
-      this.constructor.name,
-      `Getting broken links`
-    );
+    this.logger.logLevel = LogLevel.DEBUG;
+    this.logger.info(`Getting broken links`);
     const fintendb: FinTenDB = await FinTenDB.getInstance();
 
     const linksWithErrors: VisitedLink[] = await fintendb.findVisitedLinks(
@@ -154,8 +117,7 @@ class FinTen {
     for (let n = 0; n < downloadablesWithErros.length; n++) {
       const percentageDownloads =
         ((n + 1) / downloadablesWithErros.length) * 100;
-      LOGGER.get(this.constructor.name).info(
-        this.constructor.name,
+      this.logger.info(
         `🛎 ${n + 1}/${
           downloadablesWithErros.length
         } (${percentageDownloads.toFixed(3)} %)`
@@ -177,21 +139,58 @@ class FinTen {
             }
           );
 
-          LOGGER.get(this.constructor.name).info(
-            this.constructor.name,
-            `Could now parse from ${filing.url}!`
-          );
+          this.logger.info(`Could now parse from ${filing.url}!`);
         } catch (ex) {
-          LOGGER.get(this.constructor.name).info(
-            this.constructor.name,
-            `Could still not parse from ${filing.url}`
-          );
+          this.logger.info(`Could still not parse from ${filing.url}`);
         }
       }
       this.secgov.flush();
     }
 
     this.secgov.flush();
+  }
+
+  //Private implementations
+  private get logger() {
+    return LOGGER.get(this.constructor.name);
+  }
+
+  private logPercentage(currentIndex: number, length: number) {
+    const percentageDownloads = ((currentIndex + 1) / length) * 100;
+    this.logger.info(
+      `🛎 ${currentIndex + 1}/${length} (${percentageDownloads.toFixed(3)} %)`
+    );
+  }
+
+  private async getNewFilingReportMetadatas(
+    start: number,
+    end: number,
+    amount: number | undefined
+  ) {
+    const filings = await this.getFilings(start, end, amount);
+    const fintendb: FinTenDB = await FinTenDB.getInstance();
+    const visitedLinks: VisitedLink[] = await fintendb.findVisitedLinks(
+      {},
+      { url: 1, _id: 0 }
+    );
+
+    return filings.filter(f => !visitedLinks.find(v => v.url === f.url));
+  }
+
+  private async getFilings(
+    start: number,
+    end: number,
+    amount: number | undefined
+  ) {
+    this.secgov.flush();
+
+    await this.secgov.getIndices(start, end);
+    const filings = this.secgov.parseIndices(
+      [FormType.F10K, FormType.F10Q],
+      amount
+    );
+    this.secgov.flush();
+    return filings;
   }
 }
 

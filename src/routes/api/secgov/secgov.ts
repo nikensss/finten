@@ -1,7 +1,7 @@
 import path from 'path';
 import { Router } from 'express';
 import { default as LOGGER } from '../../../classes/logger/DefaultLogger';
-import FinTen from '../../../FinTen';
+import FinTen from '../../../classes/finten/FinTen';
 
 const secgovRoutes = Router();
 
@@ -44,7 +44,6 @@ secgovRoutes.get('/fill', async (req, res) => {
   }
 
   LOGGER.get('secgov-routes/fill').info(
-    'secgov-routes/fill',
     `filling database with all the data between ${start} and ${end}`
   );
 
@@ -58,7 +57,6 @@ secgovRoutes.get('/fill', async (req, res) => {
 
 secgovRoutes.get('/fix', async (req, res) => {
   LOGGER.get('secgov-routes/fix').info(
-    'secgov-routes/fix',
     `revisiting and reparsing documents from links with errors`
   );
 

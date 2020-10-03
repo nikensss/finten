@@ -1,7 +1,3 @@
-import fs, { PathLike } from 'fs';
-import ParseXbrl from 'parse-xbrl';
-import DefaultLogger from '../logger/DefaultLogger';
-
 class XBRL {
   private data: any;
 

@@ -7,18 +7,22 @@ import moment from 'moment';
 class DefaultLogger implements Logger {
   private _logLevel: LogLevel = LogLevel.INFO;
   private output: Writable = process.stdout;
+  private label: string = '';
   // private output: Writable = fs.createWriteStream('logs/.log', {
   //   flags: 'a'
   // });
   private static map: Map<string, Logger> = new Map();
   private static readonly MOMENT_FORMAT: string = 'YYYY/MM/DD HH:mm:ss SSS';
-  private contructor() {}
 
-  public static get(className: string): Logger {
-    if (DefaultLogger.map.get(className) === undefined) {
-      DefaultLogger.map.set(className, new DefaultLogger());
+  private constructor(label: string) {
+    this.label = label;
+  }
+
+  public static get(key: string): Logger {
+    if (DefaultLogger.map.get(key) === undefined) {
+      DefaultLogger.map.set(key, new DefaultLogger(key));
     }
-    return DefaultLogger.map.get(className)!;
+    return DefaultLogger.map.get(key)!;
   }
 
   setOutput(destinationFile: string): void {
@@ -35,33 +39,35 @@ class DefaultLogger implements Logger {
     this._logLevel = logLevel;
   }
 
-  debug(origin: string, ...message: any[]): void {
+  debug(...messages: any[]): void {
     if (this._logLevel <= LogLevel.DEBUG) {
-      this.log(`{DEBUG} [${origin}] ${message[0]}`, message.slice(1));
+      this.log(`DEBUG`, messages);
     }
   }
 
-  info(origin: string, ...message: any[]): void {
+  info(...messages: any[]): void {
     if (this._logLevel <= LogLevel.INFO) {
-      this.log(`{INFO} [${origin}] ${message[0]}`, message.slice(1));
+      this.log(`INFO`, messages);
     }
   }
 
-  warning(origin: string, ...message: any[]): void {
+  warning(...messages: any[]): void {
     if (this._logLevel <= LogLevel.WARNING) {
-      this.log(`{WARNING} [${origin}] ${message[0]}`, message.slice(1));
+      this.log(`WARNING`, messages);
     }
   }
 
-  error(origin: string, ...message: any[]): void {
+  error(...messages: any[]): void {
     if (this._logLevel <= LogLevel.ERROR) {
-      this.log(`{ERROR} [${origin}] ${message[0]}`, message.slice(1));
+      this.log(`ERROR`, messages);
     }
   }
 
-  private log(...args: any[]): void {
+  private log(type: string, ...args: any[]): void {
     this.output.write(
-      `${moment().format(DefaultLogger.MOMENT_FORMAT)}|${args.join(';')}\n`
+      `${moment().format(DefaultLogger.MOMENT_FORMAT)}|{${type}} [${
+        this.label
+      }] ${args.join(';')}\n`
     );
   }
 }

@@ -1,7 +1,7 @@
 import express, { Application } from 'express';
 import bodyParser from 'body-parser';
-import { default as LOGGER } from './classes/logger/DefaultLogger';
-import api from './routes/api/api';
+import { default as LOGGER } from '../logger/DefaultLogger';
+import api from '../../routes/api/api';
 import cors from 'cors';
 
 class FinTenAPI {
@@ -29,10 +29,7 @@ class FinTenAPI {
 
   listen() {
     return this.app.listen(this.port, () =>
-      LOGGER.get(this.constructor.name).info(
-        this.constructor.name,
-        `Listening on port ${this.port}!`
-      )
+      LOGGER.get(this.constructor.name).info(`Listening on port ${this.port}!`)
     );
   }
 }

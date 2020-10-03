@@ -4,7 +4,7 @@ import TimedQueue from '../download/queues/TimedQueue';
 import fs, { PathLike } from 'fs';
 import FilingReportMetadata from '../filings/FilingReportMetadata';
 import FormType from '../filings/FormType';
-import DefaultLogger from '../logger/DefaultLogger';
+import { default as LOGGER } from '../logger/DefaultLogger';
 
 class SecGov extends DownloadManager {
   public static readonly API_ROOT: string = 'https://www.sec.gov/Archives/';
@@ -48,10 +48,7 @@ class SecGov extends DownloadManager {
     formType: FormType[],
     amount?: number
   ): FilingReportMetadata[] {
-    DefaultLogger.get(this.constructor.name).debug(
-      this.constructor.name,
-      `parsing idx: ${path}`
-    );
+    LOGGER.get(this.constructor.name).debug(`parsing idx: ${path}`);
     let lines = fs.readFileSync(path, 'utf8').split('\n');
     return lines
       .reduce((t, c) => {
@@ -60,10 +57,7 @@ class SecGov extends DownloadManager {
           if (formType.includes(frm.formType)) t.push(frm); //filter
         } catch (ex) {
           if (!ex.message.includes('Unknown filing type')) {
-            DefaultLogger.get(this.constructor.name).error(
-              this.constructor.name,
-              ex
-            );
+            LOGGER.get(this.constructor.name).error(ex);
           }
         }
         return t;

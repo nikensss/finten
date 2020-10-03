@@ -1,6 +1,6 @@
 import fs, { PathLike } from 'fs';
 import ParseXbrl from 'parse-xbrl';
-import DefaultLogger from '../logger/DefaultLogger';
+import { default as LOGGER } from '../logger/DefaultLogger';
 import XBRL from './XBRL';
 
 class XBRLUtilities {
@@ -49,10 +49,7 @@ class XBRLUtilities {
     path: PathLike,
     start: number = 0
   ): { xml: string; index: number; isDone: boolean } {
-    DefaultLogger.get(this.constructor.name).debug(
-      this.constructor.name,
-      `parsing txt: ${path}`
-    );
+    LOGGER.get(this.constructor.name).debug(`parsing txt: ${path}`);
 
     const lines = fs.readFileSync(path, 'utf-8').split('\n');
     const xml: string[] = [];
@@ -68,7 +65,6 @@ class XBRLUtilities {
       i += 1;
     }
 
-    //TODO: through exception if xml.length === 0
     if (xml.length === 0) {
       throw new Error('No XBRL found!');
     }
