@@ -32,10 +32,10 @@ company.get('/tickers', async (req, res) => {
 company.get('/cik', async (req, res) => {
   const db = await FinTenDB.getInstance();
 
-  const cik = await db.distinctFilingKey('EntityCentralIndexKey');
+  const ciks = await db.distinctFilingKey('EntityCentralIndexKey');
 
-  res.json({
-    cik
+  res.status(200).json({
+    ciks
   });
 });
 
@@ -70,9 +70,12 @@ company.get('/ticker', async (req, res) => {
 
   try {
     const db = await FinTenDB.getInstance();
-    const dbquery = await db.findFilings({
-      TradingSymbol: ticker
-    });
+    const dbquery = await db.findFilings(
+      {
+        TradingSymbol: ticker
+      },
+      { _id: 0 }
+    );
 
     return res.status(200).json({
       ticker,
@@ -96,11 +99,14 @@ company.get('/name', async (req, res) => {
   }
   const db = await FinTenDB.getInstance();
 
-  const dbquery = await db.findFilings({
-    EntityRegistrantName: name
-  });
+  const dbquery = await db.findFilings(
+    {
+      EntityRegistrantName: name
+    },
+    { _id: 0 }
+  );
 
-  res.json({
+  res.status(200).json({
     name,
     data: dbquery
   });

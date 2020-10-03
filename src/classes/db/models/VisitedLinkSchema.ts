@@ -18,6 +18,10 @@ const VisitedLinkSchema = new Schema({
   }
 });
 
+export enum VisitedLinkStatus {
+  OK = 'ok',
+  ERROR = 'error'
+}
 export interface VisitedLink extends mongoose.Document {
   url: string;
   status: 'ok' | 'error';

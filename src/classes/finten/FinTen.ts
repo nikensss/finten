@@ -5,11 +5,8 @@ import SecGov from '../secgov/SecGov';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { LogLevel } from '../logger/LogLevel';
 import Downloadable from '../download/Downloadable';
-import ora from 'ora';
 import XBRLUtilities from '../secgov/XBRLUtilities';
-import FilingReportMetadata from '../filings/FilingReportMetadata';
-import { VisitedLink } from '../db/models/VisitedLinkSchema';
-import { Filing } from '../db/models/FilingSchema';
+import { VisitedLink, VisitedLinkStatus } from '../db/models/VisitedLinkSchema';
 
 class FinTen {
   private downloadsDirectory: string;
@@ -39,16 +36,13 @@ class FinTen {
     const fintendb = await FinTenDB.getInstance();
 
     for (let n = 0; n < newFilings.length; n++) {
-      const filing = newFilings[n];
       this.logPercentage(n, newFilings.length);
 
-      let downloadedDownloadables = await this.secgov.get(filing);
+      const filings = await this.secgov.get(newFilings[n]);
 
-      for (let downloadedDownloadable of downloadedDownloadables) {
+      for (let filing of filings) {
         try {
-          const xbrl = await XBRLUtilities.fromTxt(
-            downloadedDownloadable.fileName
-          );
+          const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
 
           if (xbrl.get().DocumentFiscalYearFocus > (end || start)) {
             this.logger.warning(
@@ -60,8 +54,8 @@ class FinTen {
           const result = await fintendb.insertFiling(xbrl.get());
 
           await fintendb.insertVisitedLink({
-            url: downloadedDownloadable.url,
-            status: 'ok',
+            url: filing.url,
+            status: VisitedLinkStatus.OK,
             error: null,
             filingId: result._id
           });
@@ -73,12 +67,12 @@ class FinTen {
           );
         } catch (ex) {
           this.logger.warning(
-            `Error while parsing txt to XBRL at ${downloadedDownloadable}:\n${ex}`
+            `Error while parsing txt to XBRL at ${filing}:\n${ex}`
           );
 
           await fintendb.insertVisitedLink({
-            url: downloadedDownloadable.url,
-            status: 'error',
+            url: filing.url,
+            status: VisitedLinkStatus.ERROR,
             error: ex.toString(),
             filingId: null
           });
@@ -118,13 +112,13 @@ class FinTen {
 
       for (let filing of filings) {
         try {
-          const xbrl: XBRL = await XBRLUtilities.fromTxt(filing.fileName);
+          const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
           const result = await fintendb.insertFiling(xbrl.get());
 
           await fintendb.updateVisitedLinks(
             { url: filing.url },
             {
-              status: 'ok',
+              status: VisitedLinkStatus.OK,
               error: null,
               filingId: result._id
             }
@@ -159,8 +153,8 @@ class FinTen {
     amount: number | undefined
   ) {
     const filings = await this.getFilings(start, end, amount);
-    const fintendb: FinTenDB = await FinTenDB.getInstance();
-    const visitedLinks: VisitedLink[] = await fintendb.findVisitedLinks();
+    const fintendb = await FinTenDB.getInstance();
+    const visitedLinks = await fintendb.findVisitedLinks();
 
     return filings.filter(f => !visitedLinks.find(v => v.url === f.url));
   }

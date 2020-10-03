@@ -1,9 +1,6 @@
-import { default as mongoose, Mongoose } from 'mongoose';
-import { default as FilingSchema, Filing } from './models/FilingSchema';
-import {
-  default as VisitedLinkSchema,
-  VisitedLink
-} from './models/VisitedLinkSchema';
+import mongoose, { Mongoose } from 'mongoose';
+import FilingSchema, { Filing } from './models/FilingSchema';
+import VisitedLinkSchema, { VisitedLink } from './models/VisitedLinkSchema';
 
 class FinTenDB {
   private static instance: FinTenDB | null = null;
@@ -12,10 +9,6 @@ class FinTenDB {
   private constructor() {}
 
   public static async getInstance(): Promise<FinTenDB> {
-    if (typeof process.env.DB_NAME !== 'string') {
-      throw new Error('No DB_NAME defined in .env!');
-    }
-
     if (FinTenDB.instance === null) {
       FinTenDB.instance = new FinTenDB();
     }
@@ -45,7 +38,7 @@ class FinTenDB {
     );
   }
 
-  private static get URI() {
+  private static get URI(): string {
     if (!process.env.DB_NAME) {
       throw new Error('No database has been provided!');
     }
@@ -72,17 +65,16 @@ class FinTenDB {
     return await FilingSchema.create(filing);
   }
 
-  async insertVisitedLink(link: any): Promise<VisitedLink> {
-    return await VisitedLinkSchema.create(link);
+  async insertVisitedLink(visitedLink: any): Promise<VisitedLink> {
+    return await VisitedLinkSchema.create(visitedLink);
   }
 
-  async findFilings(match?: any, select?: string) {
-    // return await this.find(this.filings, match, select);
-    return await FilingSchema.find(match);
+  async findFilings(match?: any, select?: string | object) {
+    return await FilingSchema.find(match, select);
   }
 
-  async findVisitedLinks(match?: any, select?: string) {
-    return await VisitedLinkSchema.find();
+  async findVisitedLinks(match?: any, select?: string | object) {
+    return await VisitedLinkSchema.find(match, select);
   }
 
   public async updateFilings(match: any, update: any) {
