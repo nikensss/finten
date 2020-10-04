@@ -6,15 +6,16 @@ import cors from 'cors';
 import FinTenDB from '../db/FinTenDB';
 
 class FinTenAPI {
-  private app: Application;
-  private port: number = 3000;
+  private readonly app: Application;
+  private readonly port: number = 3000;
 
   constructor() {
+    //establish the connection with the DB at the very beginning
     FinTenDB.getInstance();
     this.app = express();
     this.app.use(cors());
-    this.app.use(bodyParser.urlencoded({ extended: false }));
     this.app.use(bodyParser.json());
+    this.app.use(bodyParser.urlencoded({ extended: false }));
   }
 
   setRoutes(): FinTenAPI {
