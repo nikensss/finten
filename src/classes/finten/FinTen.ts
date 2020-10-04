@@ -6,7 +6,7 @@ import { default as LOGGER } from '../logger/DefaultLogger';
 import { LogLevel } from '../logger/LogLevel';
 import Downloadable from '../download/Downloadable';
 import XBRLUtilities from '../secgov/XBRLUtilities';
-import { VisitedLink, VisitedLinkStatus } from '../db/models/VisitedLinkSchema';
+import { VisitedLinkModel, VisitedLinkStatus } from '../db/models/VisitedLink';
 
 class FinTen {
   private downloadsDirectory: string;
@@ -89,7 +89,7 @@ class FinTen {
     this.logger.info(`Getting broken links`);
     const fintendb: FinTenDB = await FinTenDB.getInstance();
 
-    const linksWithErrors: VisitedLink[] = await fintendb.findVisitedLinks(
+    const linksWithErrors: VisitedLinkModel[] = await fintendb.findVisitedLinks(
       { status: 'error' },
       'url'
     );

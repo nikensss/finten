@@ -1,9 +1,9 @@
 import mongoose, { Mongoose } from 'mongoose';
-import FilingSchema, { Filing, FilingBase } from './models/FilingSchema';
+import FilingSchema, { FilingModel, Filing } from './models/Filing';
 import VisitedLinkSchema, {
-  VisitedLink,
-  VisitedLinkBase
-} from './models/VisitedLinkSchema';
+  VisitedLinkModel,
+  VisitedLink
+} from './models/VisitedLink';
 
 class FinTenDB {
   private static instance: FinTenDB | null = null;
@@ -64,11 +64,15 @@ class FinTenDB {
     );
   }
 
-  async insertFiling(filing: FilingBase): Promise<Filing> {
+  public use(client: Mongoose) {
+    this.client = client;
+  }
+
+  async insertFiling(filing: Filing): Promise<FilingModel> {
     return await FilingSchema.create(filing);
   }
 
-  async insertVisitedLink(visitedLink: VisitedLinkBase): Promise<VisitedLink> {
+  async insertVisitedLink(visitedLink: VisitedLink): Promise<VisitedLinkModel> {
     return await VisitedLinkSchema.create(visitedLink);
   }
 
@@ -85,8 +89,13 @@ class FinTenDB {
     // return await FilingSchema.updateOne(match, update);
   }
 
-  public async updateVisitedLinks(match: any, update: any) {
-    return await VisitedLinkSchema.updateOne(match, update);
+  public async updateVisitedLinks(
+    match: Partial<VisitedLink>,
+    update: Partial<VisitedLink>
+  ) {
+    return await VisitedLinkSchema.updateOne(match, update, {
+      runValidators: true
+    });
   }
 
   public async distinctFilingKey(key: string) {

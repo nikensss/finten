@@ -23,13 +23,16 @@ const VisitedLinkSchema = new Schema({
   }
 });
 
-export interface VisitedLinkBase {
+export interface VisitedLink {
   url: string;
   status: VisitedLinkStatus;
   error: string | null;
   filingId: Schema.Types.ObjectId | null;
 }
 
-export interface VisitedLink extends VisitedLinkBase, mongoose.Document {}
+export interface VisitedLinkModel extends VisitedLink, mongoose.Document {}
 
-export default mongoose.model<VisitedLink>('VisitedLink', VisitedLinkSchema);
+export default mongoose.model<VisitedLinkModel>(
+  'VisitedLink',
+  VisitedLinkSchema
+);
