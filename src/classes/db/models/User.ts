@@ -1,6 +1,20 @@
 import moment from 'moment';
 import mongoose, { Schema } from 'mongoose';
 import validtor from 'validator';
+import Encrypter from '../../auth/Encrypter';
+import PaymentSchema, { Payment } from './Payment';
+
+export interface User {
+  username: string;
+  password: string;
+  email: string;
+  registrationDate: Date;
+  isPremiumUntil: Date;
+  isPremium(): boolean;
+  payments: Payment[];
+  lastPayment(): Payment;
+  changePasswordRequest: Date;
+}
 
 const UserSchema = new Schema({
   username: {
@@ -18,25 +32,50 @@ const UserSchema = new Schema({
     unique: true,
     validate: (value: string) => validtor.isEmail(value)
   },
+  registrationDate: {
+    type: Date,
+    default: Date.now
+  },
   isPremiumUntil: {
-    type: Date
+    type: Date,
+    default: null
+  },
+  payments: {
+    type: [PaymentSchema.schema],
+    default: []
+  },
+  changePasswordRequest: {
+    type: Date,
+    default: null
+  },
+  nonce: {
+    type: String,
+    default: null
   }
 });
 
-UserSchema.virtual('isPremium').get(function (this: { isPremiumUntil: Date }) {
+UserSchema.virtual('isPremium').get(function (this: User) {
   return moment.utc().isBefore(this.isPremiumUntil);
 });
 
-// export interface VisitedLink {
-//   url: string;
-//   status: VisitedLinkStatus;
-//   error: string | null;
-//   filingId: Schema.Types.ObjectId | null;
-// }
+UserSchema.virtual('lastPayment').get(function (this: User) {
+  return this.payments[this.payments.length - 1];
+});
 
-// export interface VisitedLinkModel extends VisitedLink, mongoose.Document {}
+UserSchema.methods.checkPassword = function (password: string) {
+  return Encrypter.compare(password, this.password);
+};
 
-// export default mongoose.model<VisitedLinkModel>(
-//   'VisitedLink',
-//   VisitedLinkSchema
-// );
+UserSchema.pre<UserModel>('save', function (next) {
+  const user = this;
+  Encrypter.hash(user.password)
+    .then(hash => {
+      user.password = hash;
+      return next();
+    })
+    .catch(e => next(e));
+});
+
+export interface UserModel extends User, mongoose.Document {}
+
+export default mongoose.model<UserModel>('User', UserSchema);

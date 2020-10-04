@@ -3,12 +3,14 @@ import bodyParser from 'body-parser';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import api from '../../routes/api/api';
 import cors from 'cors';
+import FinTenDB from '../db/FinTenDB';
 
 class FinTenAPI {
   private app: Application;
   private port: number = 3000;
 
   constructor() {
+    FinTenDB.getInstance();
     this.app = express();
     this.app.use(cors());
     this.app.use(bodyParser.urlencoded({ extended: false }));

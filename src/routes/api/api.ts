@@ -1,4 +1,6 @@
+import bodyParser from 'body-parser';
 import { Router } from 'express';
+import users from './admin/users';
 import company from './company/company';
 import secgov from './secgov/secgov';
 
@@ -17,5 +19,6 @@ api.get('/', (req, res) => {
 
 api.use('/secgov', secgov);
 api.use('/company', company);
+api.use('/users', users);
 
 export default api;
