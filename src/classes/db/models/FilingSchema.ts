@@ -74,7 +74,7 @@ const FilingSchema = new Schema({
   ROS: Number
 });
 
-export interface Filing extends mongoose.Document {
+export interface FilingBase {
   EntityRegistrantName: string;
   CurrentFiscalYearEndDate: string;
   EntityCentralIndexKey: string;
@@ -143,9 +143,18 @@ export interface Filing extends mongoose.Document {
   ExchangeGainsLosses: number;
   NetCashFlowsContinuing: number;
   SGR: number;
-  ROA: number;
-  ROE: number;
-  ROS: number;
+  ROA: number | null;
+  ROE: number | null;
+  ROS: number | null;
 }
+
+export interface Filing extends FilingBase, mongoose.Document {}
+
+FilingSchema.pre<Filing>('validate', function (next: Function) {
+  if (this.ROA !== null && isNaN(this.ROA)) this.ROA = null;
+  if (this.ROE !== null && isNaN(this.ROE)) this.ROE = null;
+  if (this.ROS !== null && isNaN(this.ROS)) this.ROS = null;
+  next();
+});
 
 export default mongoose.model<Filing>('Filing', FilingSchema);

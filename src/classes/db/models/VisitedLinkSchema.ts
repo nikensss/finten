@@ -1,5 +1,10 @@
 import mongoose, { Schema } from 'mongoose';
 
+export enum VisitedLinkStatus {
+  OK = 'ok',
+  ERROR = 'error'
+}
+
 const VisitedLinkSchema = new Schema({
   url: {
     type: String,
@@ -8,7 +13,7 @@ const VisitedLinkSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ['ok', 'error']
+    enum: Object.values(VisitedLinkStatus)
   },
   error: {
     type: String
@@ -18,15 +23,13 @@ const VisitedLinkSchema = new Schema({
   }
 });
 
-export enum VisitedLinkStatus {
-  OK = 'ok',
-  ERROR = 'error'
-}
-export interface VisitedLink extends mongoose.Document {
+export interface VisitedLinkBase {
   url: string;
-  status: 'ok' | 'error';
+  status: VisitedLinkStatus;
   error: string | null;
-  filingId: Schema.Types.ObjectId;
+  filingId: Schema.Types.ObjectId | null;
 }
+
+export interface VisitedLink extends VisitedLinkBase, mongoose.Document {}
 
 export default mongoose.model<VisitedLink>('VisitedLink', VisitedLinkSchema);

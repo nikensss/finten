@@ -94,19 +94,15 @@ class FinTen {
       'url'
     );
 
+    console.log('VisitedLinks with error:', linksWithErrors);
+
     const downloadablesWithErros: Downloadable[] = linksWithErrors.map(f => ({
       url: f.url,
       fileName: 'filing.txt'
     }));
 
     for (let n = 0; n < downloadablesWithErros.length; n++) {
-      const percentageDownloads =
-        ((n + 1) / downloadablesWithErros.length) * 100;
-      this.logger.info(
-        `🛎 ${n + 1}/${
-          downloadablesWithErros.length
-        } (${percentageDownloads.toFixed(3)} %)`
-      );
+      this.logPercentage(n, downloadablesWithErros.length);
 
       const filings = await this.secgov.get(downloadablesWithErros[n]);
 
@@ -126,7 +122,7 @@ class FinTen {
 
           this.logger.info(`Could now parse from ${filing.url}!`);
         } catch (ex) {
-          this.logger.info(`Could still not parse from ${filing.url}`);
+          this.logger.info(`Could not parse from ${filing.url}. Error: ${ex}`);
         }
       }
       this.secgov.flush();

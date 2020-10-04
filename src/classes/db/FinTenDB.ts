@@ -1,6 +1,9 @@
 import mongoose, { Mongoose } from 'mongoose';
-import FilingSchema, { Filing } from './models/FilingSchema';
-import VisitedLinkSchema, { VisitedLink } from './models/VisitedLinkSchema';
+import FilingSchema, { Filing, FilingBase } from './models/FilingSchema';
+import VisitedLinkSchema, {
+  VisitedLink,
+  VisitedLinkBase
+} from './models/VisitedLinkSchema';
 
 class FinTenDB {
   private static instance: FinTenDB | null = null;
@@ -61,11 +64,11 @@ class FinTenDB {
     );
   }
 
-  async insertFiling(filing: any): Promise<Filing> {
+  async insertFiling(filing: FilingBase): Promise<Filing> {
     return await FilingSchema.create(filing);
   }
 
-  async insertVisitedLink(visitedLink: any): Promise<VisitedLink> {
+  async insertVisitedLink(visitedLink: VisitedLinkBase): Promise<VisitedLink> {
     return await VisitedLinkSchema.create(visitedLink);
   }
 
@@ -79,20 +82,11 @@ class FinTenDB {
 
   public async updateFilings(match: any, update: any) {
     throw new Error('Unsupported!');
-    // return await this.update(this.filings, match, update);
+    // return await FilingSchema.updateOne(match, update);
   }
 
   public async updateVisitedLinks(match: any, update: any) {
-    throw new Error('Unsupported!');
-    // return await this.update(this.visitedLinks, match, { $set: update });
-  }
-
-  public async update() {
-    if (!FinTenDB.isConnected()) {
-      throw new Error('No connection to the DB!');
-    }
-
-    return await Promise.reject(null);
+    return await VisitedLinkSchema.updateOne(match, update);
   }
 
   public async distinctFilingKey(key: string) {
@@ -103,7 +97,7 @@ class FinTenDB {
     return await FilingSchema.distinct(key);
   }
 
-  async exists(o: any): Promise<boolean> {
+  public async exists(o: any): Promise<boolean> {
     throw new Error('Unsupported operation');
   }
 }
