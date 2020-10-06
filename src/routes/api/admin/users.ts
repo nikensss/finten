@@ -14,6 +14,8 @@ users.post('/login', (req, res, next) => {
 
 users.post('/register', (req, res, next) => {
   const { username, password, email } = req.body;
+  //FIXME: if DB is not connected, it will never save!
+  //Make sure DB is connected when executing this!
   const user = new User({ username, password, email });
   console.log({ username, password, email, body: req.body });
   user

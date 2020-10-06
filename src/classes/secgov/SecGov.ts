@@ -25,6 +25,12 @@ class SecGov extends DownloadManager {
     await super.get({ url, fileName: `${year}_${quarter}_xbrl.idx` });
   }
 
+  /**
+   * Downloads all the .idx files available between the specified period of time.
+   *
+   * @param start the year from which to start downloading the .idx files (inlcusive)
+   * @param end the year at which to stop downloading the .idx files (inlcusive)
+   */
   async getIndices(start: number, end: number = start) {
     if (start > end) throw new Error('start > end 🤯');
 

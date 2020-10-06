@@ -18,6 +18,16 @@ class FinTenDB {
 
     if (FinTenDB.isConnected()) return FinTenDB.instance;
 
+    await FinTenDB.connect();
+
+    return FinTenDB.instance;
+  }
+
+  private static async connect() {
+    if (FinTenDB.instance === null) {
+      throw new Error('No instance created yet!');
+    }
+
     try {
       console.log('connecting...');
       await FinTenDB.instance.client.connect(FinTenDB.URI, {
@@ -29,8 +39,6 @@ class FinTenDB {
     } catch (ex) {
       throw new Error('Could not connect to DB: ' + ex);
     }
-
-    return FinTenDB.instance;
   }
 
   private static isConnected(): boolean {
