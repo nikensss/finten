@@ -10,10 +10,11 @@ export interface User {
   email: string;
   registrationDate: Date;
   isPremiumUntil: Date;
-  isPremium(): boolean;
+  isPremium: boolean;
   payments: Payment[];
-  lastPayment(): Payment;
+  lastPayment: Payment;
   changePasswordRequest: Date;
+  checkPassword(password: string): Promise<boolean>;
 }
 
 const UserSchema = new Schema({
@@ -62,7 +63,9 @@ UserSchema.virtual('lastPayment').get(function (this: User) {
   return this.payments[this.payments.length - 1];
 });
 
-UserSchema.methods.checkPassword = function (password: string) {
+UserSchema.methods.checkPassword = function (
+  password: string
+): Promise<boolean> {
   return Encrypter.compare(password, this.password);
 };
 

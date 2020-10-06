@@ -11,7 +11,6 @@ class FinTenAPI {
 
   constructor() {
     //establish the connection with the DB at the very beginning
-    FinTenDB.getInstance();
     this.app = express();
     this.app.use(cors());
     this.app.use(bodyParser.json());
@@ -20,7 +19,7 @@ class FinTenAPI {
 
   setRoutes(): FinTenAPI {
     this.app.get('/', (req, res) => {
-      res.json({
+      res.status(200).json({
         greeting: 'You reached the FinTen API! 🥳'
       });
     });

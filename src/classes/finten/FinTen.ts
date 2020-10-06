@@ -7,12 +7,14 @@ import Downloadable from '../download/Downloadable';
 import XBRLUtilities from '../secgov/XBRLUtilities';
 import { VisitedLinkModel, VisitedLinkStatus } from '../db/models/VisitedLink';
 import { Schema } from 'mongoose';
+import { Filing } from '../db/models/Filing';
 
 class FinTen {
   private downloadsDirectory: string;
   private secgov: SecGov;
 
-  private constructor(downloadsDirectory: string) {
+  //FIXME: this is coupling! Find a way to decouple
+  public constructor(downloadsDirectory: string) {
     this.downloadsDirectory = downloadsDirectory;
     this.secgov = new SecGov(this.downloadsDirectory);
   }
@@ -28,6 +30,11 @@ class FinTen {
     return new FinTen(process.env.DOWNLOADS_DIRECTORY);
   }
 
+  public use(secgov: SecGov): this {
+    this.secgov = secgov;
+    return this;
+  }
+
   /**
    * Fill the database with the data between the start and end years (both included)
    * up to the specified amount (if specified). If no end year is given, the method
@@ -35,12 +42,20 @@ class FinTen {
    *
    * @param start year from which to start downloading data (inclusive)
    * @param end year at which to stop downloading data (inclusive)
-   * @param amount total amount of filings to download
+   * @param amountOfFilings total amount of filings to download
    */
-  public async fill(start: number, end: number = start, amount?: number) {
+  public async fill(
+    start: number,
+    end: number = start,
+    amountOfFilings?: number
+  ) {
     this.logger.logLevel = LogLevel.DEBUG;
 
-    const newFilings = await this.getNewFilings(start, end, amount);
+    const newFilings = await this.getNewFilingsMetaData(
+      start,
+      end,
+      amountOfFilings
+    );
 
     for (let n = 0; n < newFilings.length; n++) {
       this.logPercentage(n, newFilings.length);
@@ -49,7 +64,8 @@ class FinTen {
 
       for (let filing of filings) {
         try {
-          const result = await this.insertFiling(filing);
+          const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
+          const result = await this.insertFiling(xbrl.get());
           await this.insertVisitedLink(filing.url, result._id);
         } catch (ex) {
           await this.handleExceptionDuringFilingInsertion(filing.url, ex);
@@ -59,52 +75,6 @@ class FinTen {
     }
     this.secgov.flush();
     this.logger.info(`Done filling!`);
-  }
-
-  private async insertFiling(filing: Downloadable) {
-    const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
-    const result = await FinTenDB.getInstance()
-      .then(db => db.insertFiling(xbrl.get()))
-      .catch(e => {
-        throw new Error(e);
-      });
-
-    this.logger.info(
-      `Added filing for fiscal year ${
-        xbrl.get().DocumentFiscalYearFocus
-      } (object id: ${result._id})`
-    );
-
-    return result;
-  }
-
-  private async insertVisitedLink(
-    url: string,
-    resultId: Schema.Types.ObjectId
-  ) {
-    await FinTenDB.getInstance()
-      .then(db =>
-        db.insertVisitedLink({
-          url,
-          status: VisitedLinkStatus.OK,
-          error: null,
-          filingId: resultId
-        })
-      )
-      .catch(e => {
-        throw new Error(e);
-      });
-  }
-
-  private async handleExceptionDuringFilingInsertion(url: string, ex: any) {
-    this.logger.warning(`Error while parsing ${url}:\n${ex.toString()}`);
-    const db = await FinTenDB.getInstance();
-    await db.insertVisitedLink({
-      url,
-      status: VisitedLinkStatus.ERROR,
-      error: ex.toString(),
-      filingId: null
-    });
   }
 
   public async fix() {
@@ -121,9 +91,8 @@ class FinTen {
 
       for (let filing of filings) {
         try {
-          // const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
-          // const result = await fintendb.insertFiling(xbrl.get());
-          const result = await this.insertFiling(filing);
+          const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
+          const result = await this.insertFiling(xbrl.get());
 
           await db.updateVisitedLinks(
             { url: filing.url },
@@ -147,8 +116,8 @@ class FinTen {
   private async getVisitedLinksWithErrorsAsDownloadables() {
     const db = await FinTenDB.getInstance();
     const linksWithErrors: VisitedLinkModel[] = await db.findVisitedLinks(
-      { status: 'error' },
-      'url'
+      { status: VisitedLinkStatus.ERROR },
+      { url: 1 }
     );
 
     return linksWithErrors.map(f => ({
@@ -169,35 +138,79 @@ class FinTen {
     );
   }
 
-  private async getNewFilings(
+  private async getNewFilingsMetaData(
     start: number,
     end: number,
-    amount: number | undefined
+    amountOfFilings?: number
   ) {
-    const filings = await this.getFilings(start, end, amount);
-    const visitedLinks = await FinTenDB.getInstance()
-      .then(db => db.findVisitedLinks())
-      .catch(e => {
-        throw new Error(e);
-      });
-
-    return filings.filter(f => !visitedLinks.find(v => v.url === f.url));
+    try {
+      const filingReportsMetaData = await this.getFilingsMetaData(
+        start,
+        end,
+        amountOfFilings
+      );
+      const db = await FinTenDB.getInstance();
+      const visitedLinks = await db.findVisitedLinks();
+      return filingReportsMetaData.filter(
+        f => !visitedLinks.find(v => v.url === f.url)
+      );
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
-  private async getFilings(
+  private async getFilingsMetaData(
     start: number,
     end: number,
-    amount: number | undefined
+    amount?: number
   ) {
     this.secgov.flush();
 
-    await this.secgov.getIndices(start, end);
+    const indices = await this.secgov.getIndices(start, end);
     const filings = this.secgov.parseIndices(
+      indices,
       [FormType.F10K, FormType.F10Q],
       amount
     );
     this.secgov.flush();
     return filings;
+  }
+
+  private async insertFiling(filing: Filing) {
+    try {
+      const db = await FinTenDB.getInstance();
+      return await db.insertFiling(filing);
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  private async insertVisitedLink(
+    url: string,
+    resultId: Schema.Types.ObjectId
+  ) {
+    try {
+      const db = await FinTenDB.getInstance();
+      return await db.insertVisitedLink({
+        url,
+        status: VisitedLinkStatus.OK,
+        error: null,
+        filingId: resultId
+      });
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  private async handleExceptionDuringFilingInsertion(url: string, ex: any) {
+    this.logger.warning(`Error while parsing ${url}:\n${ex.toString()}`);
+    const db = await FinTenDB.getInstance();
+    return await db.insertVisitedLink({
+      url,
+      status: VisitedLinkStatus.ERROR,
+      error: ex.toString(),
+      filingId: null
+    });
   }
 }
 

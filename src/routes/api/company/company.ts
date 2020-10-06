@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { isPremium } from '../../../classes/auth/Passport';
 import FinTenDB from '../../../classes/db/FinTenDB';
 
 const company = Router();

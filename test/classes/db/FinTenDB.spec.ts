@@ -13,20 +13,30 @@ const options = {
 };
 
 describe('FinTenDB tests', () => {
-  before(async () => {
-    const uri = await mongo.getUri();
-    console.log(`URI is ${uri}`);
-    return mongoose.connect(uri, options);
-  });
-
-  it('should count 0 filings', async done => {
-    const db = await FinTenDB.getInstance();
-    db.use(mongoose);
-    const count = await FilingSchema.count({});
-    expect(count).to.equal(0);
-  });
-
-  after(() => {
-    console.log('Closing connections!');
-  });
+  // before(done => {
+  //   mongo
+  //     .getUri()
+  //     .then(uri => {
+  //       console.log(`URI is ${uri}`);
+  //       return mongoose.connect(uri, options);
+  //     })
+  //     .then(() => {
+  //       done();
+  //     });
+  // });
+  // it('should count 0 filings', done => {
+  //   const db = FinTenDB.getInstance()
+  //     .then(db => {
+  //       db.use(mongoose);
+  //       return FilingSchema.count({});
+  //     })
+  //     .then(count => {
+  //       count; //?
+  //       expect(count).to.equal(0);
+  //       done();
+  //     });
+  // });
+  // after(() => {
+  //   console.log('Closing connections!');
+  // });
 });

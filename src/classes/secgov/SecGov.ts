@@ -2,9 +2,10 @@ import DownloadManager from '../download/DownloadManager';
 import { Quarter } from './XBRL';
 import TimedQueue from '../download/queues/TimedQueue';
 import fs, { PathLike } from 'fs';
-import FilingReportMetadata from '../filings/FilingReportMetadata';
+import FilingMetadata from '../filings/FilingMetadata';
 import FormType from '../filings/FormType';
 import { default as LOGGER } from '../logger/DefaultLogger';
+import Downloadable from '../download/Downloadable';
 
 class SecGov extends DownloadManager {
   public static readonly API_ROOT: string = 'https://www.sec.gov/Archives/';
@@ -20,9 +21,9 @@ class SecGov extends DownloadManager {
     super.use(new TimedQueue(SecGov.MS_BETWEEN_REQUESTS));
   }
 
-  async getIndex(year: number, quarter: Quarter) {
+  async getIndex(year: number, quarter: Quarter): Promise<Downloadable[]> {
     const url = `${SecGov.INDICES_ROOT}/${year}/${quarter}/xbrl.idx`;
-    await super.get({ url, fileName: `${year}_${quarter}_xbrl.idx` });
+    return await super.get({ url, fileName: `${year}_${quarter}_xbrl.idx` });
   }
 
   /**
@@ -31,15 +32,20 @@ class SecGov extends DownloadManager {
    * @param start the year from which to start downloading the .idx files (inlcusive)
    * @param end the year at which to stop downloading the .idx files (inlcusive)
    */
-  async getIndices(start: number, end: number = start) {
+  async getIndices(
+    start: number,
+    end: number = start
+  ): Promise<Downloadable[]> {
     if (start > end) throw new Error('start > end 🤯');
 
+    const downloadedIndices = [];
     for (let year = start; year <= end; year++) {
-      await this.getIndex(year, Quarter.QTR1);
-      await this.getIndex(year, Quarter.QTR2);
-      await this.getIndex(year, Quarter.QTR3);
-      await this.getIndex(year, Quarter.QTR4);
+      downloadedIndices.push(...(await this.getIndex(year, Quarter.QTR1)));
+      downloadedIndices.push(...(await this.getIndex(year, Quarter.QTR2)));
+      downloadedIndices.push(...(await this.getIndex(year, Quarter.QTR3)));
+      downloadedIndices.push(...(await this.getIndex(year, Quarter.QTR4)));
     }
+    return downloadedIndices;
   }
 
   /**
@@ -53,27 +59,33 @@ class SecGov extends DownloadManager {
     path: PathLike,
     formType: FormType[],
     amount?: number
-  ): FilingReportMetadata[] {
+  ): FilingMetadata[] {
     LOGGER.get(this.constructor.name).debug(`parsing idx: ${path}`);
     let lines = fs.readFileSync(path, 'utf8').split('\n');
     return lines
       .reduce((t, c) => {
         try {
-          const frm = new FilingReportMetadata(c); //map
-          if (formType.includes(frm.formType)) t.push(frm); //filter
+          const filingMetadata = new FilingMetadata(c); //map
+          if (formType.includes(filingMetadata.formType)) {
+            t.push(filingMetadata); //filter
+          }
         } catch (ex) {
           if (!ex.message.includes('Unknown filing type')) {
             LOGGER.get(this.constructor.name).error(ex);
           }
         }
         return t;
-      }, [] as FilingReportMetadata[])
+      }, [] as FilingMetadata[])
       .slice(0, amount);
   }
 
-  parseIndices(formType: FormType[], amount?: number): FilingReportMetadata[] {
-    return this.listDownloads('.idx')
-      .map(p => this.parseIndex(p, formType))
+  parseIndices(
+    indices: Downloadable[],
+    formType: FormType[],
+    amount?: number
+  ): FilingMetadata[] {
+    return indices
+      .map(index => this.parseIndex(index.url, formType))
       .flat()
       .slice(0, amount);
   }

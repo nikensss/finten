@@ -1,9 +1,9 @@
-import FilingReportMetadata from '../../../src/classes/filings/FilingReportMetadata';
+import FilingMetadata from '../../../src/classes/filings/FilingMetadata';
 import { expect } from 'chai';
 
-describe('FilingReportMetadata tests', () => {
+describe('FilingMetadata tests', () => {
   it('should construct FilingReportMetadata object', () => {
-    const filingReportMetadata = new FilingReportMetadata(
+    const filingReportMetadata = new FilingMetadata(
       '98677|TOOTSIE ROLL INDUSTRIES INC|10-K|2020-05-08|edgar/data/98677/0001558370-20-005994.txt'
     );
 
@@ -11,7 +11,7 @@ describe('FilingReportMetadata tests', () => {
   });
 
   it('should get cik', () => {
-    const filingReportMetadata = new FilingReportMetadata(
+    const filingReportMetadata = new FilingMetadata(
       '98677|TOOTSIE ROLL INDUSTRIES INC|10-K|2020-05-08|edgar/data/98677/0001558370-20-005994.txt'
     );
 
@@ -20,7 +20,7 @@ describe('FilingReportMetadata tests', () => {
   });
 
   it('should get companyName', () => {
-    const filingReportMetadata = new FilingReportMetadata(
+    const filingReportMetadata = new FilingMetadata(
       '98677|TOOTSIE ROLL INDUSTRIES INC|10-K|2020-05-08|edgar/data/98677/0001558370-20-005994.txt'
     );
 
@@ -29,7 +29,7 @@ describe('FilingReportMetadata tests', () => {
   });
 
   it('should get formType', () => {
-    const filingReportMetadata = new FilingReportMetadata(
+    const filingReportMetadata = new FilingMetadata(
       '98677|TOOTSIE ROLL INDUSTRIES INC|10-K|2020-05-08|edgar/data/98677/0001558370-20-005994.txt'
     );
 
@@ -38,7 +38,7 @@ describe('FilingReportMetadata tests', () => {
   });
 
   it('should get submissionDate', () => {
-    const filingReportMetadata = new FilingReportMetadata(
+    const filingReportMetadata = new FilingMetadata(
       '98677|TOOTSIE ROLL INDUSTRIES INC|10-K|2020-05-08|edgar/data/98677/0001558370-20-005994.txt'
     );
 
@@ -47,7 +47,7 @@ describe('FilingReportMetadata tests', () => {
   });
 
   it('should get partialPath', () => {
-    const filingReportMetadata = new FilingReportMetadata(
+    const filingReportMetadata = new FilingMetadata(
       '98677|TOOTSIE ROLL INDUSTRIES INC|10-K|2020-05-08|edgar/data/98677/0001558370-20-005994.txt'
     );
 
@@ -58,7 +58,7 @@ describe('FilingReportMetadata tests', () => {
   });
 
   it('should get fullPath', () => {
-    const filingReportMetadata = new FilingReportMetadata(
+    const filingReportMetadata = new FilingMetadata(
       '98677|TOOTSIE ROLL INDUSTRIES INC|10-K|2020-05-08|edgar/data/98677/0001558370-20-005994.txt'
     );
 

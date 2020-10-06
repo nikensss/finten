@@ -4,9 +4,9 @@
   "description": "The hypotenuse of the smallest pythagorean triples.",
   "main": "src/main.ts",
   "scripts": {
-    "start": "DB_NAME=secgov-dev ts-node -r dotenv/config src/main.ts",
-    "prod": "DB_NAME=secgov ts-node -r dotenv/config src/main.ts",
-    "test-script": "NO_DB_INSERT=1 ts-node src/classes/tests/tests.ts",
+    "start": " ts-node -r dotenv/config src/main.ts",
+    "prod": "ts-node -r dotenv/config src/main.ts",
+    "test-script": "ts-node src/classes/tests/tests.ts",
     "nodemon": "nodemon",
     "test": "mocha -r dotenv/config  -r ts-node/register test/classes/**/*.spec.ts",
     "test-api": "mocha -r dotenv/config -r ts-node/register test/api/**/*.spec.ts",

@@ -1,5 +1,6 @@
 import mongoose, { Mongoose } from 'mongoose';
 import FilingSchema, { FilingModel, Filing } from './models/Filing';
+import UserSchema, { UserModel, User } from './models/User';
 import VisitedLinkSchema, {
   VisitedLinkModel,
   VisitedLink
@@ -72,7 +73,7 @@ class FinTenDB {
     );
   }
 
-  public use(client: Mongoose) {
+  use(client: Mongoose) {
     this.client = client;
   }
 
@@ -84,20 +85,31 @@ class FinTenDB {
     return await VisitedLinkSchema.create(visitedLink);
   }
 
-  async findFilings(match?: any, select?: string | object) {
+  async insertUser(user: User): Promise<UserModel> {
+    return await UserSchema.create(user);
+  }
+
+  async findFilings(match?: any, select: string | object = {}) {
     return await FilingSchema.find(match, select);
   }
 
-  async findVisitedLinks(match?: any, select?: string | object) {
+  async findVisitedLinks(
+    match: Partial<VisitedLink> = {},
+    select: string | object = {}
+  ) {
     return await VisitedLinkSchema.find(match, select);
   }
 
-  public async updateFilings(match: any, update: any) {
+  async findUser(match: Partial<User> = {}, select: string | object = {}) {
+    return await UserSchema.findOne(match);
+  }
+
+  async updateFilings(match: any, update: any) {
     throw new Error('Unsupported!');
     // return await FilingSchema.updateOne(match, update);
   }
 
-  public async updateVisitedLinks(
+  async updateVisitedLinks(
     match: Partial<VisitedLink>,
     update: Partial<VisitedLink>
   ) {
@@ -106,7 +118,7 @@ class FinTenDB {
     });
   }
 
-  public async distinctFilingKey(key: string) {
+  async distinctFilingKey(key: string) {
     if (!FinTenDB.isConnected()) {
       throw new Error('No connection to the DB!');
     }
@@ -114,7 +126,7 @@ class FinTenDB {
     return await FilingSchema.distinct(key);
   }
 
-  public async exists(o: any): Promise<boolean> {
+  async exists(o: any): Promise<boolean> {
     throw new Error('Unsupported operation');
   }
 }

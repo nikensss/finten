@@ -1,7 +1,7 @@
 import FormType, { byName } from './FormType';
 import Downloadable from '../download/Downloadable';
 
-class FilingReportMetadata implements Downloadable {
+class FilingMetadata implements Downloadable {
   private _cik: number;
   private _companyName: string;
   private _filing: FormType;
@@ -56,4 +56,4 @@ class FilingReportMetadata implements Downloadable {
   }
 }
 
-export default FilingReportMetadata;
+export default FilingMetadata;

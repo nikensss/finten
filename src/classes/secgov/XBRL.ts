@@ -1,19 +1,17 @@
+import { Filing } from '../db/models/Filing';
+
 class XBRL {
-  private data: any;
+  private data: Filing;
 
   constructor(data: any) {
-    this.data = data;
+    this.data = data as Filing;
   }
 
   /**
    * Returns the XBRL data.
    */
-  get(): any {
+  get(): Filing {
     return this.data;
-  }
-
-  set partialPath(partialPath: string) {
-    this.data.partialPath = partialPath;
   }
 }
 

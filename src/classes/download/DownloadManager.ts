@@ -45,10 +45,6 @@ class DownloadManager {
   constructor(directory: PathLike) {
     this._directory = directory;
 
-    // LOGGER.get(this.constructor.name).setOutput(
-    //   `logs/${this.constructor.name}.log`
-    // );
-
     if (!fs.existsSync(this.dir)) {
       LOGGER.get(this.constructor.name).info(
         `directory '${this.dir}' doesn't exist, creating...`

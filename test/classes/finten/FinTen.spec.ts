@@ -1,6 +1,7 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import FinTen from '../../../src/classes/finten/FinTen';
+import SecGov from '../../../src/classes/secgov/SecGov';
 
 describe('FinTen tests', () => {
   it('should create a new FinTen', () => {
@@ -21,5 +22,14 @@ describe('FinTen tests', () => {
     if (typeof downloadsDirectoryBackup === 'string') {
       process.env.DOWNLOADS_DIRECTORY = downloadsDirectoryBackup;
     }
+  });
+
+  it('should use new mock SecGov', () => {
+    const finten = FinTen.create();
+    finten.use({} as SecGov);
+    expect(() => {
+      const finten = FinTen.create();
+      finten.use({} as SecGov);
+    }).to.not.throw();
   });
 });
