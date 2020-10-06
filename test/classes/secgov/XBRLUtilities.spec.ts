@@ -22,6 +22,12 @@ describe('XBRL tests', () => {
     }).to.throw('No XBRL found!');
   });
 
+  it('should not extract several xmls', () => {
+    expect(() => {
+      XBRLUtilities.extractXmlsFromTxt(path.join(__dirname, 'NoXBRLS.txt'));
+    }).to.throw('No XBRL found!');
+  });
+
   //extractXmlsFromTxt
   it('should extract several xmls', () => {
     const xmls = XBRLUtilities.extractXmlsFromTxt(
@@ -33,28 +39,21 @@ describe('XBRL tests', () => {
 
   // fromTxt
   it('should return one document', done => {
-    const xbrl = XBRLUtilities.fromTxt(
-      path.join(__dirname, '1stXBRLvalid.txt')
-    );
-    xbrl.then(d => {
+    XBRLUtilities.fromTxt(path.join(__dirname, '1stXBRLvalid.txt')).then(d => {
       expect(d).to.not.be.undefined;
       done();
     });
   });
 
   it('should return one document again', done => {
-    const xbrl = XBRLUtilities.fromTxt(
-      path.join(__dirname, '3rdXBRLvalid.txt')
-    );
-    xbrl.then(d => {
+    XBRLUtilities.fromTxt(path.join(__dirname, '3rdXBRLvalid.txt')).then(d => {
       expect(d).to.not.be.undefined;
       done();
     });
   });
 
   it('should throw error', done => {
-    const xbrl = XBRLUtilities.fromTxt(path.join(__dirname, 'NoXBRLS.txt'));
-    xbrl
+    XBRLUtilities.fromTxt(path.join(__dirname, 'NoXBRLS.txt'))
       .then(d => {
         done(new Error('Should not be here...'));
       })
