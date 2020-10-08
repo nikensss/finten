@@ -16,7 +16,7 @@ class SecGov extends DownloadManager {
    */
   public static readonly MS_BETWEEN_REQUESTS = 100; //their documentation says max 10 API calls per second
 
-  constructor(downloadsDirectory: string) {
+  constructor(downloadsDirectory?: string) {
     super(downloadsDirectory);
     super.use(new TimedQueue(SecGov.MS_BETWEEN_REQUESTS));
   }

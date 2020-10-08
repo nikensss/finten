@@ -3,36 +3,20 @@ import FinTenDB from '../db/FinTenDB';
 import SecGov from '../secgov/SecGov';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { LogLevel } from '../logger/LogLevel';
-import Downloadable from '../download/Downloadable';
 import XBRLUtilities from '../secgov/XBRLUtilities';
 import { VisitedLinkModel, VisitedLinkStatus } from '../db/models/VisitedLink';
 import { Schema } from 'mongoose';
 import { Filing } from '../db/models/Filing';
 
 class FinTen {
-  private downloadsDirectory: string;
-  private secgov: SecGov;
+  private _secgov: SecGov;
 
-  //FIXME: this is coupling! Find a way to decouple
-  public constructor(downloadsDirectory: string) {
-    this.downloadsDirectory = downloadsDirectory;
-    this.secgov = new SecGov(this.downloadsDirectory);
+  public constructor(secgov: SecGov) {
+    this._secgov = secgov;
   }
 
-  /**
-   * Creates an instance of FinTen. Use this method to guarantee the use of the
-   * environment variable DOWNLOADS_DIRECTORY.
-   */
-  public static create(): FinTen {
-    if (typeof process.env.DOWNLOADS_DIRECTORY !== 'string') {
-      throw new Error('No DOWNLOADS_DIRECTORY in .env');
-    }
-    return new FinTen(process.env.DOWNLOADS_DIRECTORY);
-  }
-
-  public use(secgov: SecGov): this {
+  public set secgov(secgov: SecGov) {
     this.secgov = secgov;
-    return this;
   }
 
   /**
@@ -60,7 +44,7 @@ class FinTen {
     for (let n = 0; n < newFilings.length; n++) {
       this.logPercentage(n, newFilings.length);
 
-      const filings = await this.secgov.get(newFilings[n]);
+      const filings = await this._secgov.get(newFilings[n]);
 
       for (let filing of filings) {
         try {
@@ -71,9 +55,9 @@ class FinTen {
           await this.handleExceptionDuringFilingInsertion(filing.url, ex);
         }
       }
-      this.secgov.flush();
+      this._secgov.flush();
     }
-    this.secgov.flush();
+    this._secgov.flush();
     this.logger.info(`Done filling!`);
   }
 
@@ -87,7 +71,7 @@ class FinTen {
     for (let n = 0; n < downloadablesWithErros.length; n++) {
       this.logPercentage(n, downloadablesWithErros.length);
 
-      const filings = await this.secgov.get(downloadablesWithErros[n]);
+      const filings = await this._secgov.get(downloadablesWithErros[n]);
 
       for (let filing of filings) {
         try {
@@ -108,9 +92,9 @@ class FinTen {
           this.logger.info(`Could not parse from ${filing.url}. Error: ${ex}`);
         }
       }
-      this.secgov.flush();
+      this._secgov.flush();
     }
-    this.secgov.flush();
+    this._secgov.flush();
   }
 
   private async getVisitedLinksWithErrorsAsDownloadables() {
@@ -164,15 +148,15 @@ class FinTen {
     end: number,
     amount?: number
   ) {
-    this.secgov.flush();
+    this._secgov.flush();
 
-    const indices = await this.secgov.getIndices(start, end);
-    const filings = this.secgov.parseIndices(
+    const indices = await this._secgov.getIndices(start, end);
+    const filings = this._secgov.parseIndices(
       indices,
       [FormType.F10K, FormType.F10Q],
       amount
     );
-    this.secgov.flush();
+    this._secgov.flush();
     return filings;
   }
 

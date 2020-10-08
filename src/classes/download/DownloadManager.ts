@@ -42,7 +42,7 @@ class DownloadManager {
 
   private q: Queue;
 
-  constructor(directory: PathLike) {
+  constructor(directory: PathLike = 'downloads') {
     this._directory = directory;
 
     if (!fs.existsSync(this.dir)) {

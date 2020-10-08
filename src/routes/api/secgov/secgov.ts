@@ -2,6 +2,7 @@ import path from 'path';
 import { Router } from 'express';
 import { default as LOGGER } from '../../../classes/logger/DefaultLogger';
 import FinTen from '../../../classes/finten/FinTen';
+import SecGov from '../../../classes/secgov/SecGov';
 
 const secgovRoutes = Router();
 
@@ -47,7 +48,8 @@ secgovRoutes.get('/fill', async (req, res) => {
     `filling database with all the data between ${start} and ${end}`
   );
 
-  FinTen.create().fill(parseInt(start as string), parseInt(end as string));
+  const finten = new FinTen(new SecGov());
+  finten.fill(parseInt(start as string), parseInt(end as string));
 
   return res.status(200).json({
     start,
@@ -60,10 +62,11 @@ secgovRoutes.get('/fix', async (req, res) => {
     `revisiting and reparsing documents from links with errors`
   );
 
-  FinTen.create().fix();
+  const finten = new FinTen(new SecGov());
+  finten.fix();
 
   return res.status(200).json({
-    message: 'performing fix...'
+    message: 'fixing...'
   });
 });
 
