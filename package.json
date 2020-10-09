@@ -66,7 +66,7 @@
     "mongoose": "^5.10.7",
     "nodemon": "^2.0.4",
     "ora": "^4.0.4",
-    "parse-xbrl": "https://github.com/weirwoodai/parse-xbrl.git",
+    "parse-xbrl": "https://github.com/weirwoodai/parse-xbrl",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "supertest": "^4.0.2",
