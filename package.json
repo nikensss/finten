@@ -28,14 +28,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/weirwood/finten.git"
+    "url": "git+https://github.com/weirwoodai/finten.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/weirwood/finten/issues"
+    "url": "https://github.com/weirwoodai/finten/issues"
   },
-  "homepage": "https://github.com/weirwood/finten#readme",
+  "homepage": "https://github.com/weirwoodai/finten#readme",
   "dependencies": {
     "@types/axios": "^0.14.0",
     "@types/bcryptjs": "^2.4.2",
@@ -66,7 +66,7 @@
     "mongoose": "^5.10.7",
     "nodemon": "^2.0.4",
     "ora": "^4.0.4",
-    "parse-xbrl": "https://github.com/weirwood/parse-xbrl.git",
+    "parse-xbrl": "https://github.com/weirwoodai/parse-xbrl.git",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "supertest": "^4.0.2",

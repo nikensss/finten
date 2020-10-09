@@ -70,4 +70,13 @@ secgovRoutes.get('/fix', async (req, res) => {
   });
 });
 
+secgovRoutes.get('/ecikmap', async (req, res) => {
+  const finten = new FinTen(new SecGov());
+  finten.buildEntityCentralIndexKeyMap();
+
+  return res.status(200).json({
+    message: 'creating CIK map'
+  });
+});
+
 export default secgovRoutes;

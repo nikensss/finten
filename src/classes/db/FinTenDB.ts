@@ -1,5 +1,6 @@
 import mongoose, { Mongoose } from 'mongoose';
 import FilingSchema, { FilingModel, Filing } from './models/Filing';
+import TickerModel, { Ticker, TickerDocument } from './models/Ticker';
 import UserSchema, { UserModel, User } from './models/User';
 import VisitedLinkSchema, {
   VisitedLinkModel,
@@ -77,6 +78,9 @@ class FinTenDB {
     this.client = client;
   }
 
+  async insertTicker(ticker: Ticker): Promise<TickerDocument> {
+    return await TickerModel.create(ticker);
+  }
   async insertFiling(filing: Filing): Promise<FilingModel> {
     return await FilingSchema.create(filing);
   }

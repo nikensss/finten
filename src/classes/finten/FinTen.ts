@@ -1,3 +1,4 @@
+import { promises as fs } from 'fs';
 import FormType from '../filings/FormType';
 import FinTenDB from '../db/FinTenDB';
 import SecGov from '../secgov/SecGov';
@@ -7,16 +8,38 @@ import XBRLUtilities from '../secgov/XBRLUtilities';
 import { VisitedLinkModel, VisitedLinkStatus } from '../db/models/VisitedLink';
 import { Schema } from 'mongoose';
 import { Filing } from '../db/models/Filing';
+import Ticker, { TickerModel } from '../db/models/Ticker';
 
 class FinTen {
   private _secgov: SecGov;
 
-  public constructor(secgov: SecGov) {
+  constructor(secgov: SecGov) {
     this._secgov = secgov;
   }
 
-  public set secgov(secgov: SecGov) {
-    this.secgov = secgov;
+  get secgov(): SecGov {
+    return this._secgov;
+  }
+
+  set secgov(secgov: SecGov) {
+    this._secgov = secgov;
+  }
+
+  async buildEntityCentralIndexKeyMap() {
+    const tickersCIKMap = await this.secgov.get({
+      url: 'https://www.sec.gov/include/ticker.txt',
+      fileName: 'ticker_cik_map.txt'
+    });
+
+    for (const f of tickersCIKMap) {
+      const content = (await fs.readFile(f.fileName, 'utf-8')).split('\n');
+      for (const line of content) {
+        const ticker = Ticker.parse(line);
+        console.log('found: ', ticker);
+      }
+    }
+
+    this.secgov.flush();
   }
 
   /**
@@ -28,11 +51,7 @@ class FinTen {
    * @param end year at which to stop downloading data (inclusive)
    * @param amountOfFilings total amount of filings to download
    */
-  public async fill(
-    start: number,
-    end: number = start,
-    amountOfFilings?: number
-  ) {
+  async fill(start: number, end: number = start, amountOfFilings?: number) {
     this.logger.logLevel = LogLevel.DEBUG;
 
     const newFilings = await this.getNewFilingsMetaData(
@@ -44,7 +63,7 @@ class FinTen {
     for (let n = 0; n < newFilings.length; n++) {
       this.logPercentage(n, newFilings.length);
 
-      const filings = await this._secgov.get(newFilings[n]);
+      const filings = await this.secgov.get(newFilings[n]);
 
       for (let filing of filings) {
         try {
@@ -55,13 +74,13 @@ class FinTen {
           await this.handleExceptionDuringFilingInsertion(filing.url, ex);
         }
       }
-      this._secgov.flush();
+      this.secgov.flush();
     }
-    this._secgov.flush();
+    this.secgov.flush();
     this.logger.info(`Done filling!`);
   }
 
-  public async fix() {
+  async fix() {
     this.logger.logLevel = LogLevel.DEBUG;
     this.logger.info(`Getting broken links`);
     const db: FinTenDB = await FinTenDB.getInstance();
@@ -71,7 +90,7 @@ class FinTen {
     for (let n = 0; n < downloadablesWithErros.length; n++) {
       this.logPercentage(n, downloadablesWithErros.length);
 
-      const filings = await this._secgov.get(downloadablesWithErros[n]);
+      const filings = await this.secgov.get(downloadablesWithErros[n]);
 
       for (let filing of filings) {
         try {
@@ -92,9 +111,9 @@ class FinTen {
           this.logger.info(`Could not parse from ${filing.url}. Error: ${ex}`);
         }
       }
-      this._secgov.flush();
+      this.secgov.flush();
     }
-    this._secgov.flush();
+    this.secgov.flush();
   }
 
   private async getVisitedLinksWithErrorsAsDownloadables() {
@@ -108,18 +127,6 @@ class FinTen {
       url: f.url,
       fileName: 'filing.txt'
     }));
-  }
-
-  //Private implementations
-  private get logger() {
-    return LOGGER.get(this.constructor.name);
-  }
-
-  private logPercentage(currentIndex: number, length: number) {
-    const percentageDownloads = ((currentIndex + 1) / length) * 100;
-    this.logger.info(
-      `🛎 ${currentIndex + 1}/${length} (${percentageDownloads.toFixed(3)} %)`
-    );
   }
 
   private async getNewFilingsMetaData(
@@ -148,15 +155,15 @@ class FinTen {
     end: number,
     amount?: number
   ) {
-    this._secgov.flush();
+    this.secgov.flush();
 
-    const indices = await this._secgov.getIndices(start, end);
-    const filings = this._secgov.parseIndices(
+    const indices = await this.secgov.getIndices(start, end);
+    const filings = this.secgov.parseIndices(
       indices,
       [FormType.F10K, FormType.F10Q],
       amount
     );
-    this._secgov.flush();
+    this.secgov.flush();
     return filings;
   }
 
@@ -195,6 +202,17 @@ class FinTen {
       error: ex.toString(),
       filingId: null
     });
+  }
+
+  private get logger() {
+    return LOGGER.get(this.constructor.name);
+  }
+
+  private logPercentage(currentIndex: number, length: number) {
+    const percentageDownloads = ((currentIndex + 1) / length) * 100;
+    this.logger.info(
+      `🛎 ${currentIndex + 1}/${length} (${percentageDownloads.toFixed(3)} %)`
+    );
   }
 }
 
