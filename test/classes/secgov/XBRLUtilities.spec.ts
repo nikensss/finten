@@ -1,9 +1,6 @@
-import chai, { expect } from 'chai';
-import chaiAsPromised from 'chai-as-promised';
+import { expect } from 'chai';
 import path from 'path';
 import XBRLUtilities from '../../../src/classes/secgov/XBRLUtilities';
-
-const should = chai.use(chaiAsPromised).should();
 
 describe('XBRL tests', () => {
   //extractXmlFromTxt
@@ -38,26 +35,30 @@ describe('XBRL tests', () => {
   });
 
   // fromTxt
-  it('should return one document', done => {
-    XBRLUtilities.fromTxt(path.join(__dirname, '1stXBRLvalid.txt')).then(d => {
-      expect(d).to.not.be.undefined;
-      done();
-    });
+  it('should return one document', (done) => {
+    XBRLUtilities.fromTxt(path.join(__dirname, '1stXBRLvalid.txt')).then(
+      (d) => {
+        expect(d).to.not.be.undefined;
+        done();
+      }
+    );
   });
 
-  it('should return one document again', done => {
-    XBRLUtilities.fromTxt(path.join(__dirname, '3rdXBRLvalid.txt')).then(d => {
-      expect(d).to.not.be.undefined;
-      done();
-    });
+  it('should return one document again', (done) => {
+    XBRLUtilities.fromTxt(path.join(__dirname, '3rdXBRLvalid.txt')).then(
+      (d) => {
+        expect(d).to.not.be.undefined;
+        done();
+      }
+    );
   });
 
-  it('should throw error', done => {
+  it('should throw error', (done) => {
     XBRLUtilities.fromTxt(path.join(__dirname, 'NoXBRLS.txt'))
-      .then(d => {
+      .then(() => {
         done(new Error('Should not be here...'));
       })
-      .catch(ex => {
+      .catch(() => {
         done();
       });
   });

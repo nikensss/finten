@@ -7,7 +7,7 @@ import moment from 'moment';
 class DefaultLogger implements Logger {
   private _logLevel: LogLevel = LogLevel.INFO;
   private output: Writable = process.stdout;
-  private label: string = '';
+  private label: string;
   // private output: Writable = fs.createWriteStream('logs/.log', {
   //   flags: 'a'
   // });
@@ -22,7 +22,9 @@ class DefaultLogger implements Logger {
     if (DefaultLogger.map.get(key) === undefined) {
       DefaultLogger.map.set(key, new DefaultLogger(key));
     }
-    return DefaultLogger.map.get(key)!;
+    const logger = DefaultLogger.map.get(key);
+
+    return logger as Logger;
   }
 
   setOutput(destinationFile: string): void {
@@ -39,31 +41,31 @@ class DefaultLogger implements Logger {
     this._logLevel = logLevel;
   }
 
-  debug(...messages: any[]): void {
+  debug(...messages: unknown[]): void {
     if (this._logLevel <= LogLevel.DEBUG) {
       this.log(`DEBUG`, messages);
     }
   }
 
-  info(...messages: any[]): void {
+  info(...messages: unknown[]): void {
     if (this._logLevel <= LogLevel.INFO) {
       this.log(`INFO`, messages);
     }
   }
 
-  warning(...messages: any[]): void {
+  warning(...messages: unknown[]): void {
     if (this._logLevel <= LogLevel.WARNING) {
       this.log(`WARNING`, messages);
     }
   }
 
-  error(...messages: any[]): void {
+  error(...messages: unknown[]): void {
     if (this._logLevel <= LogLevel.ERROR) {
       this.log(`ERROR`, messages);
     }
   }
 
-  private log(type: string, ...args: any[]): void {
+  private log(type: string, ...args: unknown[]): void {
     this.output.write(
       `${moment().format(DefaultLogger.MOMENT_FORMAT)}|{${type}} [${
         this.label

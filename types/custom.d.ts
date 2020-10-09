@@ -1,4 +1,4 @@
-import FinTen from '../src/FinTen';
+import FinTen from '../src/classes/finten/FinTen';
 
 declare module 'express-serve-static-core' {
   interface Request {

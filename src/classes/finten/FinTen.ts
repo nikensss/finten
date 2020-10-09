@@ -5,10 +5,13 @@ import SecGov from '../secgov/SecGov';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { LogLevel } from '../logger/LogLevel';
 import XBRLUtilities from '../secgov/XBRLUtilities';
-import { VisitedLinkModel, VisitedLinkStatus } from '../db/models/VisitedLink';
+import {
+  VisitedLinkDocument,
+  VisitedLinkStatus
+} from '../db/models/VisitedLink';
 import { Schema } from 'mongoose';
 import { Filing } from '../db/models/Filing';
-import Ticker, { TickerModel } from '../db/models/Ticker';
+import Ticker from '../db/models/Ticker';
 
 class FinTen {
   private _secgov: SecGov;
@@ -25,17 +28,26 @@ class FinTen {
     this._secgov = secgov;
   }
 
-  async buildEntityCentralIndexKeyMap() {
+  async buildEntityCentralIndexKeyMap(): Promise<void> {
     const tickersCIKMap = await this.secgov.get({
       url: 'https://www.sec.gov/include/ticker.txt',
-      fileName: 'ticker_cik_map.txt'
+      fileName: 'ticker_ecik_map.txt'
     });
 
     for (const f of tickersCIKMap) {
       const content = (await fs.readFile(f.fileName, 'utf-8')).split('\n');
+      const db = await FinTenDB.getInstance();
       for (const line of content) {
-        const ticker = Ticker.parse(line);
-        console.log('found: ', ticker);
+        try {
+          const ticker = Ticker.parse(line);
+          await db.insertTicker(ticker);
+          console.log('found: ', ticker);
+        } catch (ex) {
+          console.error(
+            'Exception caught while parsing and insrting tickers:\n' +
+              ex.toString()
+          );
+        }
       }
     }
 
@@ -51,7 +63,11 @@ class FinTen {
    * @param end year at which to stop downloading data (inclusive)
    * @param amountOfFilings total amount of filings to download
    */
-  async fill(start: number, end: number = start, amountOfFilings?: number) {
+  async fill(
+    start: number,
+    end: number = start,
+    amountOfFilings?: number
+  ): Promise<void> {
     this.logger.logLevel = LogLevel.DEBUG;
 
     const newFilings = await this.getNewFilingsMetaData(
@@ -65,7 +81,7 @@ class FinTen {
 
       const filings = await this.secgov.get(newFilings[n]);
 
-      for (let filing of filings) {
+      for (const filing of filings) {
         try {
           const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
           const result = await this.insertFiling(xbrl.get());
@@ -80,7 +96,7 @@ class FinTen {
     this.logger.info(`Done filling!`);
   }
 
-  async fix() {
+  async fix(): Promise<void> {
     this.logger.logLevel = LogLevel.DEBUG;
     this.logger.info(`Getting broken links`);
     const db: FinTenDB = await FinTenDB.getInstance();
@@ -92,7 +108,7 @@ class FinTen {
 
       const filings = await this.secgov.get(downloadablesWithErros[n]);
 
-      for (let filing of filings) {
+      for (const filing of filings) {
         try {
           const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
           const result = await this.insertFiling(xbrl.get());
@@ -118,12 +134,12 @@ class FinTen {
 
   private async getVisitedLinksWithErrorsAsDownloadables() {
     const db = await FinTenDB.getInstance();
-    const linksWithErrors: VisitedLinkModel[] = await db.findVisitedLinks(
+    const linksWithErrors: VisitedLinkDocument[] = await db.findVisitedLinks(
       { status: VisitedLinkStatus.ERROR },
-      { url: 1 }
+      'url'
     );
 
-    return linksWithErrors.map(f => ({
+    return linksWithErrors.map((f) => ({
       url: f.url,
       fileName: 'filing.txt'
     }));
@@ -143,7 +159,7 @@ class FinTen {
       const db = await FinTenDB.getInstance();
       const visitedLinks = await db.findVisitedLinks();
       return filingReportsMetaData.filter(
-        f => !visitedLinks.find(v => v.url === f.url)
+        (f) => !visitedLinks.find((v) => v.url === f.url)
       );
     } catch (e) {
       throw new Error(e);
@@ -193,7 +209,7 @@ class FinTen {
     }
   }
 
-  private async handleExceptionDuringFilingInsertion(url: string, ex: any) {
+  private async handleExceptionDuringFilingInsertion(url: string, ex: Error) {
     this.logger.warning(`Error while parsing ${url}:\n${ex.toString()}`);
     const db = await FinTenDB.getInstance();
     return await db.insertVisitedLink({

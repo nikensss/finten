@@ -1,17 +1,15 @@
 import mongoose, { Mongoose } from 'mongoose';
-import FilingSchema, { FilingModel, Filing } from './models/Filing';
-import TickerModel, { Ticker, TickerDocument } from './models/Ticker';
-import UserSchema, { UserModel, User } from './models/User';
+import FilingSchema, { Filing, FilingDocument } from './models/Filing';
+import TickerSchema, { Ticker, TickerDocument } from './models/Ticker';
+import UserSchema, { User, UserDocument } from './models/User';
 import VisitedLinkSchema, {
-  VisitedLinkModel,
-  VisitedLink
+  VisitedLink,
+  VisitedLinkDocument
 } from './models/VisitedLink';
 
 class FinTenDB {
   private static instance: FinTenDB | null = null;
   private client: Mongoose = mongoose;
-
-  private constructor() {}
 
   public static async getInstance(): Promise<FinTenDB> {
     if (FinTenDB.instance === null) {
@@ -74,64 +72,90 @@ class FinTenDB {
     );
   }
 
-  use(client: Mongoose) {
+  use(client: Mongoose): void {
     this.client = client;
   }
 
   async insertTicker(ticker: Ticker): Promise<TickerDocument> {
-    return await TickerModel.create(ticker);
-  }
-  async insertFiling(filing: Filing): Promise<FilingModel> {
-    return await FilingSchema.create(filing);
-  }
-
-  async insertVisitedLink(visitedLink: VisitedLink): Promise<VisitedLinkModel> {
-    return await VisitedLinkSchema.create(visitedLink);
+    try {
+      return await TickerSchema.create(ticker);
+    } catch (ex) {
+      throw ex;
+    }
   }
 
-  async insertUser(user: User): Promise<UserModel> {
-    return await UserSchema.create(user);
+  async insertFiling(filing: Filing): Promise<FilingDocument> {
+    try {
+      return await FilingSchema.create(filing);
+    } catch (ex) {
+      throw ex;
+    }
   }
 
-  async findFilings(match?: any, select: string | object = {}) {
+  async insertVisitedLink(
+    visitedLink: VisitedLink
+  ): Promise<VisitedLinkDocument> {
+    try {
+      return await VisitedLinkSchema.create(visitedLink);
+    } catch (ex) {
+      throw ex;
+    }
+  }
+
+  async insertUser(user: User): Promise<UserDocument> {
+    try {
+      return await UserSchema.create(user);
+    } catch (ex) {
+      throw ex;
+    }
+  }
+
+  async findFilings(
+    match: Partial<FilingDocument>,
+    select = ''
+  ): Promise<FilingDocument[]> {
     return await FilingSchema.find(match, select);
   }
 
   async findVisitedLinks(
-    match: Partial<VisitedLink> = {},
-    select: string | object = {}
-  ) {
+    match: Partial<VisitedLinkDocument> = {},
+    select = ''
+  ): Promise<VisitedLinkDocument[]> {
     return await VisitedLinkSchema.find(match, select);
   }
 
-  async findUser(match: Partial<User> = {}, select: string | object = {}) {
-    return await UserSchema.findOne(match);
+  async findUser(
+    match: Partial<UserDocument>,
+    select = ''
+  ): Promise<UserDocument | null> {
+    return await UserSchema.findOne(match, select);
   }
 
-  async updateFilings(match: any, update: any) {
+  async updateFilings(
+    match: Partial<Filing>,
+    update: Partial<Filing>
+  ): Promise<FilingDocument> {
     throw new Error('Unsupported!');
-    // return await FilingSchema.updateOne(match, update);
+    return await FilingSchema.updateOne(match, update, {
+      runValidators: true
+    });
   }
 
   async updateVisitedLinks(
     match: Partial<VisitedLink>,
     update: Partial<VisitedLink>
-  ) {
+  ): Promise<VisitedLink> {
     return await VisitedLinkSchema.updateOne(match, update, {
       runValidators: true
     });
   }
 
-  async distinctFilingKey(key: string) {
+  async distinctFilingKey(key: string): Promise<string[]> {
     if (!FinTenDB.isConnected()) {
       throw new Error('No connection to the DB!');
     }
 
     return await FilingSchema.distinct(key);
-  }
-
-  async exists(o: any): Promise<boolean> {
-    throw new Error('Unsupported operation');
   }
 }
 

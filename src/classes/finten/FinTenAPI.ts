@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import api from '../../routes/api/api';
 import cors from 'cors';
-import FinTenDB from '../db/FinTenDB';
+import { Server } from 'http';
 
 class FinTenAPI {
   private readonly app: Application;
@@ -29,7 +29,7 @@ class FinTenAPI {
     return this;
   }
 
-  listen() {
+  listen(): Server {
     return this.app.listen(this.port, () =>
       LOGGER.get(this.constructor.name).info(`Listening on port ${this.port}!`)
     );

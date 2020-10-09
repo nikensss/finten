@@ -6,39 +6,38 @@ import Queue from './queues/Queue';
 import DefaultQueue from './queues/DefaultQueue';
 import { default as LOGGER } from '../logger/DefaultLogger';
 
-function Speedometer() {
-  const args = arguments;
-  return function (target: any, key: string) {
-    //target === parent class
-    //key === decorated property
-    let val = target[key];
+// function Speedometer(...args) {
+//   return function (target: unknown, key: string) {
+//     //target === parent class
+//     //key === decorated property
+//     let val = target[key];
 
-    const getter = () => val;
-    const setter = (next: number) => {
-      LOGGER.get('Speedometer').debug(
-        'Speedometer',
-        `${key}: ${val} → ${next}`
-      );
-      val = next;
-    };
+//     const getter = () => val;
+//     const setter = (next: number) => {
+//       LOGGER.get('Speedometer').debug(
+//         'Speedometer',
+//         `${key}: ${val} → ${next}`
+//       );
+//       val = next;
+//     };
 
-    Object.defineProperty(target, key, {
-      get: getter,
-      set: setter,
-      enumerable: true,
-      configurable: true
-    });
-  };
-}
+//     Object.defineProperty(target, key, {
+//       get: getter,
+//       set: setter,
+//       enumerable: true,
+//       configurable: true
+//     });
+//   };
+// }
 
 class DownloadManager {
   private _directory: PathLike;
 
-  @Speedometer()
-  private static activeDownloads: number = 0;
+  // @Speedometer()
+  private static activeDownloads = 0;
 
-  @Speedometer()
-  private static activeFileWrites: number = 0;
+  // @Speedometer()
+  private static activeFileWrites = 0;
 
   private q: Queue;
 
@@ -66,7 +65,7 @@ class DownloadManager {
 
   public flush(): void {
     LOGGER.get(this.constructor.name).info('flushing downloads! 🚾');
-    fs.readdirSync(this.dir).forEach(f => {
+    fs.readdirSync(this.dir).forEach((f) => {
       const currentPath = path.join(this.dir.toString(), f);
       if (fs.lstatSync(currentPath).isDirectory()) {
         this.deldir(currentPath);
@@ -77,7 +76,7 @@ class DownloadManager {
     LOGGER.get(this.constructor.name).info('done flusing 🚽');
   }
 
-  public queue(...d: Downloadable[]) {
+  public queue(...d: Downloadable[]): void {
     this.q.queue(...d);
   }
 
@@ -122,8 +121,8 @@ class DownloadManager {
   public listDownloads(extension?: string): PathLike[] {
     return fs
       .readdirSync(this.dir)
-      .map(f => path.join(this.dir.toString(), f.toString()))
-      .filter(f => path.extname(f).toLowerCase() === (extension || ''));
+      .map((f) => path.join(this.dir.toString(), f.toString()))
+      .filter((f) => path.extname(f).toLowerCase() === (extension || ''));
   }
 
   /**
@@ -173,7 +172,7 @@ class DownloadManager {
   private deldir(src: PathLike): void {
     if (!fs.existsSync(src)) return;
 
-    fs.readdirSync(src).forEach(f => {
+    fs.readdirSync(src).forEach((f) => {
       const currentPath = path.join(src.toString(), f);
       if (fs.lstatSync(currentPath).isDirectory()) {
         this.deldir(currentPath); // recurse

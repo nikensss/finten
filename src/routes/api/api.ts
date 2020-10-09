@@ -1,4 +1,3 @@
-import bodyParser from 'body-parser';
 import { Router } from 'express';
 import users from './admin/users';
 import company from './company/company';

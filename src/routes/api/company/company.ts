@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { isPremium } from '../../../classes/auth/Passport';
+// import { isPremium } from '../../../classes/auth/Passport';
 import FinTenDB from '../../../classes/db/FinTenDB';
 
 const company = Router();
@@ -24,17 +24,16 @@ company.get('/name', async (req, res) => {
   //object destructuring
   const { name } = req.query;
 
-  if (!name || (name as string).length === 0) {
+  if (!name || typeof name !== 'string' || (name as string).length === 0) {
     return res.status(400).json({
       error: 'no name given'
     });
   }
   const db = await FinTenDB.getInstance();
 
-  const dbquery = await db.findFilings(
-    { EntityRegistrantName: name },
-    { _id: 0 }
-  );
+  const dbquery = await db.findFilings({
+    EntityRegistrantName: name as string
+  });
 
   res.status(200).json({
     name,
@@ -55,7 +54,11 @@ company.get('/tickers', async (req, res) => {
 company.get('/ticker', async (req, res) => {
   const { ticker } = req.query;
 
-  if (!ticker || (ticker as string).length === 0) {
+  if (
+    !ticker ||
+    typeof ticker !== 'string' ||
+    (ticker as string).length === 0
+  ) {
     return res.status(400).json({
       error: 'no ticker given'
     });
@@ -83,7 +86,7 @@ company.get('/ticker', async (req, res) => {
 
   try {
     const db = await FinTenDB.getInstance();
-    const dbquery = await db.findFilings({ TradingSymbol: ticker }, { _id: 0 });
+    const dbquery = await db.findFilings({ TradingSymbol: ticker });
 
     return res.status(200).json({
       ticker,
@@ -96,7 +99,7 @@ company.get('/ticker', async (req, res) => {
   }
 });
 
-company.get('/ecik', async (req, res) => {
+company.get('/eciks', async (req, res) => {
   const db = await FinTenDB.getInstance();
 
   const ciks = await db.distinctFilingKey('EntityCentralIndexKey');

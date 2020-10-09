@@ -1,8 +1,16 @@
-import mongoose, { Schema } from 'mongoose';
+/* eslint-disable @typescript-eslint/no-empty-interface */
+import mongoose, { Model, Schema } from 'mongoose';
 
 export enum VisitedLinkStatus {
   OK = 'ok',
   ERROR = 'error'
+}
+
+export interface VisitedLink {
+  url: string;
+  status: VisitedLinkStatus;
+  error: string | null;
+  filingId: Schema.Types.ObjectId | null;
 }
 
 const VisitedLinkSchema = new Schema({
@@ -13,7 +21,8 @@ const VisitedLinkSchema = new Schema({
   },
   status: {
     type: String,
-    enum: Object.values(VisitedLinkStatus)
+    enum: Object.values(VisitedLinkStatus),
+    require: [true, 'Status is required']
   },
   error: {
     type: String
@@ -23,16 +32,11 @@ const VisitedLinkSchema = new Schema({
   }
 });
 
-export interface VisitedLink {
-  url: string;
-  status: VisitedLinkStatus;
-  error: string | null;
-  filingId: Schema.Types.ObjectId | null;
-}
+interface VisitedLinkBaseDocument extends VisitedLink, mongoose.Document {}
+export interface VisitedLinkDocument extends VisitedLinkBaseDocument {}
+export interface VisitedLinkModel extends Model<VisitedLinkDocument> {}
 
-export interface VisitedLinkModel extends VisitedLink, mongoose.Document {}
-
-export default mongoose.model<VisitedLinkModel>(
+export default mongoose.model<VisitedLinkDocument, VisitedLinkModel>(
   'VisitedLink',
   VisitedLinkSchema
 );

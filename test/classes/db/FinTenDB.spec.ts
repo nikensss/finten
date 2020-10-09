@@ -1,16 +1,7 @@
-import chai, { expect } from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-import mongoose from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import FinTenDB from '../../../src/classes/db/FinTenDB';
-import FilingSchema from '../../../src/classes/db/models/Filing';
-
-const mongo = new MongoMemoryServer();
-
-const options = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-};
+// import chai, { expect } from 'chai';
+// import chaiAsPromised from 'chai-as-promised';
+// import mongoose from 'mongoose';
+// import { MongoMemoryServer } from 'mongodb-memory-server';
 
 describe('FinTenDB tests', () => {
   // before(done => {

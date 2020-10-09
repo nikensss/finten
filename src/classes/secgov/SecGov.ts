@@ -61,7 +61,7 @@ class SecGov extends DownloadManager {
     amount?: number
   ): FilingMetadata[] {
     LOGGER.get(this.constructor.name).debug(`parsing idx: ${path}`);
-    let lines = fs.readFileSync(path, 'utf8').split('\n');
+    const lines = fs.readFileSync(path, 'utf8').split('\n');
     return lines
       .reduce((t, c) => {
         try {
@@ -85,7 +85,7 @@ class SecGov extends DownloadManager {
     amount?: number
   ): FilingMetadata[] {
     return indices
-      .map(index => this.parseIndex(index.url, formType))
+      .map((index) => this.parseIndex(index.url, formType))
       .flat()
       .slice(0, amount);
   }

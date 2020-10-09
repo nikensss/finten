@@ -1,20 +1,20 @@
 import fs, { PathLike } from 'fs';
-import ParseXbrl from 'parse-xbrl';
+import { parseStr } from 'parse-xbrl';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import XBRL from './XBRL';
 
 class XBRLUtilities {
   public static async fromTxts(paths: PathLike[]): Promise<XBRL[]> {
-    return await Promise.all(paths.map(p => XBRLUtilities.fromTxt(p)));
+    return await Promise.all(paths.map((p) => XBRLUtilities.fromTxt(p)));
   }
 
   public static async fromTxt(path: PathLike): Promise<XBRL> {
     const xmls: string[] = XBRLUtilities.extractXmlsFromTxt(path);
     const exceptions: string[] = [];
 
-    for (let xml of xmls) {
+    for (const xml of xmls) {
       try {
-        const xbrl = await ParseXbrl.parseStr(xml);
+        const xbrl = await parseStr(xml);
         return new XBRL(xbrl);
       } catch (ex) {
         exceptions.push(ex.toString());
@@ -47,7 +47,7 @@ class XBRLUtilities {
 
   public static extractXmlFromTxt(
     path: PathLike,
-    start: number = 0
+    start = 0
   ): { xml: string; index: number; isDone: boolean } {
     LOGGER.get(this.constructor.name).debug(`parsing txt: ${path}`);
 

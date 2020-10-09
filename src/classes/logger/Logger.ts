@@ -2,9 +2,9 @@ import { LogLevel } from './LogLevel';
 
 export interface Logger {
   logLevel: LogLevel;
-  debug(origin: string, ...message: any[]): void;
-  info(origin: string, ...message: any[]): void;
-  warning(origin: string, ...message: any[]): void;
-  error(origin: string, ...message: any[]): void;
+  debug(origin: string, ...message: unknown[]): void;
+  info(origin: string, ...message: unknown[]): void;
+  warning(origin: string, ...message: unknown[]): void;
+  error(origin: string, ...message: unknown[]): void;
   setOutput(output: string): void;
 }

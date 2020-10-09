@@ -1,4 +1,5 @@
-import mongoose, { Schema } from 'mongoose';
+/* eslint-disable @typescript-eslint/no-empty-interface */
+import mongoose, { Model, Schema } from 'mongoose';
 
 export interface Filing {
   EntityRegistrantName: string;
@@ -148,13 +149,20 @@ const FilingSchema = new Schema({
   ROS: Number
 });
 
-export interface FilingModel extends Filing, mongoose.Document {}
+interface FilingBaseDocument extends Filing, mongoose.Document {}
 
-FilingSchema.pre<FilingModel>('validate', function (next: Function) {
+export interface FilingDocument extends FilingBaseDocument {}
+
+FilingSchema.pre<FilingDocument>('validate', function (next: () => void) {
   if (this.ROA !== null && isNaN(this.ROA)) this.ROA = null;
   if (this.ROE !== null && isNaN(this.ROE)) this.ROE = null;
   if (this.ROS !== null && isNaN(this.ROS)) this.ROS = null;
   next();
 });
 
-export default mongoose.model<FilingModel>('Filing', FilingSchema);
+export interface FilingModel extends Model<FilingDocument> {}
+
+export default mongoose.model<FilingDocument, FilingModel>(
+  'Filing',
+  FilingSchema
+);

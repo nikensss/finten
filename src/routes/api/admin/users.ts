@@ -14,20 +14,20 @@ users.get('/premium', isPremium, (req, res) => {
   res.status(200).json({ isPremium: true });
 });
 
-users.post('/login', (req, res, next) => {
+users.post('/login', (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).send({ err: 'Missing data' });
   }
 
   FinTenDB.getInstance()
-    .then(db => db.findUser({ username }))
-    .then(user => {
+    .then((db) => db.findUser({ username }))
+    .then((user) => {
       if (user === null) {
         return res.status(400).json({ error: 'Invalid credentials' });
       }
 
-      user.checkPassword(password).then(correctPassword => {
+      user.checkPassword(password).then((correctPassword) => {
         if (!correctPassword) {
           return res.status(400).json({ error: 'Invalid credentials' });
         }
@@ -38,19 +38,19 @@ users.post('/login', (req, res, next) => {
           .json({ username, token: TokenFactory.sign(payload) });
       });
     })
-    .catch(error => res.status(500).json({ error }));
+    .catch((error) => res.status(500).json({ error }));
 });
 
-users.post('/register', async (req, res, next) => {
+users.post('/register', async (req, res) => {
   const { username, password, email } = req.body;
   console.log({ username, password, email, body: req.body });
   FinTenDB.getInstance()
-    .then(db => db.insertUser({ username, password, email } as User))
-    .then(user => {
+    .then((db) => db.insertUser({ username, password, email } as User))
+    .then((user) => {
       const payload = { id: user._id };
       return res.status(200).json({ token: TokenFactory.sign(payload) });
     })
-    .catch(e => res.status(400).json({ error: e.toString() }));
+    .catch((e) => res.status(400).json({ error: e.toString() }));
 });
 
 export default users;

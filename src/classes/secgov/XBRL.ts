@@ -3,8 +3,8 @@ import { Filing } from '../db/models/Filing';
 class XBRL {
   private data: Filing;
 
-  constructor(data: any) {
-    this.data = data as Filing;
+  constructor(data: Filing) {
+    this.data = data;
   }
 
   /**

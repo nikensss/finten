@@ -1,5 +1,5 @@
-import chai, { expect } from 'chai';
-import chaiAsPromised from 'chai-as-promised';
+import { expect } from 'chai';
+// import chaiAsPromised from 'chai-as-promised';
 import FinTen from '../../../src/classes/finten/FinTen';
 import SecGov from '../../../src/classes/secgov/SecGov';
 

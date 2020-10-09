@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
 import moment from 'moment';
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Model, Schema } from 'mongoose';
 import validtor from 'validator';
 import Encrypter from '../../auth/Encrypter';
 import PaymentSchema, { Payment } from './Payment';
@@ -8,12 +9,12 @@ export interface User {
   username: string;
   password: string;
   email: string;
-  registrationDate: Date;
-  isPremiumUntil: Date;
+  registrationDate?: Date;
+  isPremiumUntil?: Date;
+  payments?: Payment[];
+  changePasswordRequest?: Date;
   isPremium: boolean;
-  payments: Payment[];
   lastPayment: Payment;
-  changePasswordRequest: Date;
   checkPassword(password: string): Promise<boolean>;
 }
 
@@ -55,11 +56,21 @@ const UserSchema = new Schema({
   }
 });
 
-UserSchema.virtual('isPremium').get(function (this: User) {
+interface UserBaseDocument extends User, mongoose.Document {
+  isPremium: boolean;
+  lastPayment: Payment;
+  checkPassword(password: string): Promise<boolean>;
+}
+
+UserSchema.virtual('isPremium').get(function (this: UserBaseDocument) {
   return moment.utc().isBefore(this.isPremiumUntil);
 });
 
-UserSchema.virtual('lastPayment').get(function (this: User) {
+UserSchema.virtual('lastPayment').get(function (this: UserBaseDocument) {
+  if (!Array.isArray(this.payments)) {
+    throw new Error('No payments available!');
+  }
+
   return this.payments[this.payments.length - 1];
 });
 
@@ -69,16 +80,17 @@ UserSchema.methods.checkPassword = function (
   return Encrypter.compare(password, this.password);
 };
 
-UserSchema.pre<UserModel>('save', function (next) {
-  const user = this;
-  Encrypter.hash(user.password)
-    .then(hash => {
-      user.password = hash;
+export interface UserDocument extends UserBaseDocument {}
+
+UserSchema.pre<UserDocument>('save', function (next) {
+  Encrypter.hash(this.password)
+    .then((hash) => {
+      this.password = hash;
       return next();
     })
-    .catch(e => next(e));
+    .catch((e) => next(e));
 });
 
-export interface UserModel extends User, mongoose.Document {}
+export interface UserModel extends Model<UserDocument> {}
 
-export default mongoose.model<UserModel>('User', UserSchema);
+export default mongoose.model<UserDocument, UserModel>('User', UserSchema);
