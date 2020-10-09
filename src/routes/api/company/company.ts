@@ -20,6 +20,28 @@ company.get('/names', async (req, res) => {
   });
 });
 
+company.get('/name', async (req, res) => {
+  //object destructuring
+  const { name } = req.query;
+
+  if (!name || (name as string).length === 0) {
+    return res.status(400).json({
+      error: 'no name given'
+    });
+  }
+  const db = await FinTenDB.getInstance();
+
+  const dbquery = await db.findFilings(
+    { EntityRegistrantName: name },
+    { _id: 0 }
+  );
+
+  res.status(200).json({
+    name,
+    data: dbquery
+  });
+});
+
 company.get('/tickers', async (req, res) => {
   const db = await FinTenDB.getInstance();
 
@@ -27,16 +49,6 @@ company.get('/tickers', async (req, res) => {
 
   res.status(200).json({
     tickers
-  });
-});
-
-company.get('/cik', async (req, res) => {
-  const db = await FinTenDB.getInstance();
-
-  const ciks = await db.distinctFilingKey('EntityCentralIndexKey');
-
-  res.status(200).json({
-    ciks
   });
 });
 
@@ -71,12 +83,7 @@ company.get('/ticker', async (req, res) => {
 
   try {
     const db = await FinTenDB.getInstance();
-    const dbquery = await db.findFilings(
-      {
-        TradingSymbol: ticker
-      },
-      { _id: 0 }
-    );
+    const dbquery = await db.findFilings({ TradingSymbol: ticker }, { _id: 0 });
 
     return res.status(200).json({
       ticker,
@@ -89,27 +96,13 @@ company.get('/ticker', async (req, res) => {
   }
 });
 
-company.get('/name', async (req, res) => {
-  //object destructuring
-  const { name } = req.query;
-
-  if (!name || (name as string).length === 0) {
-    return res.status(400).json({
-      error: 'no name given'
-    });
-  }
+company.get('/ecik', async (req, res) => {
   const db = await FinTenDB.getInstance();
 
-  const dbquery = await db.findFilings(
-    {
-      EntityRegistrantName: name
-    },
-    { _id: 0 }
-  );
+  const ciks = await db.distinctFilingKey('EntityCentralIndexKey');
 
   res.status(200).json({
-    name,
-    data: dbquery
+    ciks
   });
 });
 
