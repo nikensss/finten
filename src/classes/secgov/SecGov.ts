@@ -1,4 +1,3 @@
-import DownloadManager from '../download/DownloadManager';
 import { Quarter } from './XBRL';
 import TimedQueue from '../download/queues/TimedQueue';
 import fs, { PathLike } from 'fs';
@@ -6,24 +5,21 @@ import FilingMetadata from '../filings/FilingMetadata';
 import FormType from '../filings/FormType';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import Downloadable from '../download/Downloadable';
+import Downloader from '../download/Downloader';
 
-class SecGov extends DownloadManager {
-  public static readonly API_ROOT: string = 'https://www.sec.gov/Archives/';
-  public static readonly INDICES_ROOT: string =
-    SecGov.API_ROOT + 'edgar/full-index/';
+class SecGov {
+  public static readonly INDICES_ROOT =
+    'https://www.sec.gov/Archives/edgar/full-index/';
+  private dm: Downloader;
   /**
-   * The amount of milliseconds between to API calls
+   * The amount of milliseconds between to API calls. SecGov has a limit of 10
+   * calls per second.
    */
-  public static readonly MS_BETWEEN_REQUESTS = 100; //their documentation says max 10 API calls per second
+  public static readonly MS_BETWEEN_REQUESTS = 100;
 
-  constructor(downloadsDirectory?: string) {
-    super(downloadsDirectory);
-    super.use(new TimedQueue(SecGov.MS_BETWEEN_REQUESTS));
-  }
-
-  async getIndex(year: number, quarter: Quarter): Promise<Downloadable[]> {
-    const url = `${SecGov.INDICES_ROOT}/${year}/${quarter}/xbrl.idx`;
-    return await super.get({ url, fileName: `${year}_${quarter}_xbrl.idx` });
+  constructor(dm: Downloader) {
+    this.dm = dm;
+    this.dm.use(new TimedQueue(SecGov.MS_BETWEEN_REQUESTS));
   }
 
   /**
@@ -48,6 +44,20 @@ class SecGov extends DownloadManager {
     return downloadedIndices;
   }
 
+  async getIndex(year: number, quarter: Quarter): Promise<Downloadable[]> {
+    const url = `${SecGov.INDICES_ROOT}/${year}/${quarter}/xbrl.idx`;
+    return await this.dm.get({ url, fileName: `${year}_${quarter}_xbrl.idx` });
+  }
+
+  parseIndices(
+    indices: Downloadable[],
+    formType: FormType[]
+  ): FilingMetadata[] {
+    return indices
+      .map((index) => this.parseIndex(index.fileName, formType))
+      .flat();
+  }
+
   /**
    * Parses all .idx files in the 'downloads' folder and returns the
    * FilingReportMetadata's that correspond to the desired form type.
@@ -55,39 +65,37 @@ class SecGov extends DownloadManager {
    * @param formType Form type to look for
    * @param amount The amount of filings to return
    */
-  parseIndex(
-    path: PathLike,
-    formType: FormType[],
-    amount?: number
-  ): FilingMetadata[] {
+  parseIndex(path: PathLike, formType: FormType[]): FilingMetadata[] {
     LOGGER.get(this.constructor.name).debug(`parsing idx: ${path}`);
     const lines = fs.readFileSync(path, 'utf8').split('\n');
-    return lines
-      .reduce((t, c) => {
-        try {
-          const filingMetadata = new FilingMetadata(c); //map
-          if (formType.includes(filingMetadata.formType)) {
-            t.push(filingMetadata); //filter
-          }
-        } catch (ex) {
-          if (!ex.message.includes('Unknown filing type')) {
-            LOGGER.get(this.constructor.name).error(ex);
-          }
+    return lines.reduce((t, c) => {
+      try {
+        const filingMetadata = new FilingMetadata(c); //map
+        if (formType.includes(filingMetadata.formType)) {
+          t.push(filingMetadata); //filter
         }
-        return t;
-      }, [] as FilingMetadata[])
-      .slice(0, amount);
+      } catch (ex) {
+        if (!ex.message.includes('Unknown filing type')) {
+          LOGGER.get(this.constructor.name).error(ex);
+        }
+      }
+      return t;
+    }, [] as FilingMetadata[]);
   }
 
-  parseIndices(
-    indices: Downloadable[],
-    formType: FormType[],
-    amount?: number
-  ): FilingMetadata[] {
-    return indices
-      .map((index) => this.parseIndex(index.fileName, formType))
-      .flat()
-      .slice(0, amount);
+  async getEntityCentralIndexKeyMap(): Promise<Downloadable[]> {
+    return await this.dm.get({
+      url: 'https://www.sec.gov/include/ticker.txt',
+      fileName: 'ticker_ecik_map.txt'
+    });
+  }
+
+  async getFilings(...downloadables: Downloadable[]): Promise<Downloadable[]> {
+    return await this.dm.get(...downloadables);
+  }
+
+  flush(): void {
+    this.dm.flush();
   }
 }
 

@@ -12,6 +12,7 @@ import {
 import { Schema } from 'mongoose';
 import { Filing } from '../db/models/Filing';
 import Ticker from '../db/models/Ticker';
+import Downloadable from '../download/Downloadable';
 
 class FinTen {
   private _secgov: SecGov;
@@ -39,10 +40,7 @@ class FinTen {
   }
 
   async buildEntityCentralIndexKeyMap(): Promise<void> {
-    const tickersCIKMap = await this.secgov.get({
-      url: 'https://www.sec.gov/include/ticker.txt',
-      fileName: 'ticker_ecik_map.txt'
-    });
+    const tickersCIKMap = await this.secgov.getEntityCentralIndexKeyMap();
 
     for (const f of tickersCIKMap) {
       const content = (await fs.readFile(f.fileName, 'utf-8')).split('\n');
@@ -75,23 +73,15 @@ class FinTen {
    * @param end year at which to stop downloading data (inclusive)
    * @param amountOfFilings total amount of filings to download
    */
-  async fill(
-    start: number,
-    end: number = start,
-    amountOfFilings?: number
-  ): Promise<void> {
+  async fill(start: number, end: number = start): Promise<void> {
     this.logger.logLevel = LogLevel.DEBUG;
 
-    const newFilings = await this.getNewFilingsMetaData(
-      start,
-      end,
-      amountOfFilings
-    );
+    const newFilings = await this.getNewFilingsMetaData(start, end);
 
     for (let n = 0; n < newFilings.length; n++) {
       this.logPercentage(n, newFilings.length);
 
-      const filings = await this.secgov.get(newFilings[n]);
+      const filings = await this.secgov.getFilings(newFilings[n]);
 
       for (const filing of filings) {
         try {
@@ -108,17 +98,42 @@ class FinTen {
     this.logger.info(`Done filling!`);
   }
 
+  private async getNewFilingsMetaData(start: number, end: number) {
+    try {
+      const filingReportsMetaData = await this.getFilingsMetaData(start, end);
+      const db = await this.db.connect();
+      const visitedLinks = await db.findVisitedLinks();
+      return filingReportsMetaData.filter(
+        (f) => !visitedLinks.find((v) => v.url === f.url)
+      );
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  private async getFilingsMetaData(start: number, end: number) {
+    this.secgov.flush();
+
+    const indices = await this.secgov.getIndices(start, end);
+    const filings = this.secgov.parseIndices(indices, [
+      FormType.F10K,
+      FormType.F10Q
+    ]);
+    this.secgov.flush();
+    return filings;
+  }
+
   async fix(): Promise<void> {
     this.logger.logLevel = LogLevel.DEBUG;
     this.logger.info(`Getting broken links`);
     const db: FinTenDB = await this.db.connect();
 
-    const downloadablesWithErros = await this.getVisitedLinksWithErrorsAsDownloadables();
+    const problematicFilings = await this.getVisitedLinksWithErrors();
 
-    for (let n = 0; n < downloadablesWithErros.length; n++) {
-      this.logPercentage(n, downloadablesWithErros.length);
+    for (let n = 0; n < problematicFilings.length; n++) {
+      this.logPercentage(n, problematicFilings.length);
 
-      const filings = await this.secgov.get(downloadablesWithErros[n]);
+      const filings = await this.secgov.getFilings(problematicFilings[n]);
 
       for (const filing of filings) {
         try {
@@ -144,7 +159,7 @@ class FinTen {
     this.secgov.flush();
   }
 
-  private async getVisitedLinksWithErrorsAsDownloadables() {
+  private async getVisitedLinksWithErrors(): Promise<Downloadable[]> {
     const db = await this.db.connect();
     const linksWithErrors: VisitedLinkDocument[] = await db.findVisitedLinks(
       { status: VisitedLinkStatus.ERROR },
@@ -155,44 +170,6 @@ class FinTen {
       url: f.url,
       fileName: 'filing.txt'
     }));
-  }
-
-  private async getNewFilingsMetaData(
-    start: number,
-    end: number,
-    amountOfFilings?: number
-  ) {
-    try {
-      const filingReportsMetaData = await this.getFilingsMetaData(
-        start,
-        end,
-        amountOfFilings
-      );
-      const db = await this.db.connect();
-      const visitedLinks = await db.findVisitedLinks();
-      return filingReportsMetaData.filter(
-        (f) => !visitedLinks.find((v) => v.url === f.url)
-      );
-    } catch (e) {
-      throw new Error(e);
-    }
-  }
-
-  private async getFilingsMetaData(
-    start: number,
-    end: number,
-    amount?: number
-  ) {
-    this.secgov.flush();
-
-    const indices = await this.secgov.getIndices(start, end);
-    const filings = this.secgov.parseIndices(
-      indices,
-      [FormType.F10K, FormType.F10Q],
-      amount
-    );
-    this.secgov.flush();
-    return filings;
   }
 
   private async insertFiling(filing: Filing) {
@@ -239,7 +216,7 @@ class FinTen {
   private logPercentage(currentIndex: number, length: number) {
     const percentageDownloads = ((currentIndex + 1) / length) * 100;
     this.logger.info(
-      `🛎 ${currentIndex + 1}/${length} (${percentageDownloads.toFixed(3)} %)`
+      `🛎  ${currentIndex + 1}/${length} (${percentageDownloads.toFixed(3)} %)`
     );
   }
 }

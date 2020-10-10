@@ -5,14 +5,12 @@ import Downloadable from './Downloadable';
 import Queue from './queues/Queue';
 import DefaultQueue from './queues/DefaultQueue';
 import { default as LOGGER } from '../logger/DefaultLogger';
+import Downloader from './Downloader';
 
-class DownloadManager {
+class DownloadManager implements Downloader {
   private _directory: PathLike;
-
   private static activeDownloads = 0;
-
   private static activeFileWrites = 0;
-
   private q: Queue;
 
   constructor(directory: PathLike = 'finten_downloads') {
@@ -42,7 +40,7 @@ class DownloadManager {
     fs.readdirSync(this.dir).forEach((f) => {
       const currentPath = path.join(this.dir.toString(), f);
       if (fs.lstatSync(currentPath).isDirectory()) {
-        this.deldir(currentPath);
+        this.deleteDirectory(currentPath);
       }
       LOGGER.get(this.constructor.name).debug(`deleting ${f}`);
       fs.unlinkSync(currentPath);
@@ -143,13 +141,13 @@ class DownloadManager {
     });
   }
 
-  private deldir(src: PathLike): void {
+  private deleteDirectory(src: PathLike): void {
     if (!fs.existsSync(src)) return;
 
     fs.readdirSync(src).forEach((f) => {
       const currentPath = path.join(src.toString(), f);
       if (fs.lstatSync(currentPath).isDirectory()) {
-        this.deldir(currentPath); // recurse
+        this.deleteDirectory(currentPath); // recurse
       } else {
         fs.unlinkSync(currentPath); // delete file
       }
