@@ -1,5 +1,6 @@
 import fs, { PathLike } from 'fs';
 import { parseStr } from 'parse-xbrl';
+import { Filing } from '../db/models/Filing';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import XBRL from './XBRL';
 
@@ -14,7 +15,7 @@ class XBRLUtilities {
 
     for (const xml of xmls) {
       try {
-        const xbrl = await parseStr(xml);
+        const xbrl: Filing = await parseStr(xml);
         return new XBRL(xbrl);
       } catch (ex) {
         exceptions.push(ex.toString());
