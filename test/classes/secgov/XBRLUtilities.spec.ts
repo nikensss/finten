@@ -1,6 +1,9 @@
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import path from 'path';
 import XBRLUtilities from '../../../src/classes/secgov/XBRLUtilities';
+
+chai.use(chaiAsPromised);
 
 describe('XBRL tests', () => {
   //extractXmlFromTxt
@@ -53,13 +56,9 @@ describe('XBRL tests', () => {
     );
   });
 
-  it('should throw error', (done) => {
-    XBRLUtilities.fromTxt(path.join(__dirname, 'NoXBRLS.txt'))
-      .then(() => {
-        done(new Error('Should not be here...'));
-      })
-      .catch(() => {
-        done();
-      });
+  it('should reject with "No XBRL found"', () => {
+    expect(
+      XBRLUtilities.fromTxt(path.join(__dirname, 'NoXBRLS.txt'))
+    ).to.be.rejectedWith('No XBRL found');
   });
 });

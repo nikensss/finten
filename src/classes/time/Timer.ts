@@ -1,6 +1,7 @@
 class Timer {
   private timeout: number;
   private start: number;
+
   constructor(timeout: number) {
     this.timeout = timeout;
     this.start = Date.now();
@@ -12,6 +13,10 @@ class Timer {
 
   isTimeout(): boolean {
     return Date.now() - this.start > this.timeout;
+  }
+
+  getTimeout(): number {
+    return this.timeout;
   }
 
   async waitForTimeout(): Promise<void> {

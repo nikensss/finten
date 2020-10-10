@@ -107,7 +107,7 @@ dist
 downloads
 downloads-backup
 finten_downloads
-*.idx
+finten_downloads/*.idx
 
 
 # .ds_store

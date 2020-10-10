@@ -34,13 +34,14 @@ class SecGov {
   ): Promise<Downloadable[]> {
     if (start > end) throw new Error('start > end 🤯');
 
-    const downloadedIndices = [];
+    const downloadedIndices: Downloadable[] = [];
     for (let year = start; year <= end; year++) {
       downloadedIndices.push(...(await this.getIndex(year, Quarter.QTR1)));
       downloadedIndices.push(...(await this.getIndex(year, Quarter.QTR2)));
       downloadedIndices.push(...(await this.getIndex(year, Quarter.QTR3)));
       downloadedIndices.push(...(await this.getIndex(year, Quarter.QTR4)));
     }
+
     return downloadedIndices;
   }
 
@@ -62,16 +63,17 @@ class SecGov {
    * Parses all .idx files in the 'downloads' folder and returns the
    * FilingReportMetadata's that correspond to the desired form type.
    *
-   * @param formType Form type to look for
+   * @param formTypes Form type to look for
    * @param amount The amount of filings to return
    */
-  parseIndex(path: PathLike, formType: FormType[]): FilingMetadata[] {
+  parseIndex(path: PathLike, formTypes: FormType[]): FilingMetadata[] {
     LOGGER.get(this.constructor.name).debug(`parsing idx: ${path}`);
+
     const lines = fs.readFileSync(path, 'utf8').split('\n');
     return lines.reduce((t, c) => {
       try {
         const filingMetadata = new FilingMetadata(c); //map
-        if (formType.includes(filingMetadata.formType)) {
+        if (formTypes.includes(filingMetadata.formType)) {
           t.push(filingMetadata); //filter
         }
       } catch (ex) {

@@ -1,8 +1,10 @@
+/* eslint-disable */
 module.exports = function () {
   return {
     files: [
       'src/**/*.ts',
       'test/**/*.txt',
+      'test/**/*.idx',
       {
         pattern: '.env',
         instrument: false

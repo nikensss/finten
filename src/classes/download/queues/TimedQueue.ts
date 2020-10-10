@@ -10,20 +10,23 @@ import Timer from '../../time/Timer';
  */
 class TimedQueue implements Queue {
   private timer: Timer;
-  private _queue: Downloadable[] = [];
+  private q: Downloadable[] = [];
 
   constructor(timeout: number) {
     this.timer = new Timer(timeout);
   }
 
-  queue(...d: Downloadable[]): void {
-    this._queue.push(...d);
-  }
-
   isEmpty(): boolean {
-    return this._queue.length === 0;
+    return this.q.length === 0;
   }
 
+  getTimer(): Timer {
+    return this.timer;
+  }
+
+  queue(...d: Downloadable[]): void {
+    this.q.push(...d);
+  }
   /**
    * Return the first element of the queue with guarantees that the limit of API calls per second won't be exceeded.
    */
@@ -32,7 +35,7 @@ class TimedQueue implements Queue {
     await this.timer.waitForTimeout();
     //console.log(chalk.bgRed(`[TimedQueue] Δt: ${Date.now() - now}`));
     this.timer.reset();
-    return this._queue.shift();
+    return this.q.shift();
   }
 }
 
