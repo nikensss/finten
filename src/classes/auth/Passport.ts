@@ -19,6 +19,7 @@ passport.use(
   new Strategy(options, (payload, next) => {
     console.log(`Auth user. Payload is`, payload);
     FinTenDB.getInstance()
+      .connect()
       .then(() => User.findOne({ _id: payload.id }))
       .then((user) => next(null, user))
       .catch((e) => next(e));
@@ -30,6 +31,7 @@ passport.use(
   new Strategy(options, (payload, next) => {
     console.log(`isPremium. Payload is`, payload);
     FinTenDB.getInstance()
+      .connect()
       .then(() => User.findOne({ _id: payload.id }))
       .then((user) => {
         if (user === null) {
@@ -38,6 +40,7 @@ passport.use(
         if (!user.isPremium) {
           return next(null, false, { message: 'Not premium' });
         }
+        return next(null, user);
       })
       .catch((e) => next(e));
   })

@@ -6,37 +6,11 @@ import Queue from './queues/Queue';
 import DefaultQueue from './queues/DefaultQueue';
 import { default as LOGGER } from '../logger/DefaultLogger';
 
-// function Speedometer(...args) {
-//   return function (target: unknown, key: string) {
-//     //target === parent class
-//     //key === decorated property
-//     let val = target[key];
-
-//     const getter = () => val;
-//     const setter = (next: number) => {
-//       LOGGER.get('Speedometer').debug(
-//         'Speedometer',
-//         `${key}: ${val} → ${next}`
-//       );
-//       val = next;
-//     };
-
-//     Object.defineProperty(target, key, {
-//       get: getter,
-//       set: setter,
-//       enumerable: true,
-//       configurable: true
-//     });
-//   };
-// }
-
 class DownloadManager {
   private _directory: PathLike;
 
-  // @Speedometer()
   private static activeDownloads = 0;
 
-  // @Speedometer()
   private static activeFileWrites = 0;
 
   private q: Queue;
@@ -135,7 +109,7 @@ class DownloadManager {
     LOGGER.get(this.constructor.name).info(`downloading: ${d.url}`);
     DownloadManager.activeDownloads += 1;
     const p: Downloadable = {
-      fileName: path.resolve(this.dir.toString(), d.fileName),
+      fileName: path.join(this.dir.toString(), d.fileName),
       url: d.url
     };
     const writer = fs.createWriteStream(p.fileName);

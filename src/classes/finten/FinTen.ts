@@ -15,9 +15,11 @@ import Ticker from '../db/models/Ticker';
 
 class FinTen {
   private _secgov: SecGov;
+  private _db: FinTenDB;
 
   constructor(secgov: SecGov) {
     this._secgov = secgov;
+    this._db = FinTenDB.getInstance();
   }
 
   get secgov(): SecGov {
@@ -28,6 +30,14 @@ class FinTen {
     this._secgov = secgov;
   }
 
+  get db(): FinTenDB {
+    return this._db;
+  }
+
+  set db(db: FinTenDB) {
+    this._db = db;
+  }
+
   async buildEntityCentralIndexKeyMap(): Promise<void> {
     const tickersCIKMap = await this.secgov.get({
       url: 'https://www.sec.gov/include/ticker.txt',
@@ -36,17 +46,19 @@ class FinTen {
 
     for (const f of tickersCIKMap) {
       const content = (await fs.readFile(f.fileName, 'utf-8')).split('\n');
-      const db = await FinTenDB.getInstance();
+      const db = await this.db.connect();
       for (const line of content) {
         try {
           const ticker = Ticker.parse(line);
           await db.insertTicker(ticker);
           console.log('found: ', ticker);
         } catch (ex) {
-          console.error(
-            'Exception caught while parsing and insrting tickers:\n' +
-              ex.toString()
-          );
+          if (!/duplicate key/.test(ex.toString())) {
+            console.error(
+              'Exception caught while parsing and insrting tickers:\n' +
+                ex.toString()
+            );
+          }
         }
       }
     }
@@ -99,7 +111,7 @@ class FinTen {
   async fix(): Promise<void> {
     this.logger.logLevel = LogLevel.DEBUG;
     this.logger.info(`Getting broken links`);
-    const db: FinTenDB = await FinTenDB.getInstance();
+    const db: FinTenDB = await this.db.connect();
 
     const downloadablesWithErros = await this.getVisitedLinksWithErrorsAsDownloadables();
 
@@ -133,7 +145,7 @@ class FinTen {
   }
 
   private async getVisitedLinksWithErrorsAsDownloadables() {
-    const db = await FinTenDB.getInstance();
+    const db = await this.db.connect();
     const linksWithErrors: VisitedLinkDocument[] = await db.findVisitedLinks(
       { status: VisitedLinkStatus.ERROR },
       'url'
@@ -156,7 +168,7 @@ class FinTen {
         end,
         amountOfFilings
       );
-      const db = await FinTenDB.getInstance();
+      const db = await this.db.connect();
       const visitedLinks = await db.findVisitedLinks();
       return filingReportsMetaData.filter(
         (f) => !visitedLinks.find((v) => v.url === f.url)
@@ -185,7 +197,7 @@ class FinTen {
 
   private async insertFiling(filing: Filing) {
     try {
-      const db = await FinTenDB.getInstance();
+      const db = await this.db.connect();
       return await db.insertFiling(filing);
     } catch (e) {
       throw new Error(e);
@@ -197,7 +209,7 @@ class FinTen {
     resultId: Schema.Types.ObjectId
   ) {
     try {
-      const db = await FinTenDB.getInstance();
+      const db = await this.db.connect();
       return await db.insertVisitedLink({
         url,
         status: VisitedLinkStatus.OK,
@@ -211,7 +223,7 @@ class FinTen {
 
   private async handleExceptionDuringFilingInsertion(url: string, ex: Error) {
     this.logger.warning(`Error while parsing ${url}:\n${ex.toString()}`);
-    const db = await FinTenDB.getInstance();
+    const db = await this.db.connect();
     return await db.insertVisitedLink({
       url,
       status: VisitedLinkStatus.ERROR,

@@ -85,7 +85,7 @@ class SecGov extends DownloadManager {
     amount?: number
   ): FilingMetadata[] {
     return indices
-      .map((index) => this.parseIndex(index.url, formType))
+      .map((index) => this.parseIndex(index.fileName, formType))
       .flat()
       .slice(0, amount);
   }

@@ -7,11 +7,11 @@ import { User } from '../../../classes/db/models/User';
 const users = Router();
 
 users.get('/', userAuthentication, (req, res) =>
-  res.status(200).json({ message: 'authentication works' })
+  res.status(200).json({ message: 'authentication works', user: req.user })
 );
 
 users.get('/premium', isPremium, (req, res) => {
-  res.status(200).json({ isPremium: true });
+  res.status(200).json({ isPremium: true, user: req.user });
 });
 
 users.post('/login', (req, res) => {
@@ -21,6 +21,7 @@ users.post('/login', (req, res) => {
   }
 
   FinTenDB.getInstance()
+    .connect()
     .then((db) => db.findUser({ username }))
     .then((user) => {
       if (user === null) {
@@ -45,6 +46,7 @@ users.post('/register', async (req, res) => {
   const { username, password, email } = req.body;
   console.log({ username, password, email, body: req.body });
   FinTenDB.getInstance()
+    .connect()
     .then((db) => db.insertUser({ username, password, email } as User))
     .then((user) => {
       const payload = { id: user._id };

@@ -4,6 +4,20 @@ import FinTenDB from '../../../classes/db/FinTenDB';
 
 const company = Router();
 
+const accessibleTickers = [
+  'AAPL',
+  'GOOG',
+  'FB',
+  'MSFT',
+  'ORCL',
+  'NVDA',
+  'CRM',
+  'IBM',
+  'AMZN',
+  'TSLA',
+  'JPM'
+];
+
 company.get('/', (req, res) => {
   res.json({
     message: 'company route 😎'
@@ -11,7 +25,7 @@ company.get('/', (req, res) => {
 });
 
 company.get('/names', async (req, res) => {
-  const db = await FinTenDB.getInstance();
+  const db = await FinTenDB.getInstance().connect();
 
   const names = await db.distinctFilingKey('EntityRegistrantName');
 
@@ -29,7 +43,7 @@ company.get('/name', async (req, res) => {
       error: 'no name given'
     });
   }
-  const db = await FinTenDB.getInstance();
+  const db = await FinTenDB.getInstance().connect();
 
   const dbquery = await db.findFilings({
     EntityRegistrantName: name as string
@@ -42,12 +56,11 @@ company.get('/name', async (req, res) => {
 });
 
 company.get('/tickers', async (req, res) => {
-  const db = await FinTenDB.getInstance();
-
-  const tickers = await db.distinctFilingKey('TradingSymbol');
+  // const db = await FinTenDB.getInstance();
+  // const tickers = await db.distinctFilingKey('TradingSymbol');
 
   res.status(200).json({
-    tickers
+    tickers: accessibleTickers
   });
 });
 
@@ -64,20 +77,6 @@ company.get('/ticker', async (req, res) => {
     });
   }
 
-  const accessibleTickers = [
-    'AAPL',
-    'GOOG',
-    'FB',
-    'MSFT',
-    'ORCL',
-    'NVDA',
-    'CRM',
-    'IBM',
-    'AMZN',
-    'TSLA',
-    'JPM'
-  ];
-
   if (!accessibleTickers.includes(ticker as string)) {
     return res.status(403).json({
       error: 'forbidden access'
@@ -85,8 +84,11 @@ company.get('/ticker', async (req, res) => {
   }
 
   try {
-    const db = await FinTenDB.getInstance();
-    const dbquery = await db.findFilings({ TradingSymbol: ticker });
+    const db = await FinTenDB.getInstance().connect();
+    const dbquery = await db.findFilings({
+      TradingSymbol: ticker,
+      DocumentFiscalYearFocus: '2018'
+    });
 
     return res.status(200).json({
       ticker,
@@ -100,7 +102,7 @@ company.get('/ticker', async (req, res) => {
 });
 
 company.get('/eciks', async (req, res) => {
-  const db = await FinTenDB.getInstance();
+  const db = await FinTenDB.getInstance().connect();
 
   const ciks = await db.distinctFilingKey('EntityCentralIndexKey');
 
