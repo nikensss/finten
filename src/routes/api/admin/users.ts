@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { isPremium, userAuthentication } from '../../../classes/auth/Passport';
 import TokenFactory from '../../../classes/auth/TokenFactory';
 import FinTenDB from '../../../classes/db/FinTenDB';
 import { User } from '../../../classes/db/models/User';
@@ -7,14 +6,6 @@ import { default as LOGGER } from '../../../classes/logger/DefaultLogger';
 
 const LOGGER_NAME = 'user-routes';
 const users = Router();
-
-users.get('/', userAuthentication, (req, res) =>
-  res.status(200).json({ message: 'authentication works', user: req.user })
-);
-
-users.get('/premium', isPremium, (req, res) => {
-  res.status(200).json({ isPremium: true, user: req.user });
-});
 
 users.post('/login', async (req, res) => {
   const { username, password } = req.body;

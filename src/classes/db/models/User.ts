@@ -9,6 +9,7 @@ export interface User {
   username: string;
   password: string;
   email: string;
+  isAdmin: boolean;
   registrationDate?: Date;
   isPremiumUntil?: Date;
   payments?: Payment[];
@@ -38,6 +39,10 @@ const UserSchema = new Schema({
     trim: true,
     index: { unique: true, sparse: true },
     validate: (value: string) => validator.isEmail(value)
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false
   },
   registrationDate: {
     type: Date,

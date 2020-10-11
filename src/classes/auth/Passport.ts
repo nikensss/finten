@@ -37,10 +37,32 @@ passport.use(
         if (user === null) {
           return next(null, false, { message: 'Invalid credentials' });
         }
-        if (!user.isPremium) {
-          return next(null, false, { message: 'Not premium' });
+
+        if (user.isAdmin || user.isPremium) {
+          return next(null, user);
         }
-        return next(null, user);
+
+        return next(null, false, { message: 'Invalid credentials' });
+      })
+      .catch((e) => next(e));
+  })
+);
+
+passport.use(
+  'isAdmin',
+  new Strategy(options, (payload, next) => {
+    console.log(`isAdmin. Payload is`, payload);
+    FinTenDB.getInstance()
+      .connect()
+      .then(() => User.findOne({ _id: payload.id }))
+      .then((user) => {
+        if (user === null) {
+          return next(null, false, { message: 'Invalid credentials' });
+        }
+        if (user.isAdmin === true) {
+          return next(null, user);
+        }
+        return next(null, false, { message: 'Invalid credentials' });
       })
       .catch((e) => next(e));
   })
@@ -52,3 +74,5 @@ export const userAuthentication = passport.authenticate('userAuthentication', {
   session: false
 });
 export const isPremium = passport.authenticate('isPremium', { session: false });
+
+export const isAdmin = passport.authenticate('isAdmin', { session: false });
