@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 import moment from 'moment';
 import mongoose, { Model, Schema } from 'mongoose';
-import validtor from 'validator';
+import validator from 'validator';
 import Encrypter from '../../auth/Encrypter';
 import PaymentSchema, { Payment } from './Payment';
 
@@ -22,17 +22,22 @@ const UserSchema = new Schema({
   username: {
     type: String,
     required: [true, 'Username must be provided'],
-    unique: true
+    unique: true,
+    trim: true,
+    index: { unique: true, sparse: true }
   },
   password: {
     type: String,
-    required: [true, 'Password must be provided']
+    required: [true, 'Password must be provided'],
+    minlength: 8
   },
   email: {
     type: String,
     required: [true, 'Email must be provided'],
     unique: true,
-    validate: (value: string) => validtor.isEmail(value)
+    trim: true,
+    index: { unique: true, sparse: true },
+    validate: (value: string) => validator.isEmail(value)
   },
   registrationDate: {
     type: Date,
@@ -68,7 +73,7 @@ UserSchema.virtual('isPremium').get(function (this: UserBaseDocument) {
 
 UserSchema.virtual('lastPayment').get(function (this: UserBaseDocument) {
   if (!Array.isArray(this.payments)) {
-    throw new Error('No payments available!');
+    return;
   }
 
   return this.payments[this.payments.length - 1];

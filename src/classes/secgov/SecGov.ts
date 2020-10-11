@@ -18,6 +18,9 @@ class SecGov {
   public static readonly MS_BETWEEN_REQUESTS = 100;
 
   constructor(dm: Downloader) {
+    if (!dm) {
+      throw new TypeError('Please, provide a valid Downloader');
+    }
     this.dm = dm;
     this.dm.use(new TimedQueue(SecGov.MS_BETWEEN_REQUESTS));
   }

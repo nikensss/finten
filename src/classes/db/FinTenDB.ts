@@ -28,7 +28,9 @@ class FinTenDB {
       console.log('connecting...');
       await this.client.connect(FinTenDB.URI, {
         useNewUrlParser: true,
-        useUnifiedTopology: true
+        useCreateIndex: true,
+        useUnifiedTopology: true,
+        autoIndex: true
       });
 
       this.client.set('useCreateIndex', true);
