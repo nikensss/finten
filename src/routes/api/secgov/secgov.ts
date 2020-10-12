@@ -51,7 +51,7 @@ secgovRoutes.get('/fill', isAdmin, async (req, res) => {
   );
 
   const finten = new FinTen(new SecGov(new DownloadManager()));
-  finten.fill(parseInt(start as string), parseInt(end as string));
+  finten.addNewFilings(parseInt(start as string), parseInt(end as string));
 
   return res.status(200).json({
     start,
@@ -65,7 +65,7 @@ secgovRoutes.get('/fix', isAdmin, async (req, res) => {
   );
 
   const finten = new FinTen(new SecGov(new DownloadManager()));
-  finten.fix();
+  finten.retryProblematicFilings();
 
   return res.status(200).json({
     message: 'fixing...'

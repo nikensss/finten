@@ -73,7 +73,7 @@ class FinTen {
    * @param end year at which to stop downloading data (inclusive)
    * @param amountOfFilings total amount of filings to download
    */
-  async fill(start: number, end: number = start): Promise<void> {
+  async addNewFilings(start: number, end: number = start): Promise<void> {
     this.logger.logLevel = LogLevel.DEBUG;
 
     const newFilings = await this.getNewFilingsMetaData(start, end);
@@ -123,12 +123,12 @@ class FinTen {
     return filings;
   }
 
-  async fix(): Promise<void> {
+  async retryProblematicFilings(): Promise<void> {
     this.logger.logLevel = LogLevel.DEBUG;
     this.logger.info(`Getting broken links`);
     const db: FinTenDB = await this.db.connect();
 
-    const problematicFilings = await this.getVisitedLinksWithErrors();
+    const problematicFilings = await this.getLinksOfProblematicFilings();
 
     for (let n = 0; n < problematicFilings.length; n++) {
       this.logPercentage(n, problematicFilings.length);
@@ -159,7 +159,7 @@ class FinTen {
     this.secgov.flush();
   }
 
-  private async getVisitedLinksWithErrors(): Promise<Downloadable[]> {
+  private async getLinksOfProblematicFilings(): Promise<Downloadable[]> {
     const db = await this.db.connect();
     const linksWithErrors: VisitedLinkDocument[] = await db.findVisitedLinks(
       { status: VisitedLinkStatus.ERROR },
