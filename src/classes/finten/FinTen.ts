@@ -71,7 +71,6 @@ class FinTen {
    *
    * @param start year from which to start downloading data (inclusive)
    * @param end year at which to stop downloading data (inclusive)
-   * @param amountOfFilings total amount of filings to download
    */
   async addNewFilings(start: number, end: number = start): Promise<void> {
     this.logger.logLevel = LogLevel.DEBUG;

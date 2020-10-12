@@ -50,7 +50,7 @@ describe('SecGov tests', () => {
     );
   });
 
-  it('should call "get" 4 times', () => {
+  it('should call "get" 16 times', () => {
     const mockedDownloader: Downloader = mocker.mock<Downloader>();
     const downloader: Downloader = mocker.instance(mockedDownloader);
 
@@ -73,7 +73,7 @@ describe('SecGov tests', () => {
     mocker
       .when(mockedDownloader.get(mocker.anything()))
       .thenCall((...d: Downloadable[]) => {
-        expect(d.length).to.be.greaterThan(0);
+        expect(d.length).to.equal(1);
         expect(d[0].url).to.equal(expectedURL);
         expect(d[0].fileName).to.equal(expectedFileName);
       });
