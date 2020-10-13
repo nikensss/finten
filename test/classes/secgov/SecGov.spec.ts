@@ -19,15 +19,6 @@ describe('SecGov tests', () => {
     expect(secgov).to.not.be.undefined;
   });
 
-  it('should not accept null or undefined in the constructor', () => {
-    expect(() => new SecGov(null)).to.throw(
-      'Please, provide a valid Downloader'
-    );
-    expect(() => new SecGov(undefined)).to.throw(
-      'Please, provide a valid Downloader'
-    );
-  });
-
   it('should set TimedQueue for Downloader', () => {
     const mockedDownloader: Downloader = mocker.mock<Downloader>();
     const downloader: Downloader = mocker.instance(mockedDownloader);
