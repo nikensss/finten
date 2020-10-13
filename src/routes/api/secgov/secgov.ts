@@ -4,11 +4,10 @@ import { default as LOGGER } from '../../../classes/logger/DefaultLogger';
 import FinTen from '../../../classes/finten/FinTen';
 import SecGov from '../../../classes/secgov/SecGov';
 import DownloadManager from '../../../classes/download/DownloadManager';
-import { isAdmin } from '../../../classes/auth/Passport';
 
 const secgovRoutes = Router();
 
-secgovRoutes.get('/', isAdmin, (req, res) => {
+secgovRoutes.get('/', (req, res) => {
   res.json({
     message: 'secgov route 🍟'
   });
@@ -37,7 +36,7 @@ secgovRoutes.get('/', isAdmin, (req, res) => {
  *  -Code: 400 Bad Request Error
  *  -Content: JSON object with property 'error' and value 'missing data: start'
  */
-secgovRoutes.get('/fill', isAdmin, async (req, res) => {
+secgovRoutes.get('/fill', async (req, res) => {
   const { start, end = start } = req.query;
 
   if (!start) {
@@ -59,7 +58,7 @@ secgovRoutes.get('/fill', isAdmin, async (req, res) => {
   });
 });
 
-secgovRoutes.get('/fix', isAdmin, async (req, res) => {
+secgovRoutes.get('/fix', async (req, res) => {
   LOGGER.get('secgov-routes/fix').info(
     `revisiting and reparsing documents from links with errors`
   );
@@ -72,7 +71,7 @@ secgovRoutes.get('/fix', isAdmin, async (req, res) => {
   });
 });
 
-secgovRoutes.get('/ecikmap', isAdmin, async (req, res) => {
+secgovRoutes.get('/ecikmap', async (req, res) => {
   const finten = new FinTen(new SecGov(new DownloadManager()));
   finten.buildEntityCentralIndexKeyMap();
 

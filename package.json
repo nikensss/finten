@@ -12,7 +12,8 @@
     "test-api": "mocha -r dotenv/config -r ts-node/register test/api/**/*.spec.ts",
     "npmi-container": "rm -rf node_modules && npm i",
     "pre-deploy": "rm -rf node_modules && cd db_docker_test && docker-compose up --exit-code-from test",
-    "lint": "eslint '*/**/*.{js,ts,tsx}' "
+    "lint": "eslint '*/**/*.{js,ts,tsx}' ",
+    "lintf": "eslint --fix --ext '*/**/*.{js,ts,tsx}' "
   },
   "nodemonConfig": {
     "ignore": [

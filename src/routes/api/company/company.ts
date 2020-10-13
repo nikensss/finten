@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { isPremium } from '../../../classes/auth/Passport';
 import FinTenDB from '../../../classes/db/FinTenDB';
 
 const company = Router();
@@ -18,13 +17,13 @@ const accessibleTickers = [
   'JPM'
 ];
 
-company.get('/', isPremium, (req, res) => {
+company.get('/', (req, res) => {
   res.json({
     message: 'company route 😎'
   });
 });
 
-company.get('/names', isPremium, async (req, res) => {
+company.get('/names', async (req, res) => {
   const db = await FinTenDB.getInstance().connect();
 
   const names = await db.distinctFilingKey('EntityRegistrantName');
@@ -34,7 +33,7 @@ company.get('/names', isPremium, async (req, res) => {
   });
 });
 
-company.get('/name', isPremium, async (req, res) => {
+company.get('/name', async (req, res) => {
   //object destructuring
   const { name } = req.query;
 
@@ -55,7 +54,7 @@ company.get('/name', isPremium, async (req, res) => {
   });
 });
 
-company.get('/tickers', isPremium, async (req, res) => {
+company.get('/tickers', async (req, res) => {
   // const db = await FinTenDB.getInstance();
   // const tickers = await db.distinctFilingKey('TradingSymbol');
 
@@ -101,7 +100,7 @@ company.get('/ticker', async (req, res) => {
   }
 });
 
-company.get('/eciks', isPremium, async (req, res) => {
+company.get('/eciks', async (req, res) => {
   const db = await FinTenDB.getInstance().connect();
 
   const ciks = await db.distinctFilingKey('EntityCentralIndexKey');
