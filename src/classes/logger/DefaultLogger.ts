@@ -43,25 +43,25 @@ class DefaultLogger implements Logger {
 
   debug(...messages: unknown[]): void {
     if (this._logLevel <= LogLevel.DEBUG) {
-      this.log(`DEBUG`, messages);
+      this.log('DEBUG', messages);
     }
   }
 
   info(...messages: unknown[]): void {
     if (this._logLevel <= LogLevel.INFO) {
-      this.log(`INFO`, messages);
+      this.log('INFO', messages);
     }
   }
 
   warning(...messages: unknown[]): void {
     if (this._logLevel <= LogLevel.WARNING) {
-      this.log(`WARNING`, messages);
+      this.log('WARNING', messages);
     }
   }
 
   error(...messages: unknown[]): void {
     if (this._logLevel <= LogLevel.ERROR) {
-      this.log(`ERROR`, messages);
+      this.log('ERROR', messages);
     }
   }
 

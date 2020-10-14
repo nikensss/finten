@@ -12,8 +12,8 @@
     "test-api": "mocha -r dotenv/config -r ts-node/register test/api/**/*.spec.ts",
     "npmi-container": "rm -rf node_modules && npm i",
     "pre-deploy": "rm -rf node_modules && cd db_docker_test && docker-compose up --exit-code-from test",
-    "lint": "eslint '*/**/*.{js,ts,tsx}' ",
-    "lintf": "eslint --fix --ext '*/**/*.{js,ts,tsx}' "
+    "lint": "eslint --fix '{src,test}/**/*.ts'",
+    "pretty": "prettier --write {src,test}/**/*.ts"
   },
   "nodemonConfig": {
     "ignore": [
@@ -33,12 +33,19 @@
     "url": "git+https://github.com/weirwoodai/finten.git"
   },
   "typings": "types",
-  "author": "",
+  "author": "Alex Faraday, Ricard Mallafre",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/weirwoodai/finten/issues"
   },
   "homepage": "https://github.com/weirwoodai/finten#readme",
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run pretty && npm run lint && npm test && git add -A",
+      "pre-push": "npm test",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
   "dependencies": {
     "@types/axios": "^0.14.0",
     "@types/bcryptjs": "^2.4.2",
@@ -78,6 +85,8 @@
     "validator": "^13.1.17"
   },
   "devDependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
     "@types/chai": "^4.2.11",
     "@types/chai-as-promised": "^7.1.3",
     "@types/mocha": "^7.0.2",
@@ -90,6 +99,7 @@
     "eslint": "^7.10.0",
     "eslint-config-prettier": "^6.12.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "husky": "^4.3.0",
     "mocha": "^8.1.3",
     "mongodb-memory-server": "^6.9.0",
     "prettier": "^2.1.2",

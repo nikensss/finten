@@ -17,7 +17,7 @@ const options = {
 passport.use(
   'userAuthentication',
   new Strategy(options, (payload, next) => {
-    console.log(`Auth user. Payload is`, payload);
+    console.log('Auth user. Payload is', payload);
     FinTenDB.getInstance()
       .connect()
       .then(() => User.findOne({ _id: payload.id }))
@@ -29,7 +29,7 @@ passport.use(
 passport.use(
   'isPremium',
   new Strategy(options, (payload, next) => {
-    console.log(`isPremium. Payload is`, payload);
+    console.log('isPremium. Payload is', payload);
     FinTenDB.getInstance()
       .connect()
       .then(() => User.findOne({ _id: payload.id }))
@@ -51,7 +51,7 @@ passport.use(
 passport.use(
   'isAdmin',
   new Strategy(options, (payload, next) => {
-    console.log(`isAdmin. Payload is`, payload);
+    console.log('isAdmin. Payload is', payload);
     FinTenDB.getInstance()
       .connect()
       .then(() => User.findOne({ _id: payload.id }))

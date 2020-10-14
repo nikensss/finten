@@ -94,7 +94,7 @@ class FinTen {
       this.secgov.flush();
     }
     this.secgov.flush();
-    this.logger.info(`Done filling!`);
+    this.logger.info('Done filling!');
   }
 
   private async getNewFilingsMetaData(start: number, end: number) {
@@ -124,7 +124,7 @@ class FinTen {
 
   async retryProblematicFilings(): Promise<void> {
     this.logger.logLevel = LogLevel.DEBUG;
-    this.logger.info(`Getting broken links`);
+    this.logger.info('Getting broken links');
     const db: FinTenDB = await this.db.connect();
 
     const problematicFilings = await this.getLinksOfProblematicFilings();

@@ -60,7 +60,7 @@ secgovRoutes.get('/fill', async (req, res) => {
 
 secgovRoutes.get('/fix', async (req, res) => {
   LOGGER.get('secgov-routes/fix').info(
-    `revisiting and reparsing documents from links with errors`
+    'revisiting and reparsing documents from links with errors'
   );
 
   const finten = new FinTen(new SecGov(new DownloadManager()));
