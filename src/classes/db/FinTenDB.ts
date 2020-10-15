@@ -19,14 +19,14 @@ class FinTenDB {
     return FinTenDB.instance;
   }
 
-  public async connect(): Promise<this> {
+  public async connect(uri?: string): Promise<this> {
     if (this.isConnected()) {
       return this;
     }
 
     try {
       console.log('connecting...');
-      await this.client.connect(FinTenDB.URI, {
+      await this.client.connect(uri || FinTenDB.URI, {
         useNewUrlParser: true,
         useCreateIndex: true,
         useUnifiedTopology: true,
@@ -38,6 +38,10 @@ class FinTenDB {
     } catch (ex) {
       throw new Error('Could not connect to DB: ' + ex);
     }
+  }
+
+  async disconnect(): Promise<void> {
+    return await this.client.disconnect();
   }
 
   private isConnected(): boolean {
