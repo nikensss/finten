@@ -218,6 +218,10 @@ class FinTen {
       `🛎  ${currentIndex + 1}/${length} (${percentageDownloads.toFixed(3)} %)`
     );
   }
+
+  fixTickers() {
+    return;
+  }
 }
 
 export default FinTen;

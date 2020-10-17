@@ -8,6 +8,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import path from 'path';
 import XBRLUtilities from '../../../src/classes/secgov/XBRLUtilities';
 import { promises as fs } from 'fs';
+import { Ticker, TickerDocument } from '../../../src/classes/db/models/Ticker';
 
 describe('FinTen tests', () => {
   let mongod: MongoMemoryServer, uri: string;
@@ -26,6 +27,8 @@ describe('FinTen tests', () => {
       );
       await Promise.all(
         xbrls.map((xbrl) => {
+          console.log(xbrl.get().TradingSymbol);
+          xbrl.get().TradingSymbol = 'wrong symbol';
           db.insertFiling(xbrl.get());
         })
       );
@@ -43,5 +46,34 @@ describe('FinTen tests', () => {
     expect(
       new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance())
     ).to.not.be.undefined;
+  });
+
+  it('should retrieve all filings', async () => {
+    const finten = new FinTen(
+      new SecGov(new DownloadManager()),
+      FinTenDB.getInstance()
+    );
+
+    const tickers: Ticker[] = [
+      { TradingSymbol: 'AMZN', EntityCentralIndexKey: 1018724 },
+      { TradingSymbol: 'CNBX', EntityCentralIndexKey: 1343009 },
+      { TradingSymbol: 'COST', EntityCentralIndexKey: 1621199 },
+      { TradingSymbol: 'GOOG', EntityCentralIndexKey: 1652044 }
+    ];
+
+    finten.fixTickers();
+
+    const filings = await finten.db.findFilings({});
+
+    for (const filing of filings) {
+      const expected = tickers.find(
+        (t) =>
+          t.EntityCentralIndexKey === parseInt(filing.EntityCentralIndexKey)
+      );
+      if (!expected) {
+        throw new Error('Cannot find expected!');
+      }
+      expect(filing.TradingSymbol).to.be.equal(expected.TradingSymbol);
+    }
   });
 });
