@@ -134,6 +134,13 @@ class FinTenDB implements Database {
     return await UserModel.findOne(match, select);
   }
 
+  async findTicker(
+    match: Partial<TickerDocument>,
+    select = ''
+  ): Promise<TickerDocument | null> {
+    return await TickerModel.findOne(match, select);
+  }
+
   async updateFilings(
     match: Partial<Filing>,
     update: Partial<Filing>

@@ -30,6 +30,10 @@ interface Database {
   insertFiling(filing: Filing): Promise<FilingDocument>;
   insertVisitedLink(visitedLink: VisitedLink): Promise<VisitedLinkDocument>;
   insertUser(user: User): Promise<UserDocument>;
+  findTicker(
+    match: Partial<TickerDocument>,
+    select?: string
+  ): Promise<TickerDocument | null>;
   findFilings(
     match: Partial<FilingDocument>,
     select?: string
