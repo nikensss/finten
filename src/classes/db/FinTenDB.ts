@@ -1,17 +1,18 @@
 import mongoose, { Mongoose } from 'mongoose';
-import FilingSchema, { Filing, FilingDocument } from './models/Filing';
-import TickerSchema, { Ticker, TickerDocument } from './models/Ticker';
-import UserSchema, { User, UserDocument } from './models/User';
-import VisitedLinkSchema, {
+import Database from './Database';
+import FilingModel, { Filing, FilingDocument } from './models/Filing';
+import TickerModel, { Ticker, TickerDocument } from './models/Ticker';
+import UserModel, { User, UserDocument } from './models/User';
+import VisitedLinkModel, {
   VisitedLink,
   VisitedLinkDocument
 } from './models/VisitedLink';
 
-class FinTenDB {
+class FinTenDB implements Database {
   private static instance: FinTenDB | null = null;
   private client: Mongoose = mongoose;
 
-  public static getInstance(): FinTenDB {
+  static getInstance(): FinTenDB {
     if (FinTenDB.instance === null) {
       FinTenDB.instance = new FinTenDB();
     }
@@ -19,7 +20,7 @@ class FinTenDB {
     return FinTenDB.instance;
   }
 
-  public async connect(uri?: string): Promise<this> {
+  async connect(uri?: string): Promise<Database> {
     if (this.isConnected()) {
       return this;
     }
@@ -80,7 +81,7 @@ class FinTenDB {
 
   async insertTicker(ticker: Ticker): Promise<TickerDocument> {
     try {
-      return await TickerSchema.create(ticker);
+      return await TickerModel.create(ticker);
     } catch (ex) {
       throw ex;
     }
@@ -88,7 +89,7 @@ class FinTenDB {
 
   async insertFiling(filing: Filing): Promise<FilingDocument> {
     try {
-      return await FilingSchema.create(filing);
+      return await FilingModel.create(filing);
     } catch (ex) {
       throw ex;
     }
@@ -98,7 +99,7 @@ class FinTenDB {
     visitedLink: VisitedLink
   ): Promise<VisitedLinkDocument> {
     try {
-      return await VisitedLinkSchema.create(visitedLink);
+      return await VisitedLinkModel.create(visitedLink);
     } catch (ex) {
       throw ex;
     }
@@ -106,7 +107,7 @@ class FinTenDB {
 
   async insertUser(user: User): Promise<UserDocument> {
     try {
-      return await UserSchema.create(user);
+      return await UserModel.create(user);
     } catch (ex) {
       throw ex;
     }
@@ -116,30 +117,28 @@ class FinTenDB {
     match: Partial<FilingDocument>,
     select = ''
   ): Promise<FilingDocument[]> {
-    return await FilingSchema.find(match, select);
+    return await FilingModel.find(match, select);
   }
 
   async findVisitedLinks(
-    match: Partial<VisitedLinkDocument> = {},
+    match: Partial<VisitedLinkDocument>,
     select = ''
   ): Promise<VisitedLinkDocument[]> {
-    return await VisitedLinkSchema.find(match, select);
+    return await VisitedLinkModel.find(match, select);
   }
 
   async findUser(
     match: Partial<UserDocument>,
     select = ''
   ): Promise<UserDocument | null> {
-    return await UserSchema.findOne(match, select);
+    return await UserModel.findOne(match, select);
   }
 
   async updateFilings(
     match: Partial<Filing>,
     update: Partial<Filing>
   ): Promise<FilingDocument> {
-    throw new Error('Unsupported!');
-
-    return await FilingSchema.updateOne(match, update, {
+    return await FilingModel.updateOne(match, update, {
       runValidators: true
     });
   }
@@ -150,7 +149,7 @@ class FinTenDB {
   ): Promise<VisitedLink> {
     throw new Error('Unsupported!');
 
-    return await VisitedLinkSchema.updateOne(match, update, {
+    return await VisitedLinkModel.updateOne(match, update, {
       runValidators: true
     });
   }
@@ -160,7 +159,7 @@ class FinTenDB {
       throw new Error('No connection to the DB!');
     }
 
-    return await FilingSchema.distinct(key);
+    return await FilingModel.distinct(key);
   }
 }
 

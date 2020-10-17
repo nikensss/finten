@@ -4,6 +4,7 @@ import { default as LOGGER } from '../../../classes/logger/DefaultLogger';
 import FinTen from '../../../classes/finten/FinTen';
 import SecGov from '../../../classes/secgov/SecGov';
 import DownloadManager from '../../../classes/download/DownloadManager';
+import FinTenDB from '../../../classes/db/FinTenDB';
 
 const secgovRoutes = Router();
 
@@ -49,7 +50,10 @@ secgovRoutes.get('/fill', async (req, res) => {
     `filling database with all the data between ${start} and ${end}`
   );
 
-  const finten = new FinTen(new SecGov(new DownloadManager()));
+  const finten = new FinTen(
+    new SecGov(new DownloadManager()),
+    FinTenDB.getInstance()
+  );
   finten.addNewFilings(parseInt(start as string), parseInt(end as string));
 
   return res.status(200).json({
@@ -63,7 +67,10 @@ secgovRoutes.get('/fix', async (req, res) => {
     'revisiting and reparsing documents from links with errors'
   );
 
-  const finten = new FinTen(new SecGov(new DownloadManager()));
+  const finten = new FinTen(
+    new SecGov(new DownloadManager()),
+    FinTenDB.getInstance()
+  );
   finten.retryProblematicFilings();
 
   return res.status(200).json({
@@ -72,7 +79,10 @@ secgovRoutes.get('/fix', async (req, res) => {
 });
 
 secgovRoutes.get('/ecikmap', async (req, res) => {
-  const finten = new FinTen(new SecGov(new DownloadManager()));
+  const finten = new FinTen(
+    new SecGov(new DownloadManager()),
+    FinTenDB.getInstance()
+  );
   finten.buildEntityCentralIndexKeyMap();
 
   return res.status(200).json({

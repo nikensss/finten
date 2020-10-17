@@ -1,0 +1,55 @@
+import { Filing, FilingDocument } from './models/Filing';
+import { Ticker, TickerDocument } from './models/Ticker';
+import { User, UserDocument } from './models/User';
+import { VisitedLink, VisitedLinkDocument } from './models/VisitedLink';
+
+/* 
+interface DatabaseReader<T> {
+  read(): Promise<T[]>;
+  findById(id: string): Promise<T | null>;
+  findOne(cond?: Partial<T>): Promise<T | null>;
+  find(cond: Partial<T>): Promise<T[]>;
+}
+
+interface DatabaseWriter<T> {
+  create(item: Partial<T>): Promise<T>;
+  update(id: mongoose.Types.ObjectId, updates: Partial<T>): Promise<T>;
+  delete(id: string): Promise<T>;
+}
+
+interface Database<T> extends DatabaseReader<T>, DatabaseWriter<T> {
+  connect(uri?: string): Promise<Database<T>>;
+  disconnect(): Promise<void>;
+}
+*/
+
+interface Database {
+  connect(uri?: string): Promise<Database>;
+  disconnect(): Promise<void>;
+  insertTicker(ticker: Ticker): Promise<TickerDocument>;
+  insertFiling(filing: Filing): Promise<FilingDocument>;
+  insertVisitedLink(visitedLink: VisitedLink): Promise<VisitedLinkDocument>;
+  insertUser(user: User): Promise<UserDocument>;
+  findFilings(
+    match: Partial<FilingDocument>,
+    select?: string
+  ): Promise<FilingDocument[]>;
+  findVisitedLinks(
+    match: Partial<VisitedLinkDocument>,
+    select?: string
+  ): Promise<VisitedLinkDocument[]>;
+  findUser(
+    match: Partial<UserDocument>,
+    select?: string
+  ): Promise<UserDocument | null>;
+  updateFilings(
+    match: Partial<Filing>,
+    update: Partial<Filing>
+  ): Promise<FilingDocument>;
+  updateVisitedLinks(
+    match: Partial<VisitedLink>,
+    update: Partial<VisitedLink>
+  ): Promise<VisitedLink>;
+}
+
+export default Database;

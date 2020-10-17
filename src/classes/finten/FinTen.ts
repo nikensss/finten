@@ -1,6 +1,5 @@
 import { promises as fs } from 'fs';
 import FormType from '../filings/FormType';
-import FinTenDB from '../db/FinTenDB';
 import SecGov from '../secgov/SecGov';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { LogLevel } from '../logger/LogLevel';
@@ -13,14 +12,15 @@ import { Schema } from 'mongoose';
 import { Filing } from '../db/models/Filing';
 import Ticker from '../db/models/Ticker';
 import Downloadable from '../download/Downloadable';
+import Database from '../db/Database';
 
 class FinTen {
   private _secgov: SecGov;
-  private _db: FinTenDB;
+  private _db: Database;
 
-  constructor(secgov: SecGov) {
+  constructor(secgov: SecGov, db: Database) {
     this._secgov = secgov;
-    this._db = FinTenDB.getInstance();
+    this._db = db;
   }
 
   get secgov(): SecGov {
@@ -31,11 +31,11 @@ class FinTen {
     this._secgov = secgov;
   }
 
-  get db(): FinTenDB {
+  get db(): Database {
     return this._db;
   }
 
-  set db(db: FinTenDB) {
+  set db(db: Database) {
     this._db = db;
   }
 
@@ -101,7 +101,7 @@ class FinTen {
     try {
       const filingReportsMetaData = await this.getFilingsMetaData(start, end);
       const db = await this.db.connect();
-      const visitedLinks = await db.findVisitedLinks();
+      const visitedLinks = await db.findVisitedLinks({});
       return filingReportsMetaData.filter(
         (f) => !visitedLinks.find((v) => v.url === f.url)
       );
@@ -125,7 +125,7 @@ class FinTen {
   async retryProblematicFilings(): Promise<void> {
     this.logger.logLevel = LogLevel.DEBUG;
     this.logger.info('Getting broken links');
-    const db: FinTenDB = await this.db.connect();
+    const db: Database = await this.db.connect();
 
     const problematicFilings = await this.getLinksOfProblematicFilings();
 
