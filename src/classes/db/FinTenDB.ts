@@ -133,12 +133,17 @@ class FinTenDB {
     return await UserSchema.findOne(match, select);
   }
 
+  async findTicker(
+    match: Partial<TickerDocument>,
+    select = ''
+  ): Promise<TickerDocument | null> {
+    return await TickerSchema.findOne(match, select);
+  }
+
   async updateFilings(
     match: Partial<Filing>,
     update: Partial<Filing>
   ): Promise<FilingDocument> {
-    throw new Error('Unsupported!');
-
     return await FilingSchema.updateOne(match, update, {
       runValidators: true
     });
