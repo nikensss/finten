@@ -219,7 +219,53 @@ class FinTen {
     );
   }
 
-  fixTickers() {
+  async fixTickers(): Promise<void> {
+    console.log('getting filings...');
+    const filings = await this.db.findFilings({});
+
+    console.log(`scanning ${filings.length} filings`);
+
+    let unknownECIKs = 0;
+    let fixedFilings = 0;
+    let totalDone = 0;
+
+    for (const filing of filings) {
+      const ticker = await this.db.findTicker({
+        EntityCentralIndexKey: parseInt(filing.EntityCentralIndexKey)
+      });
+
+      if (!ticker) {
+        console.log(
+          `Skipping ${filing.EntityRegistrantName} (${filing.EntityCentralIndexKey}) (${totalDone}/${filings.length})`
+        );
+        unknownECIKs += 1;
+        totalDone += 1;
+        continue;
+      }
+
+      if (filing.TradingSymbol.toUpperCase() === ticker.TradingSymbol) {
+        console.log(
+          `Trading symbols match, skipping (${totalDone}/${filings.length})...`
+        );
+        await this.db.updateFilings(filing, {
+          TradingSymbol: ticker.TradingSymbol,
+          CurrentTradingSymbol: ticker.TradingSymbol
+        });
+        totalDone += 1;
+        continue;
+      }
+
+      console.log(
+        `Updating from ${filing.TradingSymbol} to ${ticker.TradingSymbol} (${totalDone}/${filings.length})`
+      );
+      fixedFilings += 1;
+      totalDone += 1;
+      await this.db.updateFilings(filing, {
+        CurrentTradingSymbol: ticker.TradingSymbol
+      });
+    }
+    console.log(`Fixed ${fixedFilings} filings`);
+    console.log(`Unknown ECIKs: ${unknownECIKs}`);
     return;
   }
 }

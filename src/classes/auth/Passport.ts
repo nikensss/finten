@@ -54,7 +54,6 @@ passport.use(
 passport.use(
   'isAdmin',
   new Strategy(options, (payload, next) => {
-    console.log('isAdmin. Payload is', payload);
     FinTenDB.getInstance()
       .connect()
       .then(() => User.findOne({ _id: payload.id }))

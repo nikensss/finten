@@ -62,7 +62,7 @@ secgovRoutes.get('/fill', async (req, res) => {
   });
 });
 
-secgovRoutes.get('/fix', async (req, res) => {
+secgovRoutes.get('/reparse', async (req, res) => {
   LOGGER.get('secgov-routes/fix').info(
     'revisiting and reparsing documents from links with errors'
   );
@@ -74,7 +74,21 @@ secgovRoutes.get('/fix', async (req, res) => {
   finten.retryProblematicFilings();
 
   return res.status(200).json({
-    message: 'fixing...'
+    message: 'reparsing...'
+  });
+});
+
+secgovRoutes.get('/fixtickers', async (req, res) => {
+  LOGGER.get('secgov-routes/fixtickers').info('fixing tickers');
+
+  const finten = new FinTen(
+    new SecGov(new DownloadManager()),
+    FinTenDB.getInstance()
+  );
+  finten.fixTickers();
+
+  return res.status(200).json({
+    message: 'fixing tickers...'
   });
 });
 

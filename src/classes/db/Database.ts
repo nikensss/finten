@@ -58,6 +58,7 @@ interface Database {
     match: Partial<VisitedLink>,
     update: Partial<VisitedLink>
   ): Promise<VisitedLink>;
+  distinctFilingKey(key: string): Promise<string[]>;
 }
 
 export default Database;

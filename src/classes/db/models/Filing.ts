@@ -7,6 +7,7 @@ export interface Filing {
   EntityCentralIndexKey: string;
   EntityFilerCategory: string;
   TradingSymbol: string;
+  CurrentTradingSymbol: string;
   DocumentPeriodEndDate: string;
   DocumentFiscalYearFocus: string;
   DocumentFiscalPeriodFocus: string;
@@ -81,6 +82,7 @@ const FilingSchema = new Schema({
   EntityCentralIndexKey: String,
   EntityFilerCategory: String,
   TradingSymbol: String,
+  CurrentTradingSymbol: String,
   DocumentPeriodEndDate: String,
   DocumentFiscalYearFocus: String,
   DocumentFiscalPeriodFocus: String,
@@ -157,6 +159,13 @@ FilingSchema.pre<FilingDocument>('validate', function (next: () => void) {
   if (this.ROA !== null && isNaN(this.ROA)) this.ROA = null;
   if (this.ROE !== null && isNaN(this.ROE)) this.ROE = null;
   if (this.ROS !== null && isNaN(this.ROS)) this.ROS = null;
+
+  this.CurrentTradingSymbol = this.TradingSymbol;
+
+  if (this.TradingSymbol !== 'Field not found.') {
+    this.TradingSymbol = this.TradingSymbol.toUpperCase();
+  }
+
   next();
 });
 
