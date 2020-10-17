@@ -17,8 +17,6 @@ describe('FormType tests', () => {
   });
 
   it('should fail with unkown type', () => {
-    expect(() => byName('not a filing')).to.throw(
-      'Unknown filing type: not a filing'
-    );
+    expect(() => byName('not a filing')).to.throw('Unknown filing type: not a filing');
   });
 });

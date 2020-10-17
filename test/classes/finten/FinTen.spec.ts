@@ -9,6 +9,8 @@ import path from 'path';
 import XBRLUtilities from '../../../src/classes/secgov/XBRLUtilities';
 import { promises as fs } from 'fs';
 import { Ticker } from '../../../src/classes/db/models/Ticker';
+import { FilingDocument } from '../../../src/classes/db/models/Filing';
+import { fail } from 'assert';
 
 describe('FinTen tests', () => {
   let mongod: MongoMemoryServer, uri: string;
@@ -19,9 +21,7 @@ describe('FinTen tests', () => {
       uri = await mongod.getUri();
       const db = await FinTenDB.getInstance().connect(uri);
 
-      const files = (await fs.readdir(__dirname)).filter((f) =>
-        f.endsWith('.txt')
-      );
+      const files = (await fs.readdir(__dirname)).filter((f) => f.endsWith('.txt'));
       const xbrls = await Promise.all(
         files.map((f) => XBRLUtilities.fromTxt(path.join(__dirname, f)))
       );
@@ -50,28 +50,25 @@ describe('FinTen tests', () => {
   });
 
   it('should create a new FinTen', () => {
-    expect(
-      new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance())
-    ).to.not.be.undefined;
+    expect(new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance())).to.not.be
+      .undefined;
   });
 
   it('should fix 4 tickers', async () => {
-    const finten = new FinTen(
-      new SecGov(new DownloadManager()),
-      FinTenDB.getInstance()
-    );
+    const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
 
     await finten.fixTickers();
-    const filings = await finten.db.findFilings({});
 
-    for (const filing of filings) {
-      const expected = await finten.db.findTicker({
+    await finten.db.findFilings({}).eachAsync(async (filing: FilingDocument) => {
+      const ticker = await finten.db.findTicker({
         EntityCentralIndexKey: parseInt(filing.EntityCentralIndexKey)
       });
-      if (!expected) {
-        throw new Error('Cannot find expected!');
+
+      if (!ticker) {
+        fail('Please, add the tickers to the mongodb-memory-server!');
       }
-      expect(filing.CurrentTradingSymbol).to.be.equal(expected.TradingSymbol);
-    }
+
+      expect(filing.CurrentTradingSymbol).to.be.equal(ticker.TradingSymbol);
+    });
   });
 });

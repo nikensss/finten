@@ -171,7 +171,4 @@ FilingSchema.pre<FilingDocument>('validate', function (next: () => void) {
 
 export interface FilingModel extends Model<FilingDocument> {}
 
-export default mongoose.model<FilingDocument, FilingModel>(
-  'Filing',
-  FilingSchema
-);
+export default mongoose.model<FilingDocument, FilingModel>('Filing', FilingSchema);

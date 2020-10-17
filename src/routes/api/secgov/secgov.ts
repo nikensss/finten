@@ -50,10 +50,7 @@ secgovRoutes.get('/fill', async (req, res) => {
     `filling database with all the data between ${start} and ${end}`
   );
 
-  const finten = new FinTen(
-    new SecGov(new DownloadManager()),
-    FinTenDB.getInstance()
-  );
+  const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
   finten.addNewFilings(parseInt(start as string), parseInt(end as string));
 
   return res.status(200).json({
@@ -63,14 +60,9 @@ secgovRoutes.get('/fill', async (req, res) => {
 });
 
 secgovRoutes.get('/reparse', async (req, res) => {
-  LOGGER.get('secgov-routes/fix').info(
-    'revisiting and reparsing documents from links with errors'
-  );
+  LOGGER.get('secgov-routes/fix').info('revisiting and reparsing documents from links with errors');
 
-  const finten = new FinTen(
-    new SecGov(new DownloadManager()),
-    FinTenDB.getInstance()
-  );
+  const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
   finten.retryProblematicFilings();
 
   return res.status(200).json({
@@ -81,10 +73,7 @@ secgovRoutes.get('/reparse', async (req, res) => {
 secgovRoutes.get('/fixtickers', async (req, res) => {
   LOGGER.get('secgov-routes/fixtickers').info('fixing tickers');
 
-  const finten = new FinTen(
-    new SecGov(new DownloadManager()),
-    FinTenDB.getInstance()
-  );
+  const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
   finten.fixTickers();
 
   return res.status(200).json({
@@ -93,10 +82,7 @@ secgovRoutes.get('/fixtickers', async (req, res) => {
 });
 
 secgovRoutes.get('/ecikmap', async (req, res) => {
-  const finten = new FinTen(
-    new SecGov(new DownloadManager()),
-    FinTenDB.getInstance()
-  );
+  const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
   finten.buildEntityCentralIndexKeyMap();
 
   return res.status(200).json({

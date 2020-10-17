@@ -1,8 +1,20 @@
 {
   "configurations": [
     {
-      "command": "npm run start",
+      "command": "npm start",
       "name": "npm start",
+      "request": "launch",
+      "type": "node-terminal"
+    },
+    {
+      "command": "npx mocha -r dotenv/config  -r ts-node/register test/classes/db/*.spec.ts",
+      "name": "subset test",
+      "request": "launch",
+      "type": "node-terminal"
+    },
+    {
+      "command": "npm test",
+      "name": "npm test",
       "request": "launch",
       "type": "node-terminal"
     }

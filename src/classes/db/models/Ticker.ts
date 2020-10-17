@@ -45,9 +45,7 @@ TickerSchema.pre<TickerDocument>('save', function (next) {
   next();
 });
 
-TickerSchema.statics.finByEntityCentralIndexKey = async function (
-  EntityCentralIndexKey: number
-) {
+TickerSchema.statics.finByEntityCentralIndexKey = async function (EntityCentralIndexKey: number) {
   return await this.findOne({ EntityCentralIndexKey });
 };
 
@@ -72,7 +70,4 @@ export interface TickerModel extends Model<TickerDocument> {
   finByEntityCentralIndexKey(n: number): TickerDocument;
 }
 
-export default mongoose.model<TickerDocument, TickerModel>(
-  'Ticker',
-  TickerSchema
-);
+export default mongoose.model<TickerDocument, TickerModel>('Ticker', TickerSchema);

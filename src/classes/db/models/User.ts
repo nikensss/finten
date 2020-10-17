@@ -86,9 +86,7 @@ UserSchema.virtual('lastPayment').get(function (this: UserBaseDocument) {
   return this.payments[this.payments.length - 1];
 });
 
-UserSchema.methods.checkPassword = function (
-  password: string
-): Promise<boolean> {
+UserSchema.methods.checkPassword = function (password: string): Promise<boolean> {
   return Encrypter.compare(password, this.password);
 };
 

@@ -38,9 +38,7 @@ passport.use(
         }
 
         if (user.isAdmin || user.isPremium) {
-          console.log(
-            `user ${user.username} is ${user.isAdmin ? 'admin' : 'premium'}`
-          );
+          console.log(`user ${user.username} is ${user.isAdmin ? 'admin' : 'premium'}`);
           return next(null, user);
         }
         console.log(`user ${user.username} is neither admin nor premium`);

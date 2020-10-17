@@ -52,9 +52,7 @@ describe('FilingMetadata tests', () => {
     );
 
     const partialPath = filingReportMetadata.partialPath;
-    expect(partialPath).to.be.equal(
-      'edgar/data/98677/0001558370-20-005994.txt'
-    );
+    expect(partialPath).to.be.equal('edgar/data/98677/0001558370-20-005994.txt');
   });
 
   it('should get fullPath', () => {

@@ -59,9 +59,7 @@ users.post('/signup', async (req, res) => {
   } catch (e) {
     if (/duplicate key/.test(e.toString())) {
       const duplicateKey = Object.keys(e.keyPattern)[0];
-      return res
-        .status(400)
-        .json({ error: `${duplicateKey} already registered` });
+      return res.status(400).json({ error: `${duplicateKey} already registered` });
     }
 
     return res.status(400).json({ error: e.toString() });

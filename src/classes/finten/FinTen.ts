@@ -4,12 +4,9 @@ import SecGov from '../secgov/SecGov';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { LogLevel } from '../logger/LogLevel';
 import XBRLUtilities from '../secgov/XBRLUtilities';
-import {
-  VisitedLinkDocument,
-  VisitedLinkStatus
-} from '../db/models/VisitedLink';
+import { VisitedLinkDocument, VisitedLinkStatus } from '../db/models/VisitedLink';
 import { Schema } from 'mongoose';
-import { Filing } from '../db/models/Filing';
+import { Filing, FilingDocument } from '../db/models/Filing';
 import Ticker from '../db/models/Ticker';
 import Downloadable from '../download/Downloadable';
 import Database from '../db/Database';
@@ -52,10 +49,7 @@ class FinTen {
           console.log('found: ', ticker);
         } catch (ex) {
           if (!/duplicate key/.test(ex.toString())) {
-            console.error(
-              'Exception caught while parsing and insrting tickers:\n' +
-                ex.toString()
-            );
+            console.error('Exception caught while parsing and insrting tickers:\n' + ex.toString());
           }
         }
       }
@@ -99,12 +93,20 @@ class FinTen {
 
   private async getNewFilingsMetaData(start: number, end: number) {
     try {
+      const NOT_FOUND = -1;
       const filingReportsMetaData = await this.getFilingsMetaData(start, end);
       const db = await this.db.connect();
-      const visitedLinks = await db.findVisitedLinks({});
-      return filingReportsMetaData.filter(
-        (f) => !visitedLinks.find((v) => v.url === f.url)
-      );
+      await db.findVisitedLinks({}).eachAsync(async (l: VisitedLinkDocument) => {
+        let index = -1;
+        do {
+          index = filingReportsMetaData.findIndex((f) => f.url === l.url);
+          if (index === NOT_FOUND) {
+            break;
+          }
+          filingReportsMetaData.splice(index, 1);
+        } while (index !== -1);
+      });
+      return filingReportsMetaData;
     } catch (e) {
       throw new Error(e);
     }
@@ -114,10 +116,7 @@ class FinTen {
     this.secgov.flush();
 
     const indices = await this.secgov.getIndices(start, end);
-    const filings = this.secgov.parseIndices(indices, [
-      FormType.F10K,
-      FormType.F10Q
-    ]);
+    const filings = this.secgov.parseIndices(indices, [FormType.F10K, FormType.F10Q]);
     this.secgov.flush();
     return filings;
   }
@@ -139,7 +138,7 @@ class FinTen {
           const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
           const result = await this.insertFiling(xbrl.get());
 
-          await db.updateVisitedLinks(
+          await db.updateVisitedLink(
             { url: filing.url },
             {
               status: VisitedLinkStatus.OK,
@@ -160,15 +159,18 @@ class FinTen {
 
   private async getLinksOfProblematicFilings(): Promise<Downloadable[]> {
     const db = await this.db.connect();
-    const linksWithErrors: VisitedLinkDocument[] = await db.findVisitedLinks(
-      { status: VisitedLinkStatus.ERROR },
-      'url'
-    );
+    const linksWithErrors: Downloadable[] = [];
 
-    return linksWithErrors.map((f) => ({
-      url: f.url,
-      fileName: 'filing.txt'
-    }));
+    await db
+      .findVisitedLinks({ status: VisitedLinkStatus.ERROR }, 'url')
+      .eachAsync(async (l: VisitedLinkDocument) => {
+        linksWithErrors.push({
+          url: l.url,
+          fileName: 'filing.txt'
+        });
+      });
+
+    return linksWithErrors;
   }
 
   private async insertFiling(filing: Filing) {
@@ -180,10 +182,7 @@ class FinTen {
     }
   }
 
-  private async insertVisitedLink(
-    url: string,
-    resultId: Schema.Types.ObjectId
-  ) {
+  private async insertVisitedLink(url: string, resultId: Schema.Types.ObjectId) {
     try {
       const db = await this.db.connect();
       return await db.insertVisitedLink({
@@ -214,59 +213,53 @@ class FinTen {
 
   private logPercentage(currentIndex: number, length: number) {
     const percentageDownloads = ((currentIndex + 1) / length) * 100;
-    this.logger.info(
-      `🛎  ${currentIndex + 1}/${length} (${percentageDownloads.toFixed(3)} %)`
-    );
+    this.logger.info(`🛎  ${currentIndex + 1}/${length} (${percentageDownloads.toFixed(3)} %)`);
   }
 
   async fixTickers(): Promise<void> {
     console.log('getting filings...');
-    const filings = await this.db.findFilings({});
-
-    console.log(`scanning ${filings.length} filings`);
 
     let unknownECIKs = 0;
     let fixedFilings = 0;
     let totalDone = 0;
 
-    for (const filing of filings) {
-      const ticker = await this.db.findTicker({
-        EntityCentralIndexKey: parseInt(filing.EntityCentralIndexKey)
-      });
+    await this.db.findFilings({}).eachAsync(async (f: FilingDocument) => {
+      try {
+        const ticker = await this.db.findTicker({
+          EntityCentralIndexKey: parseInt(f.EntityCentralIndexKey)
+        });
 
-      if (!ticker) {
-        console.log(
-          `Skipping ${filing.EntityRegistrantName} (${filing.EntityCentralIndexKey}) (${totalDone}/${filings.length})`
-        );
-        unknownECIKs += 1;
+        if (!ticker) {
+          console.log(`Skipping ${f.EntityRegistrantName} (${f.TradingSymbol}) (${totalDone})`);
+          unknownECIKs += 1;
+          totalDone += 1;
+          return;
+        }
+
+        if (f.TradingSymbol.toUpperCase() === ticker.TradingSymbol) {
+          console.log(`Trading symbols match, adding current (${totalDone})`);
+          await this.db.updateFiling(f, {
+            TradingSymbol: ticker.TradingSymbol,
+            CurrentTradingSymbol: ticker.TradingSymbol
+          });
+          totalDone += 1;
+          return;
+        }
+
+        console.log(`${f.TradingSymbol} -> ${ticker.TradingSymbol} (${totalDone})`);
+        fixedFilings += 1;
         totalDone += 1;
-        continue;
-      }
-
-      if (filing.TradingSymbol.toUpperCase() === ticker.TradingSymbol) {
-        console.log(
-          `Trading symbols match, skipping (${totalDone}/${filings.length})...`
-        );
-        await this.db.updateFilings(filing, {
-          TradingSymbol: ticker.TradingSymbol,
+        await this.db.updateFiling(f, {
           CurrentTradingSymbol: ticker.TradingSymbol
         });
-        totalDone += 1;
-        continue;
+      } catch (ex) {
+        console.log(ex);
       }
+    });
 
-      console.log(
-        `Updating from ${filing.TradingSymbol} to ${ticker.TradingSymbol} (${totalDone}/${filings.length})`
-      );
-      fixedFilings += 1;
-      totalDone += 1;
-      await this.db.updateFilings(filing, {
-        CurrentTradingSymbol: ticker.TradingSymbol
-      });
-    }
-    console.log(`Fixed ${fixedFilings} filings`);
-    console.log(`Unknown ECIKs: ${unknownECIKs}`);
-    return;
+    console.log(`Total done: ${totalDone}`);
+    console.log(`Fixed filings: ${fixedFilings}`);
+    console.log(`Unknown ECIKS: ${unknownECIKs}`);
   }
 }
 

@@ -67,9 +67,9 @@ class DefaultLogger implements Logger {
 
   private log(type: string, ...args: unknown[]): void {
     this.output.write(
-      `${moment().format(DefaultLogger.MOMENT_FORMAT)}|{${type}} [${
-        this.label
-      }] ${args.join(';')}\n`
+      `${moment().format(DefaultLogger.MOMENT_FORMAT)}|{${type}} [${this.label}] ${args.join(
+        ';'
+      )}\n`
     );
   }
 }

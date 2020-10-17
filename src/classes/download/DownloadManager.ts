@@ -17,9 +17,7 @@ class DownloadManager implements Downloader {
     this._directory = directory;
 
     if (!fs.existsSync(this.dir)) {
-      LOGGER.get(this.constructor.name).info(
-        `directory '${this.dir}' doesn't exist, creating...`
-      );
+      LOGGER.get(this.constructor.name).info(`directory '${this.dir}' doesn't exist, creating...`);
       fs.mkdirSync(this.dir);
       LOGGER.get(this.constructor.name).info('creation successful!');
     }
@@ -62,9 +60,7 @@ class DownloadManager implements Downloader {
     const downloads: Downloadable[] = [];
     while (!this.q.isEmpty()) {
       try {
-        downloads.push(
-          await this._get((await this.q.dequeue()) as Downloadable)
-        );
+        downloads.push(await this._get((await this.q.dequeue()) as Downloadable));
       } catch (ex) {
         LOGGER.get(this.constructor.name).warning(`couldn't 'GET': ${ex}`);
       }
@@ -128,14 +124,10 @@ class DownloadManager implements Downloader {
         LOGGER.get(this.constructor.name).info(`done writting: ${d.fileName}`);
         res(p);
       });
-      writer.on('close', () =>
-        LOGGER.get(this.constructor.name).debug(`closing ${d.fileName}`)
-      );
+      writer.on('close', () => LOGGER.get(this.constructor.name).debug(`closing ${d.fileName}`));
       writer.on('error', () => {
         DownloadManager.activeFileWrites -= 1;
-        LOGGER.get(this.constructor.name).error(
-          `error while writting: ${d.fileName}`
-        );
+        LOGGER.get(this.constructor.name).error(`error while writting: ${d.fileName}`);
         rej();
       });
     });

@@ -66,11 +66,7 @@ company.get('/tickers', async (req, res) => {
 company.get('/ticker', async (req, res) => {
   const { ticker } = req.query;
 
-  if (
-    !ticker ||
-    typeof ticker !== 'string' ||
-    (ticker as string).length === 0
-  ) {
+  if (!ticker || typeof ticker !== 'string' || (ticker as string).length === 0) {
     return res.status(400).json({
       error: 'no ticker given'
     });

@@ -1,3 +1,4 @@
+import { QueryCursor } from 'mongoose';
 import { Filing, FilingDocument } from './models/Filing';
 import { Ticker, TickerDocument } from './models/Ticker';
 import { User, UserDocument } from './models/User';
@@ -34,27 +35,15 @@ interface Database {
   insertFiling(filing: Filing): Promise<FilingDocument>;
   insertVisitedLink(visitedLink: VisitedLink): Promise<VisitedLinkDocument>;
   insertUser(user: User): Promise<UserDocument>;
-  findTicker(
-    match: Partial<TickerDocument>,
-    select?: string
-  ): Promise<TickerDocument | null>;
-  findFilings(
-    match: Partial<FilingDocument>,
-    select?: string
-  ): Promise<FilingDocument[]>;
+  findTicker(match: Partial<TickerDocument>, select?: string): Promise<TickerDocument | null>;
+  findFilings(match: Partial<FilingDocument>, select?: string): QueryCursor<FilingDocument>;
   findVisitedLinks(
     match: Partial<VisitedLinkDocument>,
     select?: string
-  ): Promise<VisitedLinkDocument[]>;
-  findUser(
-    match: Partial<UserDocument>,
-    select?: string
-  ): Promise<UserDocument | null>;
-  updateFilings(
-    match: Partial<Filing>,
-    update: Partial<Filing>
-  ): Promise<FilingDocument>;
-  updateVisitedLinks(
+  ): QueryCursor<VisitedLinkDocument>;
+  findUser(match: Partial<UserDocument>, select?: string): Promise<UserDocument | null>;
+  updateFiling(match: Partial<Filing>, update: Partial<Filing>): Promise<FilingDocument>;
+  updateVisitedLink(
     match: Partial<VisitedLink>,
     update: Partial<VisitedLink>
   ): Promise<VisitedLink>;

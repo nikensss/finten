@@ -8,8 +8,7 @@ import Downloadable from '../download/Downloadable';
 import Downloader from '../download/Downloader';
 
 class SecGov {
-  public static readonly INDICES_ROOT =
-    'https://www.sec.gov/Archives/edgar/full-index/';
+  public static readonly INDICES_ROOT = 'https://www.sec.gov/Archives/edgar/full-index/';
   private dm: Downloader;
   /**
    * The amount of milliseconds between to API calls. SecGov has a limit of 10
@@ -31,10 +30,7 @@ class SecGov {
    * @param start the year from which to start downloading the .idx files (inlcusive)
    * @param end the year at which to stop downloading the .idx files (inlcusive)
    */
-  async getIndices(
-    start: number,
-    end: number = start
-  ): Promise<Downloadable[]> {
+  async getIndices(start: number, end: number = start): Promise<Downloadable[]> {
     if (start > end) throw new Error('start > end 🤯');
 
     const downloadedIndices: Downloadable[] = [];
@@ -53,13 +49,8 @@ class SecGov {
     return await this.dm.get({ url, fileName: `${year}_${quarter}_xbrl.idx` });
   }
 
-  parseIndices(
-    indices: Downloadable[],
-    formType: FormType[]
-  ): FilingMetadata[] {
-    return indices
-      .map((index) => this.parseIndex(index.fileName, formType))
-      .flat();
+  parseIndices(indices: Downloadable[], formType: FormType[]): FilingMetadata[] {
+    return indices.map((index) => this.parseIndex(index.fileName, formType)).flat();
   }
 
   /**

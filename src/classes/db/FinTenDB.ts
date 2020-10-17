@@ -1,12 +1,9 @@
-import mongoose, { CreateQuery, Document, Model, Mongoose } from 'mongoose';
+import mongoose, { CreateQuery, Document, Model, Mongoose, QueryCursor } from 'mongoose';
 import Database from './Database';
 import FilingModel, { Filing, FilingDocument } from './models/Filing';
 import TickerModel, { Ticker, TickerDocument } from './models/Ticker';
 import UserModel, { User, UserDocument } from './models/User';
-import VisitedLinkModel, {
-  VisitedLink,
-  VisitedLinkDocument
-} from './models/VisitedLink';
+import VisitedLinkModel, { VisitedLink, VisitedLinkDocument } from './models/VisitedLink';
 
 class FinTenDB implements Database {
   private static instance: FinTenDB | null = null;
@@ -46,10 +43,7 @@ class FinTenDB implements Database {
   }
 
   private isConnected(): boolean {
-    return (
-      this.client.connection.readyState ===
-      this.client.connection.states.connected
-    );
+    return this.client.connection.readyState === this.client.connection.states.connected;
   }
 
   private static get URI(): string {
@@ -94,9 +88,7 @@ class FinTenDB implements Database {
     return await this.insert(FilingModel, filing);
   }
 
-  async insertVisitedLink(
-    visitedLink: VisitedLink
-  ): Promise<VisitedLinkDocument> {
+  async insertVisitedLink(visitedLink: VisitedLink): Promise<VisitedLinkDocument> {
     try {
       return await VisitedLinkModel.create(visitedLink);
     } catch (ex) {
@@ -112,44 +104,32 @@ class FinTenDB implements Database {
     }
   }
 
-  async findFilings(
-    match: Partial<FilingDocument>,
-    select = ''
-  ): Promise<FilingDocument[]> {
-    return await FilingModel.find(match, select);
+  findFilings(match: Partial<FilingDocument>, select = ''): QueryCursor<FilingDocument> {
+    return FilingModel.find(match, select).cursor();
   }
 
-  async findVisitedLinks(
+  findVisitedLinks(
     match: Partial<VisitedLinkDocument>,
     select = ''
-  ): Promise<VisitedLinkDocument[]> {
-    return await VisitedLinkModel.find(match, select);
+  ): QueryCursor<VisitedLinkDocument> {
+    return VisitedLinkModel.find(match, select).cursor();
   }
 
-  async findUser(
-    match: Partial<UserDocument>,
-    select = ''
-  ): Promise<UserDocument | null> {
+  async findUser(match: Partial<UserDocument>, select = ''): Promise<UserDocument | null> {
     return await UserModel.findOne(match, select);
   }
 
-  async findTicker(
-    match: Partial<TickerDocument>,
-    select = ''
-  ): Promise<TickerDocument | null> {
+  async findTicker(match: Partial<TickerDocument>, select = ''): Promise<TickerDocument | null> {
     return await TickerModel.findOne(match, select);
   }
 
-  async updateFilings(
-    match: Partial<Filing>,
-    update: Partial<Filing>
-  ): Promise<FilingDocument> {
+  async updateFiling(match: Partial<Filing>, update: Partial<Filing>): Promise<FilingDocument> {
     return await FilingModel.updateOne(match, update, {
       runValidators: true
     });
   }
 
-  async updateVisitedLinks(
+  async updateVisitedLink(
     match: Partial<VisitedLink>,
     update: Partial<VisitedLink>
   ): Promise<VisitedLink> {
