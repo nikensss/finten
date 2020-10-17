@@ -27,13 +27,13 @@ class TimedQueue implements Queue {
   queue(...d: Downloadable[]): void {
     this.q.push(...d);
   }
+
   /**
-   * Return the first element of the queue with guarantees that the limit of API calls per second won't be exceeded.
+   * Return the first element of the queue with guarantees that the limit of
+   * API calls per second won't be exceeded.
    */
   async dequeue(): Promise<Downloadable | undefined> {
-    // const now = Date.now();
     await this.timer.waitForTimeout();
-    //console.log(chalk.bgRed(`[TimedQueue] Δt: ${Date.now() - now}`));
     this.timer.reset();
     return this.q.shift();
   }

@@ -217,10 +217,6 @@ class FinTen {
   }
 
   async fixTickers(): Promise<void> {
-    console.log('getting filings...');
-
-    let unknownECIKs = 0;
-    let fixedFilings = 0;
     let totalDone = 0;
 
     await this.db.findFilings({}).eachAsync(async (f: FilingDocument) => {
@@ -229,37 +225,19 @@ class FinTen {
           EntityCentralIndexKey: parseInt(f.EntityCentralIndexKey)
         });
 
-        if (!ticker) {
-          console.log(`Skipping ${f.EntityRegistrantName} (${f.TradingSymbol}) (${totalDone})`);
-          unknownECIKs += 1;
-          totalDone += 1;
-          return;
-        }
-
-        if (f.TradingSymbol.toUpperCase() === ticker.TradingSymbol) {
-          console.log(`Trading symbols match, adding current (${totalDone})`);
-          await this.db.updateFiling(f, {
-            TradingSymbol: ticker.TradingSymbol,
-            CurrentTradingSymbol: ticker.TradingSymbol
-          });
-          totalDone += 1;
-          return;
-        }
+        if (ticker === null) return;
 
         console.log(`${f.TradingSymbol} -> ${ticker.TradingSymbol} (${totalDone})`);
-        fixedFilings += 1;
-        totalDone += 1;
         await this.db.updateFiling(f, {
           CurrentTradingSymbol: ticker.TradingSymbol
         });
       } catch (ex) {
         console.log(ex);
+      } finally {
+        console.log(`done: ${totalDone}`);
+        totalDone += 1;
       }
     });
-
-    console.log(`Total done: ${totalDone}`);
-    console.log(`Fixed filings: ${fixedFilings}`);
-    console.log(`Unknown ECIKS: ${unknownECIKs}`);
   }
 }
 

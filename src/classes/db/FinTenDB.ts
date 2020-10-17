@@ -80,6 +80,7 @@ class FinTenDB implements Database {
       throw ex;
     }
   }
+
   async insertTicker(ticker: Ticker): Promise<TickerDocument> {
     return await this.insert(TickerModel, ticker);
   }
