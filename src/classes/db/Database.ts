@@ -3,6 +3,10 @@ import { Ticker, TickerDocument } from './models/Ticker';
 import { User, UserDocument } from './models/User';
 import { VisitedLink, VisitedLinkDocument } from './models/VisitedLink';
 
+//This will potentially be used in the future, when we find out how to properly
+//manage the database using generics. There is a lot of code duplication now
+//because we have to do the exact same thing with each collection.
+
 /* 
 interface DatabaseReader<T> {
   read(): Promise<T[]>;

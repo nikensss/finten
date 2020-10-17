@@ -1,4 +1,4 @@
-import mongoose, { Mongoose } from 'mongoose';
+import mongoose, { CreateQuery, Document, Model, Mongoose } from 'mongoose';
 import Database from './Database';
 import FilingModel, { Filing, FilingDocument } from './models/Filing';
 import TickerModel, { Ticker, TickerDocument } from './models/Ticker';
@@ -79,20 +79,19 @@ class FinTenDB implements Database {
     this.client = client;
   }
 
-  async insertTicker(ticker: Ticker): Promise<TickerDocument> {
+  private async insert<T extends Document>(model: Model<T>, o: CreateQuery<T>) {
     try {
-      return await TickerModel.create(ticker);
+      return await model.create(o);
     } catch (ex) {
       throw ex;
     }
   }
+  async insertTicker(ticker: Ticker): Promise<TickerDocument> {
+    return await this.insert(TickerModel, ticker);
+  }
 
   async insertFiling(filing: Filing): Promise<FilingDocument> {
-    try {
-      return await FilingModel.create(filing);
-    } catch (ex) {
-      throw ex;
-    }
+    return await this.insert(FilingModel, filing);
   }
 
   async insertVisitedLink(
@@ -154,8 +153,6 @@ class FinTenDB implements Database {
     match: Partial<VisitedLink>,
     update: Partial<VisitedLink>
   ): Promise<VisitedLink> {
-    throw new Error('Unsupported!');
-
     return await VisitedLinkModel.updateOne(match, update, {
       runValidators: true
     });

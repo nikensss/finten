@@ -13,36 +13,36 @@ import { fail } from 'assert';
 
 chai.use(chaiAsPromised);
 
-let mongod: MongoMemoryServer, uri: string;
-
-before(async () => {
-  mongod = new MongoMemoryServer();
-  try {
-    uri = await mongod.getUri();
-    const db = await FinTenDB.getInstance().connect(uri);
-
-    const files = (await fs.readdir(__dirname)).filter((f) =>
-      f.endsWith('.txt')
-    );
-    const xbrls = await Promise.all(
-      files.map((f) => XBRLUtilities.fromTxt(path.join(__dirname, f)))
-    );
-    await Promise.all(
-      xbrls.map((xbrl) => {
-        db.insertFiling(xbrl.get());
-      })
-    );
-  } catch (ex) {
-    throw ex;
-  }
-});
-
-after(async () => {
-  await FinTenDB.getInstance().disconnect();
-  await mongod.stop();
-});
-
 describe('FinTenDB tests', () => {
+  let mongod: MongoMemoryServer, uri: string;
+
+  before('before: loading memory DB', async () => {
+    mongod = new MongoMemoryServer();
+    try {
+      uri = await mongod.getUri();
+      const db = await FinTenDB.getInstance().connect(uri);
+
+      const files = (await fs.readdir(__dirname)).filter((f) =>
+        f.endsWith('.txt')
+      );
+      const xbrls = await Promise.all(
+        files.map((f) => XBRLUtilities.fromTxt(path.join(__dirname, f)))
+      );
+      await Promise.all(
+        xbrls.map((xbrl) => {
+          db.insertFiling(xbrl.get());
+        })
+      );
+    } catch (ex) {
+      throw ex;
+    }
+  });
+
+  after('after: stopping DBs', async () => {
+    await FinTenDB.getInstance().disconnect();
+    await mongod.stop();
+  });
+
   it('should insert one ticker', async () => {
     const ticker: Ticker = {
       TradingSymbol: 'FOO',
@@ -84,10 +84,9 @@ describe('FinTenDB tests', () => {
     const filings = await db.findFilings({});
 
     try {
-      const promises = filings.map((f) =>
-        db.updateFilings(f, { TradingSymbol: 'FOO' })
+      await Promise.all(
+        filings.map((f) => db.updateFilings(f, { TradingSymbol: 'FOO' }))
       );
-      await Promise.all(promises);
       const newFilings = await db.findFilings({});
       newFilings.forEach((f) => {
         expect(f.TradingSymbol).to.be.equal('FOO');

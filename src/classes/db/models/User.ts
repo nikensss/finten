@@ -3,7 +3,7 @@ import moment from 'moment';
 import mongoose, { Model, Schema } from 'mongoose';
 import validator from 'validator';
 import Encrypter from '../../auth/Encrypter';
-import PaymentSchema, { Payment } from './Payment';
+import { Payment } from './Payment';
 
 export interface User {
   username: string;
@@ -52,10 +52,12 @@ const UserSchema = new Schema({
     type: Date,
     default: null
   },
-  payments: {
-    type: [PaymentSchema.schema],
-    default: []
-  },
+  payments: [
+    {
+      ref: 'Payment',
+      type: mongoose.Schema.Types.ObjectId
+    }
+  ],
   changePasswordRequest: {
     type: Date,
     default: null
