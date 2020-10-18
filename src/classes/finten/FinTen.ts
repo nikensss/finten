@@ -7,7 +7,7 @@ import XBRLUtilities from '../secgov/XBRLUtilities';
 import { VisitedLinkDocument, VisitedLinkStatus } from '../db/models/VisitedLink';
 import { Schema } from 'mongoose';
 import { Filing, FilingDocument } from '../db/models/Filing';
-import Ticker from '../db/models/Ticker';
+import TickerModel from '../db/models/Ticker';
 import Downloadable from '../download/Downloadable';
 import Database from '../db/Database';
 
@@ -44,7 +44,7 @@ class FinTen {
       const db = await this.db.connect();
       for (const line of content) {
         try {
-          const ticker = Ticker.parse(line);
+          const ticker = TickerModel.parse(line);
           await db.insertTicker(ticker);
           console.log('found: ', ticker);
         } catch (ex) {
@@ -139,13 +139,11 @@ class FinTen {
         try {
           const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
           const result = await this.insertFiling(xbrl.get());
+          visitedLink.status = VisitedLinkStatus.OK;
+          visitedLink.error = null;
+          visitedLink.filingId = result._id;
 
-          await db.updateVisitedLink(visitedLink._id, {
-            status: VisitedLinkStatus.OK,
-            error: null,
-            filingId: result._id
-          });
-
+          await visitedLink.save();
           this.logger.info(`Could now parse from ${filing.url}!`);
         } catch (ex) {
           this.logger.info(`Could not parse from ${filing.url}. Error: ${ex}`);
@@ -198,7 +196,7 @@ class FinTen {
     const percentageDownloads = ((currentIndex + 1) / length) * 100;
     this.logger.info(`🛎  ${currentIndex + 1}/${length} (${percentageDownloads.toFixed(3)} %)`);
   }
-
+  //TODO: remember filling PastTradingSymbols array when the database is rebuilt
   async fixTickers(): Promise<void> {
     let totalDone = 0;
 
@@ -209,38 +207,15 @@ class FinTen {
         });
 
         if (t === null) {
-          throw new Error(`Ticker not found for ${f.TradingSymbol}`);
+          throw new Error(`Ticker not found for ${f.EntityCentralIndexKey}`);
         }
 
-        if (f.TradingSymbol === t.TradingSymbol) {
-          console.log(`Symbols match: ${f.TradingSymbol} = ${t.TradingSymbol}`);
-          return await this.db.updateFiling(f._id, {
-            TradingSymbol: f.TradingSymbol.toUpperCase()
-          });
-        }
+        if (f.TradingSymbol === t.TradingSymbol) return;
+
         console.log(`${f.TradingSymbol} -> ${t.TradingSymbol} (${totalDone})`);
-
-        if (f.TradingSymbol === 'Field not found.') {
-          return await this.db.updateFiling(f._id, {
-            TradingSymbol: t.TradingSymbol,
-            PastTradingSymbols: [t.TradingSymbol]
-          });
-        }
-
-        let pastTradingSymbols = f.PastTradingSymbols;
-        if (!Array.isArray(pastTradingSymbols)) {
-          pastTradingSymbols = [];
-        }
-        pastTradingSymbols.push(f.TradingSymbol);
-        if (pastTradingSymbols[pastTradingSymbols.length - 1] !== t.TradingSymbol) {
-          pastTradingSymbols.push(t.TradingSymbol);
-        }
-
+        f.TradingSymbol = t.TradingSymbol;
         totalDone += 1;
-        await this.db.updateFiling(f._id, {
-          TradingSymbol: t.TradingSymbol,
-          PastTradingSymbols: pastTradingSymbols
-        });
+        await f.save();
       } catch (ex) {
         totalDone += 1;
         console.error('There was an error!', ex);

@@ -1,4 +1,4 @@
-import mongoose, { DocumentQuery, QueryCursor } from 'mongoose';
+import { QueryCursor } from 'mongoose';
 import { Filing, FilingDocument } from './models/Filing';
 import { Ticker, TickerDocument } from './models/Ticker';
 import { User, UserDocument } from './models/User';
@@ -42,14 +42,6 @@ interface Database {
     select?: string
   ): QueryCursor<VisitedLinkDocument>;
   findUser(match: Partial<UserDocument>, select?: string): Promise<UserDocument | null>;
-  updateFiling(
-    id: mongoose.Schema.Types.ObjectId,
-    update: Partial<Filing>
-  ): DocumentQuery<Filing | null, FilingDocument>;
-  updateVisitedLink(
-    id: mongoose.Schema.Types.ObjectId,
-    update: Partial<VisitedLink>
-  ): DocumentQuery<VisitedLink | null, VisitedLinkDocument>;
   distinctFilingKey(key: string): Promise<string[]>;
 }
 

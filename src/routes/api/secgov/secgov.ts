@@ -14,10 +14,6 @@ secgovRoutes.get('/', (req, res) => {
   });
 });
 
-// secgovRoutes.get('/doc', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'doc.html'));
-// });
-
 /**
  * URL: /api/secgov/fill
  *

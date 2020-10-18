@@ -89,7 +89,8 @@ describe('FinTenDB tests', () => {
       const db = await FinTenDB.getInstance().connect(uri);
 
       await db.findFilings({}).eachAsync((filing: FilingDocument) => {
-        return db.updateFiling(filing._id, { TradingSymbol: 'FOO' });
+        filing.TradingSymbol = 'FOO';
+        return filing.save();
       });
 
       await db.findFilings({}).eachAsync((filing: FilingDocument) => {

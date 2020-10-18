@@ -1,11 +1,4 @@
-import mongoose, {
-  CreateQuery,
-  Document,
-  DocumentQuery,
-  Model,
-  Mongoose,
-  QueryCursor
-} from 'mongoose';
+import mongoose, { CreateQuery, Document, Model, Mongoose, QueryCursor } from 'mongoose';
 import Database from './Database';
 import FilingModel, { Filing, FilingDocument } from './models/Filing';
 import TickerModel, { Ticker, TickerDocument } from './models/Ticker';
@@ -122,24 +115,6 @@ class FinTenDB implements Database {
 
   async findTicker(match: Partial<TickerDocument>, select = ''): Promise<TickerDocument | null> {
     return await TickerModel.findOne(match, select);
-  }
-
-  updateFiling(
-    id: mongoose.Schema.Types.ObjectId,
-    update: Partial<Filing>
-  ): DocumentQuery<Filing | null, FilingDocument> {
-    return FilingModel.findByIdAndUpdate(id, update, {
-      runValidators: true
-    });
-  }
-
-  updateVisitedLink(
-    id: mongoose.Schema.Types.ObjectId,
-    update: Partial<VisitedLink>
-  ): DocumentQuery<VisitedLink | null, VisitedLinkDocument> {
-    return VisitedLinkModel.findByIdAndUpdate(id, update, {
-      runValidators: true
-    });
   }
 
   async distinctFilingKey(key: string): Promise<string[]> {

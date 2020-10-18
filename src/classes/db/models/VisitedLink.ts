@@ -10,7 +10,7 @@ export interface VisitedLink {
   url: string;
   status: VisitedLinkStatus;
   error: string | null;
-  filingId: Schema.Types.ObjectId | null;
+  filingId: mongoose.Schema.Types.ObjectId | null;
 }
 
 const VisitedLinkSchema = new Schema({
@@ -28,6 +28,7 @@ const VisitedLinkSchema = new Schema({
     type: String
   },
   filingId: {
+    ref: 'Filing',
     type: Schema.Types.ObjectId
   }
 });
