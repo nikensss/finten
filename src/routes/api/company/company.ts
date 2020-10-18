@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import FinTenDB from '../../../classes/db/FinTenDB';
+import { FilingDocument } from '../../../classes/db/models/Filing';
 
 const company = Router();
 
@@ -44,13 +45,19 @@ company.get('/name', async (req, res) => {
   }
   const db = await FinTenDB.getInstance().connect();
 
-  const dbquery = await db.findFilings({
+  const filingsCursor = db.findFilings({
     EntityRegistrantName: name as string
+  });
+
+  const data: FilingDocument[] = [];
+
+  await filingsCursor.eachAsync(async (f: FilingDocument) => {
+    data.push(f);
   });
 
   res.status(200).json({
     name,
-    data: dbquery
+    data
   });
 });
 
@@ -80,14 +87,19 @@ company.get('/ticker', async (req, res) => {
 
   try {
     const db = await FinTenDB.getInstance().connect();
-    const dbquery = await db.findFilings({
+    const filingsCursor = db.findFilings({
       TradingSymbol: ticker,
       DocumentFiscalYearFocus: '2018'
     });
 
+    const data: FilingDocument[] = [];
+    await filingsCursor.eachAsync(async (f: FilingDocument) => {
+      data.push(f);
+    });
+
     return res.status(200).json({
       ticker,
-      data: dbquery
+      data
     });
   } catch (ex) {
     return res.status(500).json({
