@@ -152,11 +152,7 @@ const FilingSchema = new Schema({
   ROS: Number
 });
 
-interface FilingBaseDocument extends Filing, mongoose.Document {}
-
-export interface FilingDocument extends FilingBaseDocument {}
-
-FilingSchema.pre<FilingDocument>('validate', async function () {
+FilingSchema.pre<FilingBaseDocument>('validate', async function () {
   if (this.ROA !== null && isNaN(this.ROA)) this.ROA = null;
   if (this.ROE !== null && isNaN(this.ROE)) this.ROE = null;
   if (this.ROS !== null && isNaN(this.ROS)) this.ROS = null;
@@ -176,6 +172,10 @@ FilingSchema.pre<FilingDocument>('validate', async function () {
     this.PastTradingSymbols.push(this.TradingSymbol);
   }
 });
+
+interface FilingBaseDocument extends Filing, mongoose.Document {}
+
+export interface FilingDocument extends FilingBaseDocument {}
 
 export interface FilingModel extends Model<FilingDocument> {}
 

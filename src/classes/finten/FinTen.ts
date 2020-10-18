@@ -45,7 +45,7 @@ class FinTen {
       for (const line of content) {
         try {
           const ticker = TickerModel.parse(line);
-          await db.insertTicker(ticker);
+          await db.createTicker(ticker);
           console.log('found: ', ticker);
         } catch (ex) {
           if (!/duplicate key/.test(ex.toString())) {
@@ -157,7 +157,7 @@ class FinTen {
   private async insertFiling(filing: Filing) {
     try {
       const db = await this.db.connect();
-      return await db.insertFiling(filing);
+      return await db.createFiling(filing);
     } catch (e) {
       throw new Error(e);
     }
@@ -166,7 +166,7 @@ class FinTen {
   private async insertVisitedLink(url: string, resultId: Schema.Types.ObjectId) {
     try {
       const db = await this.db.connect();
-      return await db.insertVisitedLink({
+      return await db.createVisitedLink({
         url,
         status: VisitedLinkStatus.OK,
         error: null,
@@ -180,7 +180,7 @@ class FinTen {
   private async handleExceptionDuringFilingInsertion(url: string, ex: Error) {
     this.logger.warning(`Error while parsing ${url}:\n${ex.toString()}`);
     const db = await this.db.connect();
-    return await db.insertVisitedLink({
+    return await db.createVisitedLink({
       url,
       status: VisitedLinkStatus.ERROR,
       error: ex.toString(),

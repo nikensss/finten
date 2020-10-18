@@ -28,7 +28,7 @@ describe('FinTen tests', () => {
       for (let index = 0; index < 10; index++) {
         await Promise.all(
           xbrls.map((xbrl) => {
-            db.insertFiling(xbrl.get());
+            db.createFiling(xbrl.get());
           })
         );
       }
@@ -39,7 +39,7 @@ describe('FinTen tests', () => {
         { TradingSymbol: 'COST', EntityCentralIndexKey: 1621199 },
         { TradingSymbol: 'GOOG', EntityCentralIndexKey: 1652044 }
       ];
-      await Promise.all(tickers.map((t) => db.insertTicker(t)));
+      await Promise.all(tickers.map((t) => db.createTicker(t)));
     } catch (ex) {
       throw ex;
     }

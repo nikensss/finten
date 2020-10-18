@@ -44,7 +44,7 @@ users.post('/signup', async (req, res) => {
   console.log(req.body);
   try {
     const db = await FinTenDB.getInstance().connect();
-    const user = await db.insertUser({ username, password, email } as User);
+    const user = await db.createUser({ username, password, email } as User);
 
     LOGGER.get(LOGGER_NAME).info(
       `New user signed up successfully: ${JSON.stringify(user, null, 2)}`

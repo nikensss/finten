@@ -31,10 +31,10 @@ interface Database<T> extends DatabaseReader<T>, DatabaseWriter<T> {
 interface Database {
   connect(uri?: string): Promise<Database>;
   disconnect(): Promise<void>;
-  insertTicker(ticker: Ticker): Promise<TickerDocument>;
-  insertFiling(filing: Filing): Promise<FilingDocument>;
-  insertVisitedLink(visitedLink: VisitedLink): Promise<VisitedLinkDocument>;
-  insertUser(user: User): Promise<UserDocument>;
+  createTicker(ticker: Ticker): Promise<TickerDocument>;
+  createFiling(filing: Filing): Promise<FilingDocument>;
+  createVisitedLink(visitedLink: VisitedLink): Promise<VisitedLinkDocument>;
+  createUser(user: User): Promise<UserDocument>;
   findTicker(match: Partial<TickerDocument>, select?: string): Promise<TickerDocument | null>;
   findFilings(match: Partial<FilingDocument>, select?: string): QueryCursor<FilingDocument>;
   findVisitedLinks(

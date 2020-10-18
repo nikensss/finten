@@ -27,7 +27,7 @@ describe('FinTenDB tests', () => {
       for (let index = 0; index < 10; index++) {
         await Promise.all(
           xbrls.map((xbrl) => {
-            db.insertFiling(xbrl.get());
+            db.createFiling(xbrl.get());
           })
         );
       }
@@ -47,7 +47,7 @@ describe('FinTenDB tests', () => {
       EntityCentralIndexKey: 12345678
     };
     const db = await FinTenDB.getInstance().connect(uri);
-    await db.insertTicker(ticker);
+    await db.createTicker(ticker);
 
     TickerModel.countDocuments(ticker, (err, count) => {
       expect(count).to.be.equal(1);

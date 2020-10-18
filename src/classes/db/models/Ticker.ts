@@ -2,8 +2,7 @@
 import mongoose, { Model, Schema } from 'mongoose';
 
 /**
- * The interface to be used when creating objects to be inserted in the Tickers
- * collection
+ * Reflects all the fields from the Schema
  */
 export interface Ticker {
   TradingSymbol: string;
@@ -25,17 +24,6 @@ const TickerSchema = new Schema({
   }
 });
 
-/**
- * The base document with the required fields from the Ticker interface (present
- * here by extension), the fields from a mongoose Document (also here by
- * extension), and the non-required and virutal fields, together with the
- * 'methods' of the Schema.
- * Add also again the fields from the base
- * interface that should have mongoose Types (like Types.Array<string> or
- * Types.Map<string>).
- *
- * TL;DR: add non-required fields, 'virtuals' and 'methods' of the Schema
- */
 interface TickerBaseDocument extends Ticker, mongoose.Document {}
 
 export interface TickerDocument extends TickerBaseDocument {}
@@ -70,4 +58,7 @@ export interface TickerModel extends Model<TickerDocument> {
   finByEntityCentralIndexKey(n: number): TickerDocument;
 }
 
+/**
+ * When importing this, call it TickerModule
+ */
 export default mongoose.model<TickerDocument, TickerModel>('Ticker', TickerSchema);

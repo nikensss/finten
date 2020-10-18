@@ -1,4 +1,4 @@
-import mongoose, { CreateQuery, Document, Model, Mongoose, QueryCursor } from 'mongoose';
+import mongoose, { Mongoose, QueryCursor } from 'mongoose';
 import Database from './Database';
 import FilingModel, { Filing, FilingDocument } from './models/Filing';
 import TickerModel, { Ticker, TickerDocument } from './models/Ticker';
@@ -74,28 +74,20 @@ class FinTenDB implements Database {
     this.client = client;
   }
 
-  private async insert<T extends Document>(model: Model<T>, o: CreateQuery<T>) {
-    try {
-      return await model.create(o);
-    } catch (ex) {
-      throw ex;
-    }
+  async createTicker(ticker: Ticker): Promise<TickerDocument> {
+    return await new TickerModel(ticker).save();
   }
 
-  async insertTicker(ticker: Ticker): Promise<TickerDocument> {
-    return await this.insert(TickerModel, ticker);
+  async createFiling(filing: Filing): Promise<FilingDocument> {
+    return await new FilingModel(filing).save();
   }
 
-  async insertFiling(filing: Filing): Promise<FilingDocument> {
-    return await this.insert(FilingModel, filing);
+  async createVisitedLink(visitedLink: VisitedLink): Promise<VisitedLinkDocument> {
+    return await new VisitedLinkModel(visitedLink).save();
   }
 
-  async insertVisitedLink(visitedLink: VisitedLink): Promise<VisitedLinkDocument> {
-    return await this.insert(VisitedLinkModel, visitedLink);
-  }
-
-  async insertUser(user: User): Promise<UserDocument> {
-    return await this.insert(UserModel, user);
+  async createUser(user: User): Promise<UserDocument> {
+    return await new UserModel(user).save();
   }
 
   findFilings(match: Partial<FilingDocument>, select = ''): QueryCursor<FilingDocument> {
