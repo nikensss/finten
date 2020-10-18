@@ -7,7 +7,7 @@
       "type": "node-terminal"
     },
     {
-      "command": "npx mocha -r dotenv/config  -r ts-node/register test/classes/db/*.spec.ts",
+      "command": "npx mocha -r dotenv/config  -r ts-node/register test/classes/finten/*.spec.ts",
       "name": "subset test",
       "request": "launch",
       "type": "node-terminal"

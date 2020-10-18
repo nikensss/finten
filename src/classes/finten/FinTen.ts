@@ -126,26 +126,25 @@ class FinTen {
     this.logger.info('Getting broken links');
     const db: Database = await this.db.connect();
 
-    const problematicFilings = await this.getLinksOfProblematicFilings();
+    const cursor = db.findVisitedLinks({ status: VisitedLinkStatus.ERROR });
+    await cursor.eachAsync(async (visitedLink: VisitedLinkDocument) => {
+      const downloadable: Downloadable = {
+        url: visitedLink.url,
+        fileName: 'filing.txt'
+      };
 
-    for (let n = 0; n < problematicFilings.length; n++) {
-      this.logPercentage(n, problematicFilings.length);
-
-      const filings = await this.secgov.getFilings(problematicFilings[n]);
+      const filings = await this.secgov.getFilings(downloadable);
 
       for (const filing of filings) {
         try {
           const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
           const result = await this.insertFiling(xbrl.get());
 
-          await db.updateVisitedLink(
-            { url: filing.url },
-            {
-              status: VisitedLinkStatus.OK,
-              error: null,
-              filingId: result._id
-            }
-          );
+          await db.updateVisitedLink(visitedLink._id, {
+            status: VisitedLinkStatus.OK,
+            error: null,
+            filingId: result._id
+          });
 
           this.logger.info(`Could now parse from ${filing.url}!`);
         } catch (ex) {
@@ -153,24 +152,8 @@ class FinTen {
         }
       }
       this.secgov.flush();
-    }
+    });
     this.secgov.flush();
-  }
-
-  private async getLinksOfProblematicFilings(): Promise<Downloadable[]> {
-    const db = await this.db.connect();
-    const linksWithErrors: Downloadable[] = [];
-
-    await db
-      .findVisitedLinks({ status: VisitedLinkStatus.ERROR }, 'url')
-      .eachAsync(async (l: VisitedLinkDocument) => {
-        linksWithErrors.push({
-          url: l.url,
-          fileName: 'filing.txt'
-        });
-      });
-
-    return linksWithErrors;
   }
 
   private async insertFiling(filing: Filing) {
@@ -221,23 +204,49 @@ class FinTen {
 
     await this.db.findFilings({}).eachAsync(async (f: FilingDocument) => {
       try {
-        const ticker = await this.db.findTicker({
+        const t = await this.db.findTicker({
           EntityCentralIndexKey: parseInt(f.EntityCentralIndexKey)
         });
 
-        if (ticker === null) return;
+        if (t === null) {
+          throw new Error(`Ticker not found for ${f.TradingSymbol}`);
+        }
 
-        console.log(`${f.TradingSymbol} -> ${ticker.TradingSymbol} (${totalDone})`);
-        await this.db.updateFiling(f, {
-          CurrentTradingSymbol: ticker.TradingSymbol
+        if (f.TradingSymbol === t.TradingSymbol) {
+          console.log(`Symbols match: ${f.TradingSymbol} = ${t.TradingSymbol}`);
+          return await this.db.updateFiling(f._id, {
+            TradingSymbol: f.TradingSymbol.toUpperCase()
+          });
+        }
+        console.log(`${f.TradingSymbol} -> ${t.TradingSymbol} (${totalDone})`);
+
+        if (f.TradingSymbol === 'Field not found.') {
+          return await this.db.updateFiling(f._id, {
+            TradingSymbol: t.TradingSymbol,
+            PastTradingSymbols: [t.TradingSymbol]
+          });
+        }
+
+        let pastTradingSymbols = f.PastTradingSymbols;
+        if (!Array.isArray(pastTradingSymbols)) {
+          pastTradingSymbols = [];
+        }
+        pastTradingSymbols.push(f.TradingSymbol);
+        if (pastTradingSymbols[pastTradingSymbols.length - 1] !== t.TradingSymbol) {
+          pastTradingSymbols.push(t.TradingSymbol);
+        }
+
+        totalDone += 1;
+        await this.db.updateFiling(f._id, {
+          TradingSymbol: t.TradingSymbol,
+          PastTradingSymbols: pastTradingSymbols
         });
       } catch (ex) {
-        console.log(ex);
-      } finally {
-        console.log(`done: ${totalDone}`);
         totalDone += 1;
+        console.error('There was an error!', ex);
       }
     });
+    return;
   }
 }
 

@@ -25,12 +25,13 @@ describe('FinTen tests', () => {
       const xbrls = await Promise.all(
         files.map((f) => XBRLUtilities.fromTxt(path.join(__dirname, f)))
       );
-      await Promise.all(
-        xbrls.map((xbrl) => {
-          xbrl.get().TradingSymbol = 'Field not found.';
-          db.insertFiling(xbrl.get());
-        })
-      );
+      for (let index = 0; index < 10; index++) {
+        await Promise.all(
+          xbrls.map((xbrl) => {
+            db.insertFiling(xbrl.get());
+          })
+        );
+      }
 
       const tickers: Ticker[] = [
         { TradingSymbol: 'AMZN', EntityCentralIndexKey: 1018724 },
@@ -54,7 +55,7 @@ describe('FinTen tests', () => {
       .undefined;
   });
 
-  it('should fix 4 tickers', async () => {
+  it('should fix tickers', async () => {
     const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
 
     await finten.fixTickers();
@@ -68,7 +69,7 @@ describe('FinTen tests', () => {
         fail('Please, add the tickers to the mongodb-memory-server!');
       }
 
-      expect(filing.CurrentTradingSymbol).to.be.equal(ticker.TradingSymbol);
+      expect(filing.TradingSymbol).to.be.equal(ticker.TradingSymbol);
     });
   });
 });

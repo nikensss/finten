@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 import mongoose, { Model, Schema } from 'mongoose';
+import FinTenDB from '../FinTenDB';
 
 export interface Filing {
   EntityRegistrantName: string;
@@ -7,7 +8,7 @@ export interface Filing {
   EntityCentralIndexKey: string;
   EntityFilerCategory: string;
   TradingSymbol: string;
-  CurrentTradingSymbol: string;
+  PastTradingSymbols: string[];
   DocumentPeriodEndDate: string;
   DocumentFiscalYearFocus: string;
   DocumentFiscalPeriodFocus: string;
@@ -82,7 +83,7 @@ const FilingSchema = new Schema({
   EntityCentralIndexKey: String,
   EntityFilerCategory: String,
   TradingSymbol: String,
-  CurrentTradingSymbol: String,
+  PastTradingSymbols: [String],
   DocumentPeriodEndDate: String,
   DocumentFiscalYearFocus: String,
   DocumentFiscalPeriodFocus: String,
@@ -155,18 +156,25 @@ interface FilingBaseDocument extends Filing, mongoose.Document {}
 
 export interface FilingDocument extends FilingBaseDocument {}
 
-FilingSchema.pre<FilingDocument>('validate', function (next: () => void) {
+FilingSchema.pre<FilingDocument>('validate', async function () {
   if (this.ROA !== null && isNaN(this.ROA)) this.ROA = null;
   if (this.ROE !== null && isNaN(this.ROE)) this.ROE = null;
   if (this.ROS !== null && isNaN(this.ROS)) this.ROS = null;
 
-  this.CurrentTradingSymbol = this.TradingSymbol;
+  if (this.TradingSymbol === 'Field not found.') {
+    const db = await new FinTenDB().connect();
+    const ticker = await db.findTicker({
+      EntityCentralIndexKey: parseInt(this.EntityCentralIndexKey)
+    });
+    if (ticker !== null) {
+      this.TradingSymbol = ticker.TradingSymbol;
+    }
+  }
 
   if (this.TradingSymbol !== 'Field not found.') {
     this.TradingSymbol = this.TradingSymbol.toUpperCase();
+    this.PastTradingSymbols.push(this.TradingSymbol);
   }
-
-  next();
 });
 
 export interface FilingModel extends Model<FilingDocument> {}

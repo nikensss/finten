@@ -1,4 +1,11 @@
-import mongoose, { CreateQuery, Document, Model, Mongoose, QueryCursor } from 'mongoose';
+import mongoose, {
+  CreateQuery,
+  Document,
+  DocumentQuery,
+  Model,
+  Mongoose,
+  QueryCursor
+} from 'mongoose';
 import Database from './Database';
 import FilingModel, { Filing, FilingDocument } from './models/Filing';
 import TickerModel, { Ticker, TickerDocument } from './models/Ticker';
@@ -28,7 +35,8 @@ class FinTenDB implements Database {
         useNewUrlParser: true,
         useCreateIndex: true,
         useUnifiedTopology: true,
-        autoIndex: true
+        autoIndex: true,
+        useFindAndModify: false
       });
 
       this.client.set('useCreateIndex', true);
@@ -90,19 +98,11 @@ class FinTenDB implements Database {
   }
 
   async insertVisitedLink(visitedLink: VisitedLink): Promise<VisitedLinkDocument> {
-    try {
-      return await VisitedLinkModel.create(visitedLink);
-    } catch (ex) {
-      throw ex;
-    }
+    return await this.insert(VisitedLinkModel, visitedLink);
   }
 
   async insertUser(user: User): Promise<UserDocument> {
-    try {
-      return await UserModel.create(user);
-    } catch (ex) {
-      throw ex;
-    }
+    return await this.insert(UserModel, user);
   }
 
   findFilings(match: Partial<FilingDocument>, select = ''): QueryCursor<FilingDocument> {
@@ -124,17 +124,20 @@ class FinTenDB implements Database {
     return await TickerModel.findOne(match, select);
   }
 
-  async updateFiling(match: Partial<Filing>, update: Partial<Filing>): Promise<FilingDocument> {
-    return await FilingModel.updateOne(match, update, {
+  updateFiling(
+    id: mongoose.Schema.Types.ObjectId,
+    update: Partial<Filing>
+  ): DocumentQuery<Filing | null, FilingDocument> {
+    return FilingModel.findByIdAndUpdate(id, update, {
       runValidators: true
     });
   }
 
-  async updateVisitedLink(
-    match: Partial<VisitedLink>,
+  updateVisitedLink(
+    id: mongoose.Schema.Types.ObjectId,
     update: Partial<VisitedLink>
-  ): Promise<VisitedLink> {
-    return await VisitedLinkModel.updateOne(match, update, {
+  ): DocumentQuery<VisitedLink | null, VisitedLinkDocument> {
+    return VisitedLinkModel.findByIdAndUpdate(id, update, {
       runValidators: true
     });
   }

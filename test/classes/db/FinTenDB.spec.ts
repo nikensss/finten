@@ -24,11 +24,13 @@ describe('FinTenDB tests', () => {
       const xbrls = await Promise.all(
         files.map((f) => XBRLUtilities.fromTxt(path.join(__dirname, f)))
       );
-      await Promise.all(
-        xbrls.map((xbrl) => {
-          db.insertFiling(xbrl.get());
-        })
-      );
+      for (let index = 0; index < 10; index++) {
+        await Promise.all(
+          xbrls.map((xbrl) => {
+            db.insertFiling(xbrl.get());
+          })
+        );
+      }
     } catch (ex) {
       throw ex;
     }
@@ -68,11 +70,11 @@ describe('FinTenDB tests', () => {
 
   it('should retrieve all filings', async () => {
     try {
-      const EXPECTED_TOTAL = 4;
+      const EXPECTED_TOTAL = 40;
       let total = 0;
       const db = await FinTenDB.getInstance().connect(uri);
 
-      await db.findFilings({}).eachAsync(async () => {
+      await db.findFilings({}).eachAsync(() => {
         total += 1;
       });
 
@@ -86,11 +88,11 @@ describe('FinTenDB tests', () => {
     try {
       const db = await FinTenDB.getInstance().connect(uri);
 
-      await db.findFilings({}).eachAsync(async (filing: FilingDocument) => {
-        return await db.updateFiling(filing, { TradingSymbol: 'FOO' });
+      await db.findFilings({}).eachAsync((filing: FilingDocument) => {
+        return db.updateFiling(filing._id, { TradingSymbol: 'FOO' });
       });
 
-      await db.findFilings({}).eachAsync(async (filing: FilingDocument) => {
+      await db.findFilings({}).eachAsync((filing: FilingDocument) => {
         expect(filing.TradingSymbol).to.be.equal('FOO');
       });
     } catch (ex) {
