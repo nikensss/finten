@@ -218,9 +218,10 @@ class FinTen {
         await f.save();
       } catch (ex) {
         totalDone += 1;
-        console.error(`There was an error! ${ex.toString()}`);
+        console.error(`There was an error! ${ex.toString()} (${totalDone})`);
       }
     });
+    console.log('Tickers fixed!');
     return;
   }
 }
