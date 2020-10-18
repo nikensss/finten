@@ -32,7 +32,6 @@ class FinTenDB implements Database {
         useFindAndModify: false
       });
 
-      this.client.set('useCreateIndex', true);
       return this;
     } catch (ex) {
       throw new Error('Could not connect to DB: ' + ex);

@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import TokenFactory from '../../../classes/auth/TokenFactory';
 import FinTenDB from '../../../classes/db/FinTenDB';
-import { User } from '../../../classes/db/models/User';
 import { default as LOGGER } from '../../../classes/logger/DefaultLogger';
 
 const LOGGER_NAME = 'user-routes';
@@ -44,7 +43,7 @@ users.post('/signup', async (req, res) => {
   console.log(req.body);
   try {
     const db = await FinTenDB.getInstance().connect();
-    const user = await db.createUser({ username, password, email } as User);
+    const user = await db.createUser({ username, password, email });
 
     LOGGER.get(LOGGER_NAME).info(
       `New user signed up successfully: ${JSON.stringify(user, null, 2)}`

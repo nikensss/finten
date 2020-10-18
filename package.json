@@ -4,14 +4,10 @@
   "description": "The hypotenuse of the smallest pythagorean triples.",
   "main": "src/main.ts",
   "scripts": {
-    "start": " ts-node -r dotenv/config src/main.ts",
-    "prod": "ts-node -r dotenv/config src/main.ts",
-    "test-script": "ts-node src/classes/tests/tests.ts",
+    "start": "ts-node -r dotenv/config src/main.ts",
     "nodemon": "nodemon",
-    "test": "mocha -r dotenv/config  -r ts-node/register test/classes/**/*.spec.ts",
-    "test-api": "mocha -r dotenv/config -r ts-node/register test/api/**/*.spec.ts",
-    "npmi-container": "rm -rf node_modules && npm i",
-    "pre-deploy": "rm -rf node_modules && cd db_docker_test && docker-compose up --exit-code-from test",
+    "test": "PORT=3030 mocha -r dotenv/config -r ts-node/register test/**/*.spec.ts",
+    "rimraf": "rm -rf node_modules && npm i",
     "lint": "eslint --fix '{src,test}/**/*.ts'",
     "pretty": "prettier --write {src,test}/**/*.ts"
   },

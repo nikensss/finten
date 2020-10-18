@@ -7,7 +7,7 @@ import { Server } from 'http';
 
 class FinTenAPI {
   private readonly app: Application;
-  private readonly port: number = 3000;
+  private readonly port: number = parseInt(process.env.PORT || '3000');
 
   constructor() {
     //establish the connection with the DB at the very beginning

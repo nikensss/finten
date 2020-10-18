@@ -16,6 +16,7 @@ describe('User model tests', () => {
     try {
       uri = await mongod.getUri();
       await FinTenDB.getInstance().connect(uri);
+      await UserModel.ensureIndexes();
     } catch (ex) {
       throw ex;
     }
@@ -24,6 +25,14 @@ describe('User model tests', () => {
   after('after: stopping DBs', async () => {
     await FinTenDB.getInstance().disconnect();
     await mongod.stop();
+  });
+
+  beforeEach(async () => {
+    await UserModel.ensureIndexes();
+  });
+
+  afterEach(async () => {
+    await UserModel.collection.drop();
   });
 
   it('should create default user', async () => {
@@ -65,36 +74,29 @@ describe('User model tests', () => {
     return newUser.validate().should.be.rejectedWith('validation failed: email');
   });
 
-  // it('should retrieve all filings', async () => {
-  //   try {
-  //     const EXPECTED_TOTAL = 40;
-  //     let total = 0;
-  //     const db = await FinTenDB.getInstance().connect(uri);
+  it('should fail with duplicate keys', async () => {
+    const user: User = {
+      username: 'testuser',
+      password: 'testpassword',
+      email: 'email@internet.com'
+    };
+    const userRepeatedUsername: User = {
+      username: 'testuser',
+      password: 'testpassword',
+      email: 'email2@internet.com'
+    };
+    const userRepeatedEmail: User = {
+      username: 'testuser2',
+      password: 'testpassword',
+      email: 'email@internet.com'
+    };
+    await new UserModel(user).save();
+    const newUserRepeatedUsername = new UserModel(userRepeatedUsername);
+    const newUserRepeatedEmail = new UserModel(userRepeatedEmail);
 
-  //     await db.findFilings({}).eachAsync(() => {
-  //       total += 1;
-  //     });
-
-  //     expect(total).to.be.equal(EXPECTED_TOTAL);
-  //   } catch (ex) {
-  //     fail(ex);
-  //   }
-  // });
-
-  // it('should update tickers', async () => {
-  //   try {
-  //     const db = await FinTenDB.getInstance().connect(uri);
-
-  //     await db.findFilings({}).eachAsync((filing: FilingDocument) => {
-  //       filing.TradingSymbol = 'FOO';
-  //       return filing.save();
-  //     });
-
-  //     await db.findFilings({}).eachAsync((filing: FilingDocument) => {
-  //       expect(filing.TradingSymbol).to.be.equal('FOO');
-  //     });
-  //   } catch (ex) {
-  //     fail(ex);
-  //   }
-  // });
+    return Promise.all([
+      newUserRepeatedUsername.save().should.be.rejectedWith('duplicate key'),
+      newUserRepeatedEmail.save().should.be.rejectedWith('duplicate key')
+    ]);
+  });
 });
