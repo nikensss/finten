@@ -40,16 +40,15 @@ class FinTen {
     const tickersCIKMap = await this.secgov.getEntityCentralIndexKeyMap();
 
     for (const f of tickersCIKMap) {
-      const content = (await fs.readFile(f.fileName, 'utf-8')).split('\n');
+      const lines = (await fs.readFile(f.fileName, 'utf-8')).split('\n');
       const db = await this.db.connect();
-      for (const line of content) {
+      for (const line of lines) {
         try {
           const ticker = TickerModel.parse(line);
-          await db.createTicker(ticker);
-          console.log('found: ', ticker);
+          console.log('found: ', await db.createTicker(ticker));
         } catch (ex) {
           if (!/duplicate key/.test(ex.toString())) {
-            console.error('Exception caught while parsing and insrting tickers:\n' + ex.toString());
+            console.error('Exception while parsing and inserting tickers:\n' + ex.toString());
           }
         }
       }

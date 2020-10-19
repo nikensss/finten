@@ -33,20 +33,27 @@ TickerSchema.pre<TickerDocument>('save', function (next) {
   next();
 });
 
-TickerSchema.statics.finByEntityCentralIndexKey = async function (EntityCentralIndexKey: number) {
+TickerSchema.statics.finByEntityCentralIndexKey = async function (
+  EntityCentralIndexKey: number
+): Promise<TickerDocument | null> {
   return await this.findOne({ EntityCentralIndexKey });
 };
 
 TickerSchema.statics.parse = function (s: string) {
   //the file from SecGov has the following structure: "aapl\t320193\n"
-  const [TradingSymbol, EntityCentralIndexKey] = s.split(/\s/);
+  const match = s.match(/(?<TradingSymbol>[a-zA-Z]+)[^\w]*(?<EntityCentralIndexKey>[0-9]+)/);
+  if (match === null || typeof match.groups === 'undefined') {
+    throw new Error(`Can't parse '${s}'`);
+  }
+
+  const { TradingSymbol, EntityCentralIndexKey } = match.groups;
 
   if (TradingSymbol.length > 0 && EntityCentralIndexKey.length > 0) {
-    return { TradingSymbol, EntityCentralIndexKey };
+    return { TradingSymbol, EntityCentralIndexKey: parseInt(EntityCentralIndexKey) };
   }
 
   throw new Error(
-    `Invalid arguments: TradingSymbol = '${TradingSymbol}; EntityCentralIndexKey: ${EntityCentralIndexKey}`
+    `Invalid arguments: TradingSymbol = '${TradingSymbol}'; EntityCentralIndexKey: '${EntityCentralIndexKey}'`
   );
 };
 
@@ -55,7 +62,7 @@ TickerSchema.statics.parse = function (s: string) {
  */
 export interface TickerModel extends Model<TickerDocument> {
   parse(s: string): Ticker;
-  finByEntityCentralIndexKey(n: number): TickerDocument;
+  finByEntityCentralIndexKey(n: number): Promise<TickerDocument | null>;
 }
 
 /**

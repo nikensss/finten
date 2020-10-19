@@ -1,28 +1,32 @@
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
 import FinTenDB from '../../../src/classes/db/FinTenDB';
 import DownloadManager from '../../../src/classes/download/DownloadManager';
-// import chaiAsPromised from 'chai-as-promised';
+import chaiAsPromised from 'chai-as-promised';
 import FinTen from '../../../src/classes/finten/FinTen';
 import SecGov from '../../../src/classes/secgov/SecGov';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import path from 'path';
 import XBRLUtilities from '../../../src/classes/secgov/XBRLUtilities';
 import { promises as fs } from 'fs';
-import { Ticker } from '../../../src/classes/db/models/Ticker';
+import TickerModel, { Ticker } from '../../../src/classes/db/models/Ticker';
 import { FilingDocument } from '../../../src/classes/db/models/Filing';
 import { fail } from 'assert';
+import { instance, mock, when } from 'ts-mockito';
+
+chai.should();
+chai.use(chaiAsPromised);
 
 describe('FinTen tests', function () {
   this.slow(750);
   let mongod: MongoMemoryServer, uri: string;
 
-  before('before: loading memory DB', async () => {
+  before('before: loading mongodb-memory-server', async () => {
     mongod = new MongoMemoryServer();
     try {
       uri = await mongod.getUri();
       const db = await FinTenDB.getInstance().connect(uri);
 
-      const files = (await fs.readdir(__dirname)).filter((f) => f.endsWith('.txt'));
+      const files = (await fs.readdir(__dirname)).filter((f) => f.endsWith('10k.txt'));
       const xbrls = await Promise.all(
         files.map((f) => XBRLUtilities.fromTxt(path.join(__dirname, f)))
       );
@@ -52,8 +56,38 @@ describe('FinTen tests', function () {
   });
 
   it('should create a new FinTen', () => {
-    expect(new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance())).to.not.be
-      .undefined;
+    const mockedSecGov: SecGov = mock(SecGov);
+    const secgov: SecGov = instance(mockedSecGov);
+    expect(new FinTen(secgov, FinTenDB.getInstance())).to.not.be.undefined;
+  });
+
+  it('should build ECIK map', async () => {
+    const mockedSecGov: SecGov = mock(SecGov);
+    const secgov: SecGov = instance(mockedSecGov);
+
+    when(mockedSecGov.getEntityCentralIndexKeyMap()).thenResolve([
+      {
+        url: 'https://www.sec.gov/include/ticker.txt',
+        fileName: path.join(__dirname, 'ticker_ecik_map.txt')
+      }
+    ]);
+    const finten = new FinTen(secgov, FinTenDB.getInstance());
+
+    await finten.buildEntityCentralIndexKeyMap();
+
+    const tickers: Ticker[] = [
+      { TradingSymbol: 'AAPL', EntityCentralIndexKey: 320193 },
+      { TradingSymbol: 'AMZN', EntityCentralIndexKey: 1018724 },
+      { TradingSymbol: 'MSFT', EntityCentralIndexKey: 789019 },
+      { TradingSymbol: 'GOOG', EntityCentralIndexKey: 1652044 }
+    ];
+
+    for (const t of tickers) {
+      const r = await TickerModel.finByEntityCentralIndexKey(t.EntityCentralIndexKey);
+      if (r === null) throw new Error('Ticker could not be found');
+      expect(r.TradingSymbol).to.equal(t.TradingSymbol);
+      expect(r.EntityCentralIndexKey).to.equal(t.EntityCentralIndexKey);
+    }
   });
 
   it('should fix tickers', async () => {
