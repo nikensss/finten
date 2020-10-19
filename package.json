@@ -7,6 +7,7 @@
     "start": "ts-node -r dotenv/config src/main.ts",
     "nodemon": "nodemon",
     "test": "PORT=3030 mocha -r dotenv/config -r ts-node/register test/**/*.spec.ts",
+    "full-test": "PORT=3030 mocha --forbid-only -r dotenv/config -r ts-node/register test/**/*.spec.ts",
     "rimraf": "rm -rf node_modules && npm i",
     "lint": "eslint --fix '{src,test}/**/*.ts'",
     "pretty": "prettier --write {src,test}/**/*.ts"
@@ -37,8 +38,8 @@
   "homepage": "https://github.com/weirwoodai/finten#readme",
   "husky": {
     "hooks": {
-      "pre-commit": "npm run pretty && npm run lint && npm test && git add -A",
-      "pre-push": "npm test",
+      "pre-commit": "npm run pretty && npm run lint && npm run full-test && git add -A",
+      "pre-push": "npm run full-test",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
