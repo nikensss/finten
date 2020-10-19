@@ -11,7 +11,9 @@ import { FilingDocument } from '../../../src/classes/db/models/Filing';
 
 chai.use(chaiAsPromised);
 
-describe('FinTenDB tests', () => {
+describe('FinTenDB tests', function () {
+  this.slow(500);
+
   let mongod: MongoMemoryServer, uri: string;
 
   before('before: loading memory DB', async () => {

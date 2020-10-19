@@ -5,7 +5,8 @@ import XBRLUtilities from '../../../src/classes/secgov/XBRLUtilities';
 
 chai.use(chaiAsPromised);
 
-describe('XBRL tests', () => {
+describe('XBRL tests', function () {
+  this.slow(200);
   //extractXmlFromTxt
   it('should extract xml', () => {
     const xml = XBRLUtilities.extractXmlFromTxt(path.join(__dirname, '1stXBRLvalid.txt'));

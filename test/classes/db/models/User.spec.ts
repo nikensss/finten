@@ -8,7 +8,8 @@ import UserModel, { User } from '../../../../src/classes/db/models/User';
 chai.should();
 chai.use(chaiAsPromised);
 
-describe('User model tests', () => {
+describe('User model tests', function () {
+  this.slow(500);
   let mongod: MongoMemoryServer, uri: string;
 
   before('before: loading memory DB', async () => {

@@ -15,7 +15,9 @@ const user: User = {
 };
 
 let newUser: UserDocument;
-describe('Payment model tests', () => {
+describe('Payment model tests', function () {
+  this.slow(300);
+
   let mongod: MongoMemoryServer, uri: string;
 
   before('before: loading memory DB', async () => {

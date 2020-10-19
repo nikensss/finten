@@ -13,7 +13,8 @@ import FilingMetadata from '../../../src/classes/filings/FilingMetadata';
 
 chai.use(chaiAsPromised);
 
-describe('SecGov tests', () => {
+describe('SecGov tests', function () {
+  this.slow(300);
   it('should create a SecGov', () => {
     const secgov = new SecGov(new DownloadManager());
     expect(secgov).to.not.be.undefined;

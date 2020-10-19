@@ -12,7 +12,8 @@ import { Ticker } from '../../../src/classes/db/models/Ticker';
 import { FilingDocument } from '../../../src/classes/db/models/Filing';
 import { fail } from 'assert';
 
-describe('FinTen tests', () => {
+describe('FinTen tests', function () {
+  this.slow(750);
   let mongod: MongoMemoryServer, uri: string;
 
   before('before: loading memory DB', async () => {
