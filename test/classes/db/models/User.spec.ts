@@ -1,6 +1,7 @@
 import { fail } from 'assert';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import moment from 'moment';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import FinTenDB from '../../../../src/classes/db/FinTenDB';
 import UserModel, { User } from '../../../../src/classes/db/models/User';
@@ -99,5 +100,21 @@ describe('User model tests', function () {
       newUserRepeatedUsername.save().should.be.rejectedWith('duplicate key'),
       newUserRepeatedEmail.save().should.be.rejectedWith('duplicate key')
     ]);
+  });
+
+  it('should be premium', async () => {
+    const user: User = {
+      username: 'testuser',
+      password: 'testpassword',
+      email: 'email@internet.com'
+    };
+    const testuser = await new UserModel(user).save();
+    testuser.isPremiumUntil = moment().add(1, 'days').toDate();
+    await testuser.save();
+
+    const reloadedTestUser = await UserModel.findById(testuser._id);
+    if (reloadedTestUser === null) throw new Error('Cannot find user!');
+    expect(reloadedTestUser.username).to.equal('testuser');
+    expect(reloadedTestUser.isPremium).to.be.true;
   });
 });
