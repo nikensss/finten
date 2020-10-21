@@ -59,6 +59,34 @@ class FinTen {
     this.secgov.flush();
   }
 
+  //TODO: remember to fill PastTradingSymbols array when the database is rebuilt
+  async fixTickers(): Promise<void> {
+    let totalDone = 0;
+
+    await this.db.findFilings({}).eachAsync(async (f: FilingDocument) => {
+      try {
+        const t = await this.db.findTicker({
+          EntityCentralIndexKey: parseInt(f.EntityCentralIndexKey)
+        });
+
+        if (t === null) {
+          throw new Error(`Ticker not found for ${f.EntityCentralIndexKey}`);
+        }
+
+        if (f.TradingSymbol === t.TradingSymbol) return;
+
+        console.log(`${f.TradingSymbol} -> ${t.TradingSymbol} (${totalDone})`);
+        f.TradingSymbol = t.TradingSymbol;
+        totalDone += 1;
+        await f.save();
+      } catch (ex) {
+        totalDone += 1;
+        console.error(`There was an error! ${ex.toString()} (${totalDone})`);
+      }
+    });
+    console.log('Tickers fixed!');
+    return;
+  }
   /**
    * Fill the database with the data between the start and end years (both included)
    * up to the specified amount (if specified). If no end year is given, the method
@@ -99,12 +127,12 @@ class FinTen {
       const db = await this.db.connect();
       await db.findVisitedLinks({}).eachAsync(async (l: VisitedLinkDocument) => {
         let index = -1;
+        //loop in case several filings have the same link (which would be really weird)
         do {
           index = filingReportsMetaData.findIndex((f) => f.url === l.url);
-          if (index === NOT_FOUND) {
-            break;
+          if (index !== NOT_FOUND) {
+            filingReportsMetaData.splice(index, 1);
           }
-          filingReportsMetaData.splice(index, 1);
         } while (index !== -1);
       });
       return filingReportsMetaData;
@@ -116,7 +144,7 @@ class FinTen {
   private async getFilingsMetaData(start: number, end: number) {
     this.secgov.flush();
 
-    const indices = await this.secgov.getIndices(start, end);
+    const indices = await this.secgov.getIndices(start, end); //?
     const filings = this.secgov.parseIndices(indices, [FormType.F10K, FormType.F10Q]);
     this.secgov.flush();
     return filings;
@@ -140,10 +168,7 @@ class FinTen {
         try {
           const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
           const result = await this.insertFiling(xbrl.get());
-          visitedLink.status = VisitedLinkStatus.OK;
-          visitedLink.error = null;
-          visitedLink.filingId = result._id;
-
+          await visitedLink.hasBeenFixed(result._id);
           await visitedLink.save();
           this.logger.info(`Could now parse from ${filing.url}!`);
         } catch (ex) {
@@ -196,35 +221,6 @@ class FinTen {
   private logPercentage(currentIndex: number, length: number) {
     const percentageDownloads = ((currentIndex + 1) / length) * 100;
     this.logger.info(`🛎  ${currentIndex + 1}/${length} (${percentageDownloads.toFixed(3)} %)`);
-  }
-
-  //TODO: remember to fill PastTradingSymbols array when the database is rebuilt
-  async fixTickers(): Promise<void> {
-    let totalDone = 0;
-
-    await this.db.findFilings({}).eachAsync(async (f: FilingDocument) => {
-      try {
-        const t = await this.db.findTicker({
-          EntityCentralIndexKey: parseInt(f.EntityCentralIndexKey)
-        });
-
-        if (t === null) {
-          throw new Error(`Ticker not found for ${f.EntityCentralIndexKey}`);
-        }
-
-        if (f.TradingSymbol === t.TradingSymbol) return;
-
-        console.log(`${f.TradingSymbol} -> ${t.TradingSymbol} (${totalDone})`);
-        f.TradingSymbol = t.TradingSymbol;
-        totalDone += 1;
-        await f.save();
-      } catch (ex) {
-        totalDone += 1;
-        console.error(`There was an error! ${ex.toString()} (${totalDone})`);
-      }
-    });
-    console.log('Tickers fixed!');
-    return;
   }
 }
 

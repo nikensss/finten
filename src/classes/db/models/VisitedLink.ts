@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
-import mongoose, { Model, Schema } from 'mongoose';
+import mongoose, { Model, Schema, Document } from 'mongoose';
 
 export enum VisitedLinkStatus {
   OK = 'ok',
@@ -10,7 +10,7 @@ export interface VisitedLink {
   url: string;
   status: VisitedLinkStatus;
   error: string | null;
-  filingId: mongoose.Schema.Types.ObjectId | null;
+  filingId: Schema.Types.ObjectId | null;
 }
 
 const VisitedLinkSchema = new Schema({
@@ -33,7 +33,17 @@ const VisitedLinkSchema = new Schema({
   }
 });
 
-interface VisitedLinkBaseDocument extends VisitedLink, mongoose.Document {}
+VisitedLinkSchema.methods.hasBeenFixed = function (id: string): Promise<VisitedLinkDocument> {
+  this.filingId = id;
+  this.error = null;
+  this.status = VisitedLinkStatus.OK;
+
+  return this.save();
+};
+
+interface VisitedLinkBaseDocument extends VisitedLink, Document {
+  hasBeenFixed(id: string): Promise<VisitedLinkDocument>;
+}
 export interface VisitedLinkDocument extends VisitedLinkBaseDocument {}
 export interface VisitedLinkModel extends Model<VisitedLinkDocument> {}
 

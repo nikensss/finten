@@ -65,11 +65,7 @@ describe('User model tests', function () {
       expect(newUser.registrationDate.getHours()).to.equal(moment.utc().toDate().getHours());
       expect(newUser.registrationDate.getMinutes()).to.equal(moment.utc().toDate().getMinutes());
 
-      UserModel.countDocuments({}, (err, count) => {
-        if (err) throw new Error(err);
-
-        expect(count).to.be.equal(1);
-      });
+      expect(await UserModel.countDocuments().exec()).to.equal(1);
     } catch (ex) {
       fail(ex);
     }

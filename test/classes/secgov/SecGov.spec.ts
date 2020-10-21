@@ -92,7 +92,7 @@ describe('SecGov tests', function () {
     expect(filingsMetadata.every((f) => f instanceof FilingMetadata)).to.be.true;
   });
 
-  it('should parse an idx file', () => {
+  it('should parse one idx file', () => {
     const filingsMetadata = new SecGov(new DownloadManager()).parseIndex(
       path.join(__dirname, 'xbrl.idx'),
       [FormType.F10K, FormType.F10Q]
@@ -122,6 +122,25 @@ describe('SecGov tests', function () {
     const downloader: Downloader = instance(mockedDownloader);
     new SecGov(downloader).getFilings();
     verify(mockedDownloader.get()).once();
+  });
+
+  it('in getFilings(...f), it should map the downloadables with the partial url to the full url using SecGov.FILINGS_ROOT', async () => {
+    const mockedDownloader: Downloader = mock<Downloader>();
+    const downloader: Downloader = instance(mockedDownloader);
+    when(mockedDownloader.get(anything(), anything())).thenCall((...d: Downloadable[]) => {
+      for (const filing of d) {
+        expect(filing.url.startsWith(SecGov.FILINGS_ROOT)).to.be.true;
+      }
+    });
+
+    const secgov = new SecGov(downloader);
+    const filings = secgov.parseIndex(path.join(__dirname, 'xbrl.idx'), [
+      FormType.F10K,
+      FormType.F10Q
+    ]);
+
+    await secgov.getFilings(filings[0], filings[1]);
+    verify(mockedDownloader.get(anything(), anything())).atLeast(1);
   });
 
   it('should delegate flush to dm', () => {

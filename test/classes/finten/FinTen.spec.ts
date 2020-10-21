@@ -9,42 +9,27 @@ import path from 'path';
 import XBRLUtilities from '../../../src/classes/secgov/XBRLUtilities';
 import { promises as fs } from 'fs';
 import TickerModel, { Ticker } from '../../../src/classes/db/models/Ticker';
-import { FilingDocument } from '../../../src/classes/db/models/Filing';
+import VisitedLinkModel, { VisitedLinkStatus } from '../../../src/classes/db/models/VisitedLink';
+import FilingModel, { FilingDocument } from '../../../src/classes/db/models/Filing';
 import { fail } from 'assert';
-import { instance, mock, when } from 'ts-mockito';
+import { anyNumber, anything, instance, mock, when } from 'ts-mockito';
+import FilingMetadata from '../../../src/classes/filings/FilingMetadata';
 
 chai.should();
 chai.use(chaiAsPromised);
 
 describe('FinTen tests', function () {
-  this.slow(750);
+  this.slow(2500);
   let mongod: MongoMemoryServer, uri: string;
 
   before('before: loading mongodb-memory-server', async () => {
     mongod = new MongoMemoryServer();
     try {
       uri = await mongod.getUri();
-      const db = await FinTenDB.getInstance().connect(uri);
-
-      const files = (await fs.readdir(__dirname)).filter((f) => f.endsWith('10k.txt'));
-      const xbrls = await Promise.all(
-        files.map((f) => XBRLUtilities.fromTxt(path.join(__dirname, f)))
-      );
-      for (let index = 0; index < 10; index++) {
-        await Promise.all(
-          xbrls.map((xbrl) => {
-            db.createFiling(xbrl.get());
-          })
-        );
-      }
-
-      const tickers: Ticker[] = [
-        { TradingSymbol: 'AMZN', EntityCentralIndexKey: 1018724 },
-        { TradingSymbol: 'CNBX', EntityCentralIndexKey: 1343009 },
-        { TradingSymbol: 'COST', EntityCentralIndexKey: 1621199 },
-        { TradingSymbol: 'GOOG', EntityCentralIndexKey: 1652044 }
-      ];
-      await Promise.all(tickers.map((t) => db.createTicker(t)));
+      await FinTenDB.getInstance().connect(uri);
+      await TickerModel.ensureIndexes();
+      await FilingModel.ensureIndexes();
+      await VisitedLinkModel.ensureIndexes();
     } catch (ex) {
       throw ex;
     }
@@ -53,6 +38,24 @@ describe('FinTen tests', function () {
   after('after: stopping DBs', async () => {
     await FinTenDB.getInstance().disconnect();
     await mongod.stop();
+  });
+
+  beforeEach(async () => {
+    await TickerModel.ensureIndexes();
+    await FilingModel.ensureIndexes();
+    await VisitedLinkModel.ensureIndexes();
+  });
+
+  afterEach(async () => {
+    if ((await TickerModel.countDocuments().exec()) > 0) {
+      await TickerModel.collection.drop();
+    }
+    if ((await FilingModel.countDocuments().exec()) > 0) {
+      await FilingModel.collection.drop();
+    }
+    if ((await VisitedLinkModel.countDocuments().exec()) > 0) {
+      await VisitedLinkModel.collection.drop();
+    }
   });
 
   it('should create a new FinTen', () => {
@@ -91,6 +94,7 @@ describe('FinTen tests', function () {
   });
 
   it('should fix tickers', async () => {
+    await addDummyFilingsAndTickers();
     const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
 
     await finten.fixTickers();
@@ -107,4 +111,130 @@ describe('FinTen tests', function () {
       expect(filing.TradingSymbol).to.be.equal(ticker.TradingSymbol);
     });
   });
+
+  it('should add new filings', async () => {
+    const mockedSecGov: SecGov = mock(SecGov);
+    const secgov: SecGov = instance(mockedSecGov);
+
+    when(mockedSecGov.getIndices(anyNumber(), anyNumber())).thenResolve([
+      {
+        url: 'anyurl',
+        fileName: path.join(__dirname, 'xbrl.idx')
+      }
+    ]);
+    when(mockedSecGov.parseIndices(anything(), anything())).thenReturn([
+      new FilingMetadata('320193|Apple Inc.|10-Q|2020-01-29|a_url'),
+      new FilingMetadata('320193|Apple Inc.|10-Q|2020-01-29|another_url'),
+      new FilingMetadata('320193|Apple Inc.|10-Q|2020-01-29|yet_another_url')
+    ]);
+    when(mockedSecGov.getFilings(anything()))
+      .thenResolve([
+        {
+          url: 'twin_disc_url',
+          fileName: path.join(__dirname, 'twin_disc_10q.txt')
+        }
+      ])
+      .thenResolve([
+        {
+          url: 'amazon_url',
+          fileName: path.join(__dirname, 'amazon_10k.txt')
+        }
+      ])
+      .thenResolve([
+        {
+          url: 'google_url',
+          fileName: path.join(__dirname, 'google_10k.txt')
+        }
+      ]);
+
+    const finten = new FinTen(secgov, FinTenDB.getInstance());
+    await finten.addNewFilings(1, 2);
+
+    expect(await FilingModel.countDocuments().exec()).to.equal(3);
+    expect(await VisitedLinkModel.countDocuments({ status: VisitedLinkStatus.OK }).exec()).to.equal(
+      3
+    );
+    // verify(secgov.getFilings(anything())).times(3);
+  });
+
+  it('should add less filings because there are visited links', async () => {
+    await addDummyVisitedLinks('https://www.sec.gov/Archives/a_known_url');
+    const mockedSecGov: SecGov = mock(SecGov);
+    const secgov: SecGov = instance(mockedSecGov);
+
+    when(mockedSecGov.getIndices(anyNumber(), anyNumber())).thenResolve([
+      {
+        url: 'anyurl',
+        fileName: path.join(__dirname, 'xbrl.idx')
+      }
+    ]);
+
+    when(mockedSecGov.parseIndices(anything(), anything())).thenReturn([
+      new FilingMetadata('320193|Apple Inc.|10-Q|2020-01-29|a_known_url'),
+      new FilingMetadata('320193|Apple Inc.|10-Q|2020-01-29|another_url'),
+      new FilingMetadata('320193|Apple Inc.|10-Q|2020-01-29|yet_another_url')
+    ]);
+
+    when(mockedSecGov.getFilings(anything()))
+      .thenResolve([
+        {
+          url: 'amazon_url',
+          fileName: path.join(__dirname, 'amazon_10k.txt')
+        }
+      ])
+      .thenResolve([
+        {
+          url: 'google_url',
+          fileName: path.join(__dirname, 'google_10k.txt')
+        }
+      ])
+      .thenReject(new Error('Should not have been called a third time!'));
+
+    const finten = new FinTen(secgov, FinTenDB.getInstance());
+    await finten.addNewFilings(1, 2);
+
+    expect(await FilingModel.countDocuments().exec()).to.equal(2);
+    expect(await VisitedLinkModel.countDocuments({ status: VisitedLinkStatus.OK }).exec()).to.equal(
+      3
+    );
+  });
 });
+
+async function addDummyFilingsAndTickers() {
+  await addDummyFilings();
+  await addDummyTickers();
+}
+
+async function addDummyFilings() {
+  const db = await FinTenDB.getInstance().connect();
+  const files = (await fs.readdir(__dirname)).filter((f) => f.endsWith('10k.txt'));
+  const xbrls = await Promise.all(files.map((f) => XBRLUtilities.fromTxt(path.join(__dirname, f))));
+  for (let index = 0; index < 10; index++) {
+    await Promise.all(
+      xbrls.map((xbrl) => {
+        db.createFiling(xbrl.get());
+      })
+    );
+  }
+}
+
+async function addDummyTickers() {
+  const db = await FinTenDB.getInstance().connect();
+  const tickers: Ticker[] = [
+    { TradingSymbol: 'AMZN', EntityCentralIndexKey: 1018724 },
+    { TradingSymbol: 'CNBX', EntityCentralIndexKey: 1343009 },
+    { TradingSymbol: 'COST', EntityCentralIndexKey: 1621199 },
+    { TradingSymbol: 'GOOG', EntityCentralIndexKey: 1652044 }
+  ];
+  await Promise.all(tickers.map((t) => db.createTicker(t)));
+}
+
+async function addDummyVisitedLinks(url: string) {
+  await FinTenDB.getInstance().connect();
+  await VisitedLinkModel.create({
+    url,
+    status: VisitedLinkStatus.OK,
+    error: null,
+    filingId: null
+  });
+}

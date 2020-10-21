@@ -51,9 +51,7 @@ describe('FinTenDB tests', function () {
     const db = await FinTenDB.getInstance().connect(uri);
     await db.createTicker(ticker);
 
-    TickerModel.countDocuments(ticker, (err, count) => {
-      expect(count).to.be.equal(1);
-    });
+    expect(await TickerModel.countDocuments(ticker).exec()).to.equal(1);
   });
 
   it('should retrieve one ticker', async () => {

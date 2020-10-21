@@ -7,12 +7,6 @@
       "type": "node-terminal"
     },
     {
-      "command": "npx mocha -r dotenv/config  -r ts-node/register test/classes/db/models/User.spec.ts",
-      "name": "subset test",
-      "request": "launch",
-      "type": "node-terminal"
-    },
-    {
       "command": "npm test",
       "name": "npm test",
       "request": "launch",

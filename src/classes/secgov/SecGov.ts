@@ -9,6 +9,9 @@ import Downloader from '../download/Downloader';
 
 class SecGov {
   public static readonly INDICES_ROOT = 'https://www.sec.gov/Archives/edgar/full-index/';
+  public static readonly FILINGS_ROOT = 'https://www.sec.gov/Archives/';
+  public static readonly ECIK_MAP_URL = 'https://www.sec.gov/include/ticker.txt';
+
   private dm: Downloader;
   /**
    * The amount of milliseconds between to API calls. SecGov has a limit of 10
@@ -49,13 +52,18 @@ class SecGov {
     return await this.dm.get({ url, fileName: `${year}_${quarter}_xbrl.idx` });
   }
 
+  /**
+   * Parses all the files in the indices array as if they were xbrl.idx files.
+   *
+   * @param indices the files to parse
+   * @param formType the desired form types to retrieve
+   */
   parseIndices(indices: Downloadable[], formType: FormType[]): FilingMetadata[] {
     return indices.map((index) => this.parseIndex(index.fileName, formType)).flat();
   }
 
   /**
-   * Parses all .idx files in the 'downloads' folder and returns the
-   * FilingReportMetadata's that correspond to the desired form type.
+   * Parses the given file as if it was an xbrl.idx file from SecGov.
    *
    * @param formTypes Form type to look for
    * @param amount The amount of filings to return
@@ -82,13 +90,17 @@ class SecGov {
   async getEntityCentralIndexKeyMap(): Promise<Downloadable[]> {
     this.flush();
     return await this.dm.get({
-      url: 'https://www.sec.gov/include/ticker.txt',
+      url: SecGov.ECIK_MAP_URL,
       fileName: 'ticker_ecik_map.txt'
     });
   }
 
   async getFilings(...downloadables: Downloadable[]): Promise<Downloadable[]> {
-    return await this.dm.get(...downloadables);
+    const map = downloadables.map((d) => ({
+      url: `${SecGov.INDICES_ROOT}${d.url}`,
+      fileName: d.fileName
+    }));
+    return await this.dm.get(...map);
   }
 
   flush(): void {
