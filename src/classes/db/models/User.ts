@@ -3,7 +3,7 @@ import moment from 'moment';
 import mongoose, { Model, Schema } from 'mongoose';
 import validator from 'validator';
 import Encrypter from '../../auth/Encrypter';
-import { Payment, PaymentDocument } from './Payment';
+import { PaymentDocument } from './Payment';
 
 export interface User {
   username: string;
@@ -38,7 +38,7 @@ const UserSchema = new Schema({
   },
   registrationDate: {
     type: Date,
-    default: Date.now
+    default: moment.utc
   },
   isPremiumUntil: {
     type: Date,
@@ -61,12 +61,14 @@ const UserSchema = new Schema({
 });
 
 UserSchema.virtual('isPremium').get(function (this: UserBaseDocument) {
-  return moment.utc().isBefore(this.isPremiumUntil);
+  return this.isAdmin || moment.utc().isBefore(this.isPremiumUntil);
 });
 
-UserSchema.virtual('lastPayment').get(function (this: UserBaseDocument) {
+UserSchema.virtual('lastPayment').get(function (
+  this: UserBaseDocument
+): Schema.Types.ObjectId | PaymentDocument {
   if (!Array.isArray(this.payments)) {
-    return;
+    throw new Error('Payments is not an array!');
   }
 
   return this.payments[this.payments.length - 1];
@@ -87,7 +89,7 @@ interface UserBaseDocument extends User, mongoose.Document {
   payments: Schema.Types.ObjectId[] | Record<string, unknown>;
   changePasswordRequest: Date;
   isPremium: boolean;
-  lastPayment: Payment;
+  lastPayment: Schema.Types.ObjectId;
   checkPassword(password: string): Promise<boolean>;
   nonce: string;
 }
@@ -113,6 +115,7 @@ interface UserBaseDocument extends User, mongoose.Document {
  */
 export interface UserDocument extends UserBaseDocument {
   payments: PaymentDocument['_id'];
+  lastPayment: PaymentDocument['_id'];
 }
 
 /**
@@ -121,6 +124,7 @@ export interface UserDocument extends UserBaseDocument {
  */
 export interface UserPopulatedDocument extends UserDocument {
   payments: PaymentDocument[];
+  lastPayment: PaymentDocument;
 }
 
 UserSchema.pre<UserBaseDocument>('save', function (next) {

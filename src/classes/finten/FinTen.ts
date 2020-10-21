@@ -47,7 +47,9 @@ class FinTen {
           const ticker = TickerModel.parse(line);
           console.log('found: ', await db.createTicker(ticker));
         } catch (ex) {
-          if (!/duplicate key/.test(ex.toString())) {
+          if (/duplicate key/.test(ex.toString())) {
+            console.error('Ticker already exists: ' + ex.toString());
+          } else {
             console.error('Exception while parsing and inserting tickers:\n' + ex.toString());
           }
         }
@@ -195,7 +197,8 @@ class FinTen {
     const percentageDownloads = ((currentIndex + 1) / length) * 100;
     this.logger.info(`🛎  ${currentIndex + 1}/${length} (${percentageDownloads.toFixed(3)} %)`);
   }
-  //TODO: remember filling PastTradingSymbols array when the database is rebuilt
+
+  //TODO: remember to fill PastTradingSymbols array when the database is rebuilt
   async fixTickers(): Promise<void> {
     let totalDone = 0;
 

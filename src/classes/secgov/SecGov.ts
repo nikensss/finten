@@ -80,6 +80,7 @@ class SecGov {
   }
 
   async getEntityCentralIndexKeyMap(): Promise<Downloadable[]> {
+    this.flush();
     return await this.dm.get({
       url: 'https://www.sec.gov/include/ticker.txt',
       fileName: 'ticker_ecik_map.txt'

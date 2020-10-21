@@ -37,12 +37,12 @@ passport.use(
           return next(null, false, { message: 'Invalid credentials' });
         }
 
-        if (user.isAdmin || user.isPremium) {
+        if (user.isPremium) {
           console.log(`user ${user.username} is ${user.isAdmin ? 'admin' : 'premium'}`);
           return next(null, user);
         }
-        console.log(`user ${user.username} is neither admin nor premium`);
 
+        console.log(`user ${user.username} is neither admin nor premium`);
         return next(null, false, { message: 'Invalid credentials' });
       })
       .catch((e) => next(e));

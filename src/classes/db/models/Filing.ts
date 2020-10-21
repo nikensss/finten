@@ -167,10 +167,10 @@ FilingSchema.pre<FilingBaseDocument>('validate', async function () {
     }
   }
 
-  if (this.TradingSymbol !== 'Field not found.') {
-    this.TradingSymbol = this.TradingSymbol.toUpperCase();
-    this.PastTradingSymbols.push(this.TradingSymbol);
-  }
+  // if (this.TradingSymbol !== 'Field not found.') {
+  //   this.TradingSymbol = this.TradingSymbol.toUpperCase();
+  //   this.PastTradingSymbols.push(this.TradingSymbol);
+  // }
 });
 
 interface FilingBaseDocument extends Filing, mongoose.Document {}

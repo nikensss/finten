@@ -4,6 +4,7 @@ import chaiAsPromised from 'chai-as-promised';
 import moment from 'moment';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import FinTenDB from '../../../../src/classes/db/FinTenDB';
+import PaymentModel, { PaymentDocument } from '../../../../src/classes/db/models/Payment';
 import UserModel, { User } from '../../../../src/classes/db/models/User';
 
 chai.should();
@@ -30,14 +31,14 @@ describe('User model tests', function () {
   });
 
   beforeEach(async () => {
-    await UserModel.ensureIndexes();
+    return await UserModel.ensureIndexes();
   });
 
   afterEach(async () => {
-    await UserModel.collection.drop();
+    return await UserModel.collection.drop();
   });
 
-  it('should create default user', async () => {
+  it('should create a new user with the default settings', async () => {
     const user: User = {
       username: 'testuser',
       password: 'testpassword',
@@ -48,22 +49,40 @@ describe('User model tests', function () {
       const newUser = await db.createUser(user);
 
       expect(newUser.isAdmin).to.be.false;
+      expect(newUser.isPremium).to.be.false;
       expect(newUser.isPremiumUntil).to.be.null;
       expect(newUser.payments).to.be.empty;
       expect(newUser.changePasswordRequest).to.be.null;
       expect(newUser.nonce).to.be.null;
       expect(newUser.username).to.equal(user.username);
       expect(newUser.email).to.equal(user.email);
+      expect(newUser.password).to.not.equal(user.password);
       expect(await newUser.checkPassword(user.password)).to.be.true;
-      expect(await newUser.checkPassword(user.password + 'asdf')).to.be.false;
-      expect(newUser.registrationDate).to.be.lessThan(new Date());
+
+      expect(newUser.registrationDate.getFullYear()).to.equal(moment.utc().toDate().getFullYear());
+      expect(newUser.registrationDate.getMonth()).to.equal(moment.utc().toDate().getMonth());
+      expect(newUser.registrationDate.getDay()).to.equal(moment.utc().toDate().getDay());
+      expect(newUser.registrationDate.getHours()).to.equal(moment.utc().toDate().getHours());
+      expect(newUser.registrationDate.getMinutes()).to.equal(moment.utc().toDate().getMinutes());
 
       UserModel.countDocuments({}, (err, count) => {
+        if (err) throw new Error(err);
+
         expect(count).to.be.equal(1);
       });
     } catch (ex) {
       fail(ex);
     }
+  });
+
+  it('should indicate wrong password', async () => {
+    const user: User = {
+      username: 'testuser',
+      password: 'testpassword',
+      email: 'email'
+    };
+    const newUser = new UserModel(user);
+    expect(await newUser.checkPassword(user.password + '0')).to.be.false;
   });
 
   it('should not pass email validation', async () => {
@@ -97,12 +116,17 @@ describe('User model tests', function () {
     const newUserRepeatedEmail = new UserModel(userRepeatedEmail);
 
     return Promise.all([
-      newUserRepeatedUsername.save().should.be.rejectedWith('duplicate key'),
-      newUserRepeatedEmail.save().should.be.rejectedWith('duplicate key')
+      newUserRepeatedUsername
+        .save()
+        .should.be.rejectedWith('duplicate key error dup key: { : "testuser" }'),
+
+      newUserRepeatedEmail
+        .save()
+        .should.be.rejectedWith('duplicate key error dup key: { : "email@internet.com" }')
     ]);
   });
 
-  it('should be premium', async () => {
+  it('should be premium using isPremiumUntil', async () => {
     const user: User = {
       username: 'testuser',
       password: 'testpassword',
@@ -116,5 +140,122 @@ describe('User model tests', function () {
     if (reloadedTestUser === null) throw new Error('Cannot find user!');
     expect(reloadedTestUser.username).to.equal('testuser');
     expect(reloadedTestUser.isPremium).to.be.true;
+  });
+
+  it('should consider admins premium users', async () => {
+    const user: User = {
+      username: 'adminuser',
+      password: 'testpassword',
+      email: 'email@internet.com'
+    };
+    const testuser = await new UserModel(user).save();
+    testuser.isAdmin = true;
+    await testuser.save();
+
+    const admin = await UserModel.findOne({ username: 'adminuser' });
+
+    if (admin === null) {
+      fail('Admin user was not found!');
+    }
+    expect(admin.isPremium).to.be.true;
+  });
+
+  it('should get the id of the last payment and it should equal the id of the payment added last', async () => {
+    const user: User = {
+      username: 'testuser',
+      password: 'testpassword',
+      email: 'email@internet.com'
+    };
+
+    const testuser = await new UserModel(user).save();
+
+    const firstPayment: PaymentDocument = await PaymentModel.create({
+      user: testuser._id,
+      date: moment.utc().toDate(),
+      amount: 100
+    });
+    const secondPayment: PaymentDocument = await PaymentModel.create({
+      user: testuser._id,
+      date: moment.utc().toDate(),
+      amount: 200
+    });
+    testuser.payments.push(firstPayment, secondPayment);
+    await testuser.save();
+
+    const retrievedTestUser = await UserModel.findOne({ username: 'testuser' });
+    if (retrievedTestUser === null) {
+      fail('User could not be retrieved from mongodb-memory-server');
+    }
+
+    expect(retrievedTestUser.lastPayment.equals(firstPayment._id)).to.be.false;
+    expect(retrievedTestUser.lastPayment.equals(secondPayment._id)).to.be.true;
+  });
+
+  it('should populate the array of payments', async () => {
+    const user: User = {
+      username: 'testuser',
+      password: 'testpassword',
+      email: 'email@internet.com'
+    };
+
+    const testuser = await new UserModel(user).save();
+
+    const firstPayment: PaymentDocument = await PaymentModel.create({
+      user: testuser._id,
+      date: moment.utc().toDate(),
+      amount: 100
+    });
+    const secondPayment: PaymentDocument = await PaymentModel.create({
+      user: testuser._id,
+      date: moment.utc().toDate(),
+      amount: 200
+    });
+    testuser.payments.push(firstPayment, secondPayment);
+    await testuser.save();
+
+    const retrievedTestUser = await UserModel.findWithPayments(testuser._id);
+    if (retrievedTestUser === null) {
+      fail('User could not be retrieved from mongodb-memory-server');
+    }
+
+    expect(retrievedTestUser.payments.length).to.equal(2);
+
+    expect(retrievedTestUser.payments[0].equals(firstPayment)).to.be.true;
+    expect(retrievedTestUser.payments[0].equals(secondPayment)).to.be.false;
+
+    expect(retrievedTestUser.payments[1].equals(firstPayment)).to.be.false;
+    expect(retrievedTestUser.payments[1].equals(secondPayment)).to.be.true;
+
+    expect(retrievedTestUser.lastPayment.equals(secondPayment)).to.be.true;
+  });
+
+  it('the last payment from a populated UserDocument should equal the PaymenDocument that was added last', async () => {
+    const user: User = {
+      username: 'testuser',
+      password: 'testpassword',
+      email: 'email@internet.com'
+    };
+
+    const testuser = await new UserModel(user).save();
+
+    const firstPayment: PaymentDocument = await PaymentModel.create({
+      user: testuser._id,
+      date: moment.utc().toDate(),
+      amount: 200
+    });
+    const secondPayment: PaymentDocument = await PaymentModel.create({
+      user: testuser._id,
+      date: moment.utc().toDate(),
+      amount: 200
+    });
+    testuser.payments.push(firstPayment, secondPayment);
+    await testuser.save();
+
+    const retrievedTestUser = await UserModel.findWithPayments(testuser._id);
+    if (retrievedTestUser === null) {
+      fail('User could not be retrieved from mongodb-memory-server');
+    }
+
+    expect(retrievedTestUser.lastPayment.equals(secondPayment)).to.be.true;
   });
 });
