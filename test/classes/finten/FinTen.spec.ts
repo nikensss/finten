@@ -12,7 +12,7 @@ import TickerModel, { Ticker } from '../../../src/classes/db/models/Ticker';
 import VisitedLinkModel, { VisitedLinkStatus } from '../../../src/classes/db/models/VisitedLink';
 import FilingModel, { FilingDocument } from '../../../src/classes/db/models/Filing';
 import { fail } from 'assert';
-import { anyNumber, anything, instance, mock, when } from 'ts-mockito';
+import { anyNumber, anything, instance, mock, verify, when } from 'ts-mockito';
 import FilingMetadata from '../../../src/classes/filings/FilingMetadata';
 
 chai.should();
@@ -151,14 +151,15 @@ describe('FinTen tests', function () {
     await finten.addNewFilings(1, 2);
 
     expect(await FilingModel.countDocuments().exec()).to.equal(3);
+    expect(await VisitedLinkModel.countDocuments().exec()).to.equal(3);
     expect(await VisitedLinkModel.countDocuments({ status: VisitedLinkStatus.OK }).exec()).to.equal(
       3
     );
-    // verify(secgov.getFilings(anything())).times(3);
+    verify(mockedSecGov.getFilings(anything())).times(3);
   });
 
   it('should add less filings because there are visited links', async () => {
-    await addDummyVisitedLinks('https://www.sec.gov/Archives/a_known_url');
+    await addDummyVisitedLinks(`${SecGov.FILINGS_ROOT}a_known_url`);
     const mockedSecGov: SecGov = mock(SecGov);
     const secgov: SecGov = instance(mockedSecGov);
 
@@ -194,9 +195,12 @@ describe('FinTen tests', function () {
     await finten.addNewFilings(1, 2);
 
     expect(await FilingModel.countDocuments().exec()).to.equal(2);
+    expect(await VisitedLinkModel.countDocuments().exec()).to.equal(3);
     expect(await VisitedLinkModel.countDocuments({ status: VisitedLinkStatus.OK }).exec()).to.equal(
       3
     );
+
+    verify(mockedSecGov.getFilings(anything())).twice();
   });
 });
 

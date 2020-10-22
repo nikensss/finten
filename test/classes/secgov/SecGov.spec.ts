@@ -129,6 +129,7 @@ describe('SecGov tests', function () {
     const downloader: Downloader = instance(mockedDownloader);
     when(mockedDownloader.get(anything(), anything())).thenCall((...d: Downloadable[]) => {
       for (const filing of d) {
+        expect(filing.url.startsWith('https://www.sec.gov/Archives/')).to.be.true;
         expect(filing.url.startsWith(SecGov.FILINGS_ROOT)).to.be.true;
       }
     });
