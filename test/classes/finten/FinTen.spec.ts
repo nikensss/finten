@@ -251,6 +251,40 @@ describe('FinTen tests', function () {
     verify(mockedSecGov.getFilings(anything())).twice();
   });
 
+  it('should add a VisitedLink with error when adding new filings and XBRL cannot be parsed', async () => {
+    const mockedSecGov: SecGov = mock(SecGov);
+    const secgov: SecGov = instance(mockedSecGov);
+
+    when(mockedSecGov.getIndices(anyNumber(), anyNumber())).thenResolve([
+      {
+        url: 'anyurl',
+        fileName: path.join(__dirname, 'xbrl.idx')
+      }
+    ]);
+    when(mockedSecGov.parseIndices(anything(), anything())).thenReturn([
+      new FilingMetadata('320193|Apple Inc.|10-Q|2020-01-29|a_url')
+    ]);
+    when(mockedSecGov.getFilings(anything())).thenResolve([
+      {
+        url: 'twin_disc_url',
+        fileName: path.join(__dirname, 'ticker_ecik_map.txt')
+      }
+    ]);
+
+    const finten = new FinTen(secgov, FinTenDB.getInstance());
+    await finten.addNewFilings(1, 2);
+
+    expect(await FilingModel.countDocuments().exec()).to.equal(0);
+    expect(await VisitedLinkModel.countDocuments().exec()).to.equal(1);
+    expect(await VisitedLinkModel.countDocuments({ status: VisitedLinkStatus.OK }).exec()).to.equal(
+      0
+    );
+    expect(
+      await VisitedLinkModel.countDocuments({ status: VisitedLinkStatus.ERROR }).exec()
+    ).to.equal(1);
+    verify(mockedSecGov.getFilings(anything())).times(1);
+  });
+
   it('should retry problematic filings', async () => {
     const mockedSecGov = mock(SecGov);
     const secgov = instance(mockedSecGov);
@@ -302,38 +336,53 @@ describe('FinTen tests', function () {
     verify(mockedSecGov.getFilings(anything())).times(3);
   });
 
-  it('should add a VisitedLink with error when adding new filings and XBRL cannot be parsed', async () => {
+  it('should retry problematic filings, fail the parsing and deal with it elegantly', async () => {
     const mockedSecGov: SecGov = mock(SecGov);
     const secgov: SecGov = instance(mockedSecGov);
 
-    when(mockedSecGov.getIndices(anyNumber(), anyNumber())).thenResolve([
-      {
-        url: 'anyurl',
-        fileName: path.join(__dirname, 'xbrl.idx')
-      }
-    ]);
-    when(mockedSecGov.parseIndices(anything(), anything())).thenReturn([
-      new FilingMetadata('320193|Apple Inc.|10-Q|2020-01-29|a_url')
-    ]);
-    when(mockedSecGov.getFilings(anything())).thenResolve([
-      {
-        url: 'twin_disc_url',
-        fileName: path.join(__dirname, 'ticker_ecik_map.txt')
-      }
-    ]);
-
+    when(mockedSecGov.getFilings(anything()))
+      .thenCall((...d: Downloadable[]) => {
+        expect(d.length).to.equal(1);
+        expect(d[0].url).to.equal('url_with_error_1');
+        return Promise.resolve([
+          {
+            url: 'url_with_error_1',
+            fileName: path.join(__dirname, 'ticker_ecik_map.txt')
+          }
+        ]);
+      })
+      .thenCall((...d: Downloadable[]) => {
+        expect(d.length).to.equal(1);
+        expect(d[0].url).to.equal('url_with_error_2');
+        return Promise.resolve([
+          {
+            url: 'url_with_error_2',
+            fileName: path.join(__dirname, 'ticker_ecik_map.txt')
+          }
+        ]);
+      })
+      .thenCall((...d: Downloadable[]) => {
+        expect(d.length).to.equal(1);
+        expect(d[0].url).to.equal('url_with_error_3');
+        return Promise.resolve([
+          {
+            url: 'url_with_error_3',
+            fileName: path.join(__dirname, 'ticker_ecik_map.txt')
+          }
+        ]);
+      })
+      .thenReject(new Error('Should not have been called a 4th time!'));
+    await addVsitedLinksWithError();
     const finten = new FinTen(secgov, FinTenDB.getInstance());
-    await finten.addNewFilings(1, 2);
+    await finten.retryProblematicFilings();
 
     expect(await FilingModel.countDocuments().exec()).to.equal(0);
-    expect(await VisitedLinkModel.countDocuments().exec()).to.equal(1);
+    expect(await VisitedLinkModel.countDocuments().exec()).to.equal(4);
     expect(await VisitedLinkModel.countDocuments({ status: VisitedLinkStatus.OK }).exec()).to.equal(
-      0
+      1
     );
-    expect(
-      await VisitedLinkModel.countDocuments({ status: VisitedLinkStatus.ERROR }).exec()
-    ).to.equal(1);
-    verify(mockedSecGov.getFilings(anything())).times(1);
+
+    verify(mockedSecGov.getFilings(anything())).times(3);
   });
 });
 
