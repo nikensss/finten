@@ -14,6 +14,7 @@ import FilingModel, { FilingDocument } from '../../../src/classes/db/models/Fili
 import { fail } from 'assert';
 import { anyNumber, anything, instance, mock, verify, when } from 'ts-mockito';
 import FilingMetadata from '../../../src/classes/filings/FilingMetadata';
+import Downloadable from '../../../src/classes/download/Downloadable';
 
 chai.should();
 chai.use(chaiAsPromised);
@@ -202,6 +203,57 @@ describe('FinTen tests', function () {
 
     verify(mockedSecGov.getFilings(anything())).twice();
   });
+
+  it('should retry problematic filings', async () => {
+    const mockedSecGov = mock(SecGov);
+    const secgov = instance(mockedSecGov);
+
+    when(mockedSecGov.getFilings(anything()))
+      .thenCall((...d: Downloadable[]) => {
+        expect(d.length).to.equal(1);
+        expect(d[0].url).to.equal('url_with_error_1');
+        return Promise.resolve([
+          {
+            url: 'url_with_error_1',
+            fileName: path.join(__dirname, 'amazon_10k.txt')
+          }
+        ]);
+      })
+      .thenCall((...d: Downloadable[]) => {
+        expect(d.length).to.equal(1);
+        expect(d[0].url).to.equal('url_with_error_2');
+        return Promise.resolve([
+          {
+            url: 'url_with_error_2',
+            fileName: path.join(__dirname, 'google_10k.txt')
+          }
+        ]);
+      })
+      .thenCall((...d: Downloadable[]) => {
+        expect(d.length).to.equal(1);
+        expect(d[0].url).to.equal('url_with_error_3');
+        return Promise.resolve([
+          {
+            url: 'url_with_error_3',
+            fileName: path.join(__dirname, 'costco_inc_10k.txt')
+          }
+        ]);
+      })
+      .thenReject(new Error('Should not have been called a 4th time!'));
+
+    await addVsitedLinksWithError();
+    const finten = new FinTen(secgov, FinTenDB.getInstance());
+
+    await finten.retryProblematicFilings();
+
+    expect(await FilingModel.countDocuments().exec()).to.equal(3);
+    expect(await VisitedLinkModel.countDocuments().exec()).to.equal(4);
+    expect(await VisitedLinkModel.countDocuments({ status: VisitedLinkStatus.OK }).exec()).to.equal(
+      4
+    );
+
+    verify(mockedSecGov.getFilings(anything())).times(3);
+  });
 });
 
 async function addDummyFilingsAndTickers() {
@@ -237,6 +289,34 @@ async function addDummyVisitedLinks(url: string) {
   await FinTenDB.getInstance().connect();
   await VisitedLinkModel.create({
     url,
+    status: VisitedLinkStatus.OK,
+    error: null,
+    filingId: null
+  });
+}
+
+async function addVsitedLinksWithError() {
+  await FinTenDB.getInstance().connect();
+  await VisitedLinkModel.create({
+    url: 'url_with_error_1',
+    status: VisitedLinkStatus.ERROR,
+    error: 'Error parsing xbrl: No year end found!',
+    filingId: null
+  });
+  await VisitedLinkModel.create({
+    url: 'url_with_error_2',
+    status: VisitedLinkStatus.ERROR,
+    error: 'Error parsing xbrl: No year end found!',
+    filingId: null
+  });
+  await VisitedLinkModel.create({
+    url: 'url_with_error_3',
+    status: VisitedLinkStatus.ERROR,
+    error: 'Error parsing xbrl: No year end found!',
+    filingId: null
+  });
+  await VisitedLinkModel.create({
+    url: 'url_with_no_error_3',
     status: VisitedLinkStatus.OK,
     error: null,
     filingId: null
