@@ -94,6 +94,35 @@ describe('FinTen tests', function () {
     }
   });
 
+  it('should detect a duplicate ticker insertion attempt and then not add it', async () => {
+    const mockedSecGov: SecGov = mock(SecGov);
+    const secgov: SecGov = instance(mockedSecGov);
+
+    when(mockedSecGov.getEntityCentralIndexKeyMap()).thenResolve([
+      {
+        url: 'https://www.sec.gov/include/ticker.txt',
+        fileName: path.join(__dirname, 'ticker_ecik_map_with_duplicates.txt')
+      }
+    ]);
+    const finten = new FinTen(secgov, FinTenDB.getInstance());
+
+    await finten.buildEntityCentralIndexKeyMap();
+
+    const tickers: Ticker[] = [
+      { TradingSymbol: 'AAPL', EntityCentralIndexKey: 320193 },
+      { TradingSymbol: 'AMZN', EntityCentralIndexKey: 1018724 },
+      { TradingSymbol: 'MSFT', EntityCentralIndexKey: 789019 },
+      { TradingSymbol: 'GOOG', EntityCentralIndexKey: 1652044 }
+    ];
+
+    for (const t of tickers) {
+      const r = await TickerModel.finByEntityCentralIndexKey(t.EntityCentralIndexKey);
+      if (r === null) throw new Error('Ticker could not be found');
+      expect(r.TradingSymbol).to.equal(t.TradingSymbol);
+      expect(r.EntityCentralIndexKey).to.equal(t.EntityCentralIndexKey);
+    }
+  });
+
   it('should fix tickers', async () => {
     await addDummyFilingsAndTickers();
     const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
@@ -110,6 +139,24 @@ describe('FinTen tests', function () {
       }
 
       expect(filing.TradingSymbol).to.be.equal(ticker.TradingSymbol);
+    });
+  });
+
+  it('should not be able to find a Ticker when fixing tickers', async () => {
+    await addDummyFilings();
+    const db = await FinTenDB.getInstance().connect();
+    const tickers: Ticker[] = [{ TradingSymbol: 'AAPL', EntityCentralIndexKey: 1192838 }];
+    await Promise.all(tickers.map((t) => db.createTicker(t)));
+    const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
+
+    await finten.fixTickers();
+
+    await finten.db.findFilings({}).eachAsync(async (filing: FilingDocument) => {
+      const ticker = await finten.db.findTicker({
+        EntityCentralIndexKey: parseInt(filing.EntityCentralIndexKey)
+      });
+
+      expect(ticker).to.be.null;
     });
   });
 
@@ -253,6 +300,40 @@ describe('FinTen tests', function () {
     );
 
     verify(mockedSecGov.getFilings(anything())).times(3);
+  });
+
+  it('should add a VisitedLink with error when adding new filings and XBRL cannot be parsed', async () => {
+    const mockedSecGov: SecGov = mock(SecGov);
+    const secgov: SecGov = instance(mockedSecGov);
+
+    when(mockedSecGov.getIndices(anyNumber(), anyNumber())).thenResolve([
+      {
+        url: 'anyurl',
+        fileName: path.join(__dirname, 'xbrl.idx')
+      }
+    ]);
+    when(mockedSecGov.parseIndices(anything(), anything())).thenReturn([
+      new FilingMetadata('320193|Apple Inc.|10-Q|2020-01-29|a_url')
+    ]);
+    when(mockedSecGov.getFilings(anything())).thenResolve([
+      {
+        url: 'twin_disc_url',
+        fileName: path.join(__dirname, 'ticker_ecik_map.txt')
+      }
+    ]);
+
+    const finten = new FinTen(secgov, FinTenDB.getInstance());
+    await finten.addNewFilings(1, 2);
+
+    expect(await FilingModel.countDocuments().exec()).to.equal(0);
+    expect(await VisitedLinkModel.countDocuments().exec()).to.equal(1);
+    expect(await VisitedLinkModel.countDocuments({ status: VisitedLinkStatus.OK }).exec()).to.equal(
+      0
+    );
+    expect(
+      await VisitedLinkModel.countDocuments({ status: VisitedLinkStatus.ERROR }).exec()
+    ).to.equal(1);
+    verify(mockedSecGov.getFilings(anything())).times(1);
   });
 });
 

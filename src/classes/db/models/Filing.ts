@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
-import mongoose, { Model, Schema } from 'mongoose';
+import mongoose, { Model, Schema, Document } from 'mongoose';
 import FinTenDB from '../FinTenDB';
 
 export interface Filing {
@@ -167,13 +167,13 @@ FilingSchema.pre<FilingBaseDocument>('validate', async function () {
     }
   }
 
-  // if (this.TradingSymbol !== 'Field not found.') {
-  //   this.TradingSymbol = this.TradingSymbol.toUpperCase();
-  //   this.PastTradingSymbols.push(this.TradingSymbol);
-  // }
+  if (this.TradingSymbol !== 'Field not found.') {
+    this.TradingSymbol = this.TradingSymbol.toUpperCase();
+    this.PastTradingSymbols.push(this.TradingSymbol);
+  }
 });
 
-interface FilingBaseDocument extends Filing, mongoose.Document {}
+interface FilingBaseDocument extends Filing, Document {}
 
 export interface FilingDocument extends FilingBaseDocument {}
 
