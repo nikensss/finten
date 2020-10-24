@@ -3,6 +3,7 @@ import chaiHttp from 'chai-http';
 import request from 'supertest';
 import app from '../../../src/main';
 
+chai.should();
 chai.use(chaiHttp);
 
 describe('/GET', () => {
