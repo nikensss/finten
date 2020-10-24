@@ -13,6 +13,7 @@ describe('/GET', () => {
     chai
       .request(app)
       .get('/')
+      .set('Connection', 'close')
       .end((err, res) => {
         res.should.have.status(200);
         res.body.should.have.property('greeting');

@@ -9,8 +9,8 @@ import Downloader from './Downloader';
 
 class DownloadManager implements Downloader {
   private _directory: PathLike;
-  private static activeDownloads = 0;
-  private static activeFileWrites = 0;
+  private static _activeDownloads = 0;
+  private static _activeFileWrites = 0;
   private q: Queue;
 
   constructor(directory: PathLike = 'finten_downloads') {
@@ -31,6 +31,26 @@ class DownloadManager implements Downloader {
 
   public get dir(): PathLike {
     return this._directory;
+  }
+
+  static get activeFileWrites(): number {
+    return DownloadManager._activeFileWrites;
+  }
+
+  static set activeFileWrites(amount: number) {
+    DownloadManager._activeFileWrites = amount;
+    LOGGER.get(DownloadManager.name).info(
+      `active file writes: ${DownloadManager._activeFileWrites}`
+    );
+  }
+
+  static get activeDownloads(): number {
+    return DownloadManager._activeFileWrites;
+  }
+
+  static set activeDownloads(amount: number) {
+    DownloadManager._activeFileWrites = amount;
+    LOGGER.get(DownloadManager.name).info(`active downloads: ${DownloadManager._activeDownloads}`);
   }
 
   public flush(): void {
