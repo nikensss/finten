@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import FinTenDB from '../../../classes/db/FinTenDB';
-import CompanyInfoModel from '../../../classes/db/models/CompanyInfo';
 import { FilingDocument } from '../../../classes/db/models/Filing';
 
 const company = Router();
@@ -26,9 +25,16 @@ company.get('/', (req, res) => {
 });
 
 company.get('/tickers', async (req, res) => {
-  await FinTenDB.getInstance().connect();
-  const tickers = await CompanyInfoModel.find().select('TradingSymbol').exec();
+  // await FinTenDB.getInstance().connect();
+  // const tickers = (
+  //   await CompanyInfoModel.find({}, null, { sort: { TradingSymbol: 1 } })
+  //     .select('TradingSymbol')
+  //     .exec()
+  // )
+  //   .map((d) => d.TradingSymbol)
+  //   .filter((tradingSmbol) => typeof tradingSmbol === 'string');
 
+  const tickers = accessibleTickers;
   res.status(200).json({ tickers });
 });
 
