@@ -1,4 +1,3 @@
-import { promises as fs } from 'fs';
 import FormType from '../filings/FormType';
 import SecGov from '../secgov/SecGov';
 import { default as LOGGER } from '../logger/DefaultLogger';
@@ -6,10 +5,10 @@ import { LogLevel } from '../logger/LogLevel';
 import XBRLUtilities from '../secgov/XBRLUtilities';
 import { VisitedLinkDocument, VisitedLinkStatus } from '../db/models/VisitedLink';
 import { Schema } from 'mongoose';
-import { Filing, FilingDocument } from '../db/models/Filing';
-import TickerModel from '../db/models/Ticker';
+import { Filing } from '../db/models/Filing';
 import Downloadable from '../download/Downloadable';
 import Database from '../db/Database';
+import CompanyInfoModel, { CompanyInfo } from '../db/models/CompanyInfo';
 
 class FinTen {
   private _secgov: SecGov;
@@ -36,57 +35,40 @@ class FinTen {
     this._db = db;
   }
 
-  async buildEntityCentralIndexKeyMap(): Promise<void> {
-    const tickersCIKMap = await this.secgov.getEntityCentralIndexKeyMap();
+  async buildCompanyInfo(csv: string): Promise<void> {
+    try {
+      const companies = await CompanyInfoModel.parseFile(csv);
+      await this.saveAllCompanies(companies);
+    } catch (ex) {
+      console.log(`Error building CompanyInfo collection: ${ex.toString()}`);
+    }
+  }
 
-    for (const f of tickersCIKMap) {
-      const lines = (await fs.readFile(f.fileName, 'utf-8')).split('\n');
-      const db = await this.db.connect();
-      for (const line of lines) {
-        try {
-          const ticker = TickerModel.parse(line);
-          console.log('found: ', await db.createTicker(ticker));
-        } catch (ex) {
-          if (/duplicate key/.test(ex.toString())) {
-            console.error('Ticker already exists: ' + ex.toString());
-          } else {
-            console.error('Exception while parsing and inserting tickers:\n' + ex.toString());
-          }
-        }
+  private async saveAllCompanies(companies: CompanyInfo[]) {
+    let counter = 1;
+    for (const company of companies) {
+      try {
+        const doc = await this.createCompanyInfo(company);
+        console.log(
+          ` [${counter}] Added new CompanyInfo: ${doc.TradingSymbol} (${doc.EntityCentralIndexKey})`
+        );
+      } catch (ex) {
+        console.log(`Error while saving all companies [${counter}! ${ex.toString()}`);
+      } finally {
+        counter += 1;
       }
     }
-
-    this.secgov.flush();
   }
 
-  //TODO: remember to fill PastTradingSymbols array when the database is rebuilt
-  async fixTickers(): Promise<void> {
-    let totalDone = 0;
-
-    await this.db.findFilings({}).eachAsync(async (f: FilingDocument) => {
-      try {
-        const t = await this.db.findTicker({
-          EntityCentralIndexKey: parseInt(f.EntityCentralIndexKey)
-        });
-
-        if (t === null) {
-          throw new Error(`Ticker not found for ${f.EntityCentralIndexKey}`);
-        }
-
-        if (f.TradingSymbol === t.TradingSymbol) return;
-
-        console.log(`${f.TradingSymbol} -> ${t.TradingSymbol} (${totalDone})`);
-        f.TradingSymbol = t.TradingSymbol;
-        totalDone += 1;
-        await f.save();
-      } catch (ex) {
-        totalDone += 1;
-        console.error(`There was an error! ${ex.toString()} (${totalDone})`);
-      }
-    });
-    console.log('Tickers fixed!');
-    return;
+  private async createCompanyInfo(companyInfo: CompanyInfo) {
+    try {
+      const db = await this.db.connect();
+      return await db.createCompanyInfo(companyInfo);
+    } catch (e) {
+      throw new Error(e);
+    }
   }
+
   /**
    * Fill the database with the data between the start and end years (both included)
    * up to the specified amount (if specified). If no end year is given, the method
@@ -108,10 +90,10 @@ class FinTen {
       for (const filing of filings) {
         try {
           const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
-          const result = await this.insertFiling(xbrl.get());
-          await this.insertVisitedLink(filing.url, result._id);
+          const result = await this.createFiling(xbrl.get());
+          await this.createVisitedLink(filing.url, result._id);
         } catch (ex) {
-          await this.handleExceptionDuringFilingInsertion(filing.url, ex);
+          await this.handleExceptionDuringFilingCreation(filing.url, ex);
         }
       }
       this.secgov.flush();
@@ -167,7 +149,7 @@ class FinTen {
       for (const filing of filings) {
         try {
           const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
-          const result = await this.insertFiling(xbrl.get());
+          const result = await this.createFiling(xbrl.get());
           await visitedLink.hasBeenFixed(result._id);
           await visitedLink.save();
           this.logger.info(`Could now parse from ${filing.url}!`);
@@ -180,7 +162,7 @@ class FinTen {
     this.secgov.flush();
   }
 
-  private async insertFiling(filing: Filing) {
+  private async createFiling(filing: Filing) {
     try {
       const db = await this.db.connect();
       return await db.createFiling(filing);
@@ -189,7 +171,7 @@ class FinTen {
     }
   }
 
-  private async insertVisitedLink(url: string, resultId: Schema.Types.ObjectId) {
+  private async createVisitedLink(url: string, resultId: Schema.Types.ObjectId) {
     try {
       const db = await this.db.connect();
       return await db.createVisitedLink({
@@ -203,7 +185,7 @@ class FinTen {
     }
   }
 
-  private async handleExceptionDuringFilingInsertion(url: string, ex: Error) {
+  private async handleExceptionDuringFilingCreation(url: string, ex: Error) {
     this.logger.warning(`Error while parsing ${url}:\n${ex.toString()}`);
     const db = await this.db.connect();
     return await db.createVisitedLink({

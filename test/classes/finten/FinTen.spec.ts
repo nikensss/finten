@@ -1,17 +1,13 @@
 import chai, { expect } from 'chai';
 import FinTenDB from '../../../src/classes/db/FinTenDB';
-import DownloadManager from '../../../src/classes/download/DownloadManager';
 import chaiAsPromised from 'chai-as-promised';
 import FinTen from '../../../src/classes/finten/FinTen';
 import SecGov from '../../../src/classes/secgov/SecGov';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import path from 'path';
-import XBRLUtilities from '../../../src/classes/secgov/XBRLUtilities';
-import { promises as fs } from 'fs';
-import TickerModel, { Ticker } from '../../../src/classes/db/models/Ticker';
 import VisitedLinkModel, { VisitedLinkStatus } from '../../../src/classes/db/models/VisitedLink';
-import FilingModel, { FilingDocument } from '../../../src/classes/db/models/Filing';
-import { fail } from 'assert';
+import FilingModel from '../../../src/classes/db/models/Filing';
+import CompanyInfoModel from '../../../src/classes/db/models/CompanyInfo';
 import { anyNumber, anything, instance, mock, verify, when } from 'ts-mockito';
 import FilingMetadata from '../../../src/classes/filings/FilingMetadata';
 import Downloadable from '../../../src/classes/download/Downloadable';
@@ -28,9 +24,9 @@ describe('FinTen tests', function () {
     try {
       uri = await mongod.getUri();
       await FinTenDB.getInstance().connect(uri);
-      await TickerModel.ensureIndexes();
       await FilingModel.ensureIndexes();
       await VisitedLinkModel.ensureIndexes();
+      await CompanyInfoModel.ensureIndexes();
     } catch (ex) {
       throw ex;
     }
@@ -38,24 +34,27 @@ describe('FinTen tests', function () {
 
   after('after: stopping DBs', async () => {
     await FinTenDB.getInstance().disconnect();
-    await mongod.stop();
+    let disconnected = false;
+    while (!disconnected) {
+      disconnected = await mongod.stop();
+    }
   });
 
   beforeEach(async () => {
-    await TickerModel.ensureIndexes();
     await FilingModel.ensureIndexes();
     await VisitedLinkModel.ensureIndexes();
+    await CompanyInfoModel.ensureIndexes();
   });
 
   afterEach(async () => {
-    if ((await TickerModel.countDocuments().exec()) > 0) {
-      await TickerModel.collection.drop();
-    }
     if ((await FilingModel.countDocuments().exec()) > 0) {
       await FilingModel.collection.drop();
     }
     if ((await VisitedLinkModel.countDocuments().exec()) > 0) {
       await VisitedLinkModel.collection.drop();
+    }
+    if ((await CompanyInfoModel.countDocuments().exec()) > 0) {
+      await CompanyInfoModel.collection.drop();
     }
   });
 
@@ -65,99 +64,13 @@ describe('FinTen tests', function () {
     expect(new FinTen(secgov, FinTenDB.getInstance())).to.not.be.undefined;
   });
 
-  it('should build ECIK map', async () => {
+  it('should create company info data', async () => {
     const mockedSecGov: SecGov = mock(SecGov);
     const secgov: SecGov = instance(mockedSecGov);
-
-    when(mockedSecGov.getEntityCentralIndexKeyMap()).thenResolve([
-      {
-        url: 'https://www.sec.gov/include/ticker.txt',
-        fileName: path.join(__dirname, 'ticker_ecik_map.txt')
-      }
-    ]);
     const finten = new FinTen(secgov, FinTenDB.getInstance());
+    await finten.buildCompanyInfo(path.join(__dirname, 'company_info.csv'));
 
-    await finten.buildEntityCentralIndexKeyMap();
-
-    const tickers: Ticker[] = [
-      { TradingSymbol: 'AAPL', EntityCentralIndexKey: 320193 },
-      { TradingSymbol: 'AMZN', EntityCentralIndexKey: 1018724 },
-      { TradingSymbol: 'MSFT', EntityCentralIndexKey: 789019 },
-      { TradingSymbol: 'GOOG', EntityCentralIndexKey: 1652044 }
-    ];
-
-    for (const t of tickers) {
-      const r = await TickerModel.finByEntityCentralIndexKey(t.EntityCentralIndexKey);
-      if (r === null) throw new Error('Ticker could not be found');
-      expect(r.TradingSymbol).to.equal(t.TradingSymbol);
-      expect(r.EntityCentralIndexKey).to.equal(t.EntityCentralIndexKey);
-    }
-  });
-
-  it('should detect a duplicate ticker insertion attempt and then not add it', async () => {
-    const mockedSecGov: SecGov = mock(SecGov);
-    const secgov: SecGov = instance(mockedSecGov);
-
-    when(mockedSecGov.getEntityCentralIndexKeyMap()).thenResolve([
-      {
-        url: 'https://www.sec.gov/include/ticker.txt',
-        fileName: path.join(__dirname, 'ticker_ecik_map_with_duplicates.txt')
-      }
-    ]);
-    const finten = new FinTen(secgov, FinTenDB.getInstance());
-
-    await finten.buildEntityCentralIndexKeyMap();
-
-    const tickers: Ticker[] = [
-      { TradingSymbol: 'AAPL', EntityCentralIndexKey: 320193 },
-      { TradingSymbol: 'AMZN', EntityCentralIndexKey: 1018724 },
-      { TradingSymbol: 'MSFT', EntityCentralIndexKey: 789019 },
-      { TradingSymbol: 'GOOG', EntityCentralIndexKey: 1652044 }
-    ];
-
-    for (const t of tickers) {
-      const r = await TickerModel.finByEntityCentralIndexKey(t.EntityCentralIndexKey);
-      if (r === null) throw new Error('Ticker could not be found');
-      expect(r.TradingSymbol).to.equal(t.TradingSymbol);
-      expect(r.EntityCentralIndexKey).to.equal(t.EntityCentralIndexKey);
-    }
-  });
-
-  it('should fix tickers', async () => {
-    await addDummyFilingsAndTickers();
-    const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
-
-    await finten.fixTickers();
-
-    await finten.db.findFilings({}).eachAsync(async (filing: FilingDocument) => {
-      const ticker = await finten.db.findTicker({
-        EntityCentralIndexKey: parseInt(filing.EntityCentralIndexKey)
-      });
-
-      if (!ticker) {
-        fail('Please, add the tickers to the mongodb-memory-server!');
-      }
-
-      expect(filing.TradingSymbol).to.be.equal(ticker.TradingSymbol);
-    });
-  });
-
-  it('should not be able to find a Ticker when fixing tickers', async () => {
-    await addDummyFilings();
-    const db = await FinTenDB.getInstance().connect();
-    const tickers: Ticker[] = [{ TradingSymbol: 'AAPL', EntityCentralIndexKey: 1192838 }];
-    await Promise.all(tickers.map((t) => db.createTicker(t)));
-    const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
-
-    await finten.fixTickers();
-
-    await finten.db.findFilings({}).eachAsync(async (filing: FilingDocument) => {
-      const ticker = await finten.db.findTicker({
-        EntityCentralIndexKey: parseInt(filing.EntityCentralIndexKey)
-      });
-
-      expect(ticker).to.be.null;
-    });
+    expect(await CompanyInfoModel.countDocuments().exec()).to.equal(7);
   });
 
   it('should add new filings', async () => {
@@ -385,35 +298,6 @@ describe('FinTen tests', function () {
     verify(mockedSecGov.getFilings(anything())).times(3);
   });
 });
-
-async function addDummyFilingsAndTickers() {
-  await addDummyFilings();
-  await addDummyTickers();
-}
-
-async function addDummyFilings() {
-  const db = await FinTenDB.getInstance().connect();
-  const files = (await fs.readdir(__dirname)).filter((f) => f.endsWith('10k.txt'));
-  const xbrls = await Promise.all(files.map((f) => XBRLUtilities.fromTxt(path.join(__dirname, f))));
-  for (let index = 0; index < 10; index++) {
-    await Promise.all(
-      xbrls.map((xbrl) => {
-        db.createFiling(xbrl.get());
-      })
-    );
-  }
-}
-
-async function addDummyTickers() {
-  const db = await FinTenDB.getInstance().connect();
-  const tickers: Ticker[] = [
-    { TradingSymbol: 'AMZN', EntityCentralIndexKey: 1018724 },
-    { TradingSymbol: 'CNBX', EntityCentralIndexKey: 1343009 },
-    { TradingSymbol: 'COST', EntityCentralIndexKey: 1621199 },
-    { TradingSymbol: 'GOOG', EntityCentralIndexKey: 1652044 }
-  ];
-  await Promise.all(tickers.map((t) => db.createTicker(t)));
-}
 
 async function addDummyVisitedLinks(url: string) {
   await FinTenDB.getInstance().connect();

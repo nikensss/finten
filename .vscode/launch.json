@@ -7,8 +7,8 @@
       "type": "node-terminal"
     },
     {
-      "command": "npm test",
-      "name": "npm test",
+      "command": "npm run test-debug",
+      "name": "debug tests",
       "request": "launch",
       "type": "node-terminal"
     }

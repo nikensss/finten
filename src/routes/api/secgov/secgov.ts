@@ -5,6 +5,7 @@ import FinTen from '../../../classes/finten/FinTen';
 import SecGov from '../../../classes/secgov/SecGov';
 import DownloadManager from '../../../classes/download/DownloadManager';
 import FinTenDB from '../../../classes/db/FinTenDB';
+import path from 'path';
 
 const secgovRoutes = Router();
 
@@ -66,23 +67,12 @@ secgovRoutes.get('/reparse', async (req, res) => {
   });
 });
 
-secgovRoutes.get('/fixtickers', async (req, res) => {
-  LOGGER.get('secgov-routes/fixtickers').info('fixing tickers');
-
+secgovRoutes.get('/buildCompanyInfo', async (req, res) => {
   const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
-  finten.fixTickers();
+  finten.buildCompanyInfo(path.join(__dirname, 'company_info.csv'));
 
   return res.status(200).json({
-    message: 'fixing tickers...'
-  });
-});
-
-secgovRoutes.get('/ecikmap', async (req, res) => {
-  const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
-  finten.buildEntityCentralIndexKeyMap();
-
-  return res.status(200).json({
-    message: 'creating CIK map'
+    message: 'building CompanyInfo collection'
   });
 });
 

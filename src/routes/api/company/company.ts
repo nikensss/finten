@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import FinTenDB from '../../../classes/db/FinTenDB';
+import CompanyInfoModel from '../../../classes/db/models/CompanyInfo';
 import { FilingDocument } from '../../../classes/db/models/Filing';
 
 const company = Router();
@@ -24,53 +25,14 @@ company.get('/', (req, res) => {
   });
 });
 
-company.get('/names', async (req, res) => {
-  const db = await FinTenDB.getInstance().connect();
-
-  const names = await db.distinctFilingKey('EntityRegistrantName');
-
-  res.status(200).json({
-    names
-  });
-});
-
-company.get('/name', async (req, res) => {
-  //object destructuring
-  const { name } = req.query;
-
-  if (!name || typeof name !== 'string' || (name as string).length === 0) {
-    return res.status(400).json({
-      error: 'no name given'
-    });
-  }
-  const db = await FinTenDB.getInstance().connect();
-
-  const filingsCursor = db.findFilings({
-    EntityRegistrantName: name as string
-  });
-
-  const data: FilingDocument[] = [];
-
-  await filingsCursor.eachAsync(async (f: FilingDocument) => {
-    data.push(f);
-  });
-
-  res.status(200).json({
-    name,
-    data
-  });
-});
-
 company.get('/tickers', async (req, res) => {
-  // const db = await FinTenDB.getInstance();
-  // const tickers = await db.distinctFilingKey('TradingSymbol');
+  await FinTenDB.getInstance().connect();
+  const tickers = await CompanyInfoModel.find().select('TradingSymbol').exec();
 
-  res.status(200).json({
-    tickers: accessibleTickers
-  });
+  res.status(200).json({ tickers });
 });
 
-company.get('/ticker', async (req, res) => {
+company.get('/filings', async (req, res) => {
   const { ticker } = req.query;
 
   if (!ticker || typeof ticker !== 'string' || (ticker as string).length === 0) {
@@ -88,18 +50,18 @@ company.get('/ticker', async (req, res) => {
   try {
     const db = await FinTenDB.getInstance().connect();
     const filingsCursor = db.findFilings({
-      TradingSymbol: ticker,
-      DocumentFiscalYearFocus: '2018'
+      TradingSymbol: ticker
     });
 
-    const data: FilingDocument[] = [];
+    const filings: FilingDocument[] = [];
     await filingsCursor.eachAsync(async (f: FilingDocument) => {
-      data.push(f);
+      filings.push(f);
     });
 
     return res.status(200).json({
       ticker,
-      data
+      filings
+      // companyInfo
     });
   } catch (ex) {
     return res.status(500).json({

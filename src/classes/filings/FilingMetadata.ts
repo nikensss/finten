@@ -1,5 +1,6 @@
 import FormType, { byName } from './FormType';
 import Downloadable from '../download/Downloadable';
+import SecGov from '../secgov/SecGov';
 
 class FilingMetadata implements Downloadable {
   private _cik: number;
@@ -38,7 +39,7 @@ class FilingMetadata implements Downloadable {
   }
 
   get fullPath(): string {
-    return `https://www.sec.gov/Archives/${this.partialPath}`;
+    return `${SecGov.FILINGS_ROOT}${this.partialPath}`;
   }
 
   get url(): string {

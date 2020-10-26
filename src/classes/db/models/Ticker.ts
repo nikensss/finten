@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
-import mongoose, { Model, Schema } from 'mongoose';
+import mongoose, { Model, Schema, Document } from 'mongoose';
 
 /**
  * Reflects all the fields from the Schema
@@ -19,12 +19,13 @@ const TickerSchema = new Schema({
     type: Number,
     required: true,
     unique: true,
+    index: true,
     min: 0,
     max: Number.MAX_SAFE_INTEGER
   }
 });
 
-interface TickerBaseDocument extends Ticker, mongoose.Document {}
+interface TickerBaseDocument extends Ticker, Document {}
 
 export interface TickerDocument extends TickerBaseDocument {}
 
@@ -33,7 +34,7 @@ TickerSchema.pre<TickerDocument>('save', function (next) {
   next();
 });
 
-TickerSchema.statics.finByEntityCentralIndexKey = async function (
+TickerSchema.statics.findByEntityCentralIndexKey = async function (
   EntityCentralIndexKey: number
 ): Promise<TickerDocument | null> {
   return await this.findOne({ EntityCentralIndexKey });
@@ -41,7 +42,9 @@ TickerSchema.statics.finByEntityCentralIndexKey = async function (
 
 TickerSchema.statics.parse = function (s: string) {
   //the file from SecGov has the following structure: "aapl\t320193\n"
-  const match = s.match(/(?<TradingSymbol>[a-zA-Z]+)[^\w]*(?<EntityCentralIndexKey>[0-9]+)/);
+  s; // ?
+  const match = s.match(/(?<TradingSymbol>[^\s]+)[^\w]*(?<EntityCentralIndexKey>[0-9]+)/);
+  match; // ?
   if (match === null || typeof match.groups === 'undefined') {
     throw new Error(`Can't parse '${s}'`);
   }
@@ -62,7 +65,7 @@ TickerSchema.statics.parse = function (s: string) {
  */
 export interface TickerModel extends Model<TickerDocument> {
   parse(s: string): Ticker;
-  finByEntityCentralIndexKey(n: number): Promise<TickerDocument | null>;
+  findByEntityCentralIndexKey(n: number): Promise<TickerDocument | null>;
 }
 
 /**

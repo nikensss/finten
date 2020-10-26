@@ -5,6 +5,7 @@ module.exports = function (w) {
       'src/**/*.ts',
       'test/**/*.txt',
       'test/**/*.idx',
+      'test/**/*.csv',
       {
         pattern: '.env',
         instrument: false

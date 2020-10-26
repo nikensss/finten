@@ -1,7 +1,7 @@
 import mongoose, { Mongoose, QueryCursor } from 'mongoose';
 import Database from './Database';
+import CompanyInfoModel, { CompanyInfo, CompanyInfoDocument } from './models/CompanyInfo';
 import FilingModel, { Filing, FilingDocument } from './models/Filing';
-import TickerModel, { Ticker, TickerDocument } from './models/Ticker';
 import UserModel, { User, UserDocument } from './models/User';
 import VisitedLinkModel, { VisitedLink, VisitedLinkDocument } from './models/VisitedLink';
 
@@ -73,8 +73,8 @@ class FinTenDB implements Database {
     this.client = client;
   }
 
-  async createTicker(ticker: Ticker): Promise<TickerDocument> {
-    return await new TickerModel(ticker).save();
+  async createCompanyInfo(companyInfo: CompanyInfo): Promise<CompanyInfoDocument> {
+    return await new CompanyInfoModel(companyInfo).save();
   }
 
   async createFiling(filing: Filing): Promise<FilingDocument> {
@@ -104,8 +104,13 @@ class FinTenDB implements Database {
     return await UserModel.findOne(match, select);
   }
 
-  async findTicker(match: Partial<TickerDocument>, select = ''): Promise<TickerDocument | null> {
-    return await TickerModel.findOne(match, select);
+  async findCompanyInfoByEntityCentralIndexKey(
+    entityCentralIndexKey: number
+  ): Promise<CompanyInfoDocument[]> {
+    return await CompanyInfoModel.findByEntityCentralIndexKey(entityCentralIndexKey);
+  }
+  async findCompanyInfoByTradingSymbol(tradingSymbol: string): Promise<CompanyInfoDocument | null> {
+    return await CompanyInfoModel.findByTradingSymbol(tradingSymbol);
   }
 
   async distinctFilingKey(key: string): Promise<string[]> {

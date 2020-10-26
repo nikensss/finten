@@ -1,12 +1,13 @@
 {
   "name": "finten",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "The hypotenuse of the smallest pythagorean triples.",
   "main": "src/main.ts",
   "scripts": {
     "start": "ts-node -r dotenv/config src/main.ts",
     "nodemon": "nodemon",
     "test": "PORT=3030 mocha -r dotenv/config -r ts-node/register test/**/*.spec.ts",
+    "test-debug": "PORT=3030 mocha -r dotenv/config -r ts-node/register test/**/*.spec.ts --timeout 300000",
     "full-test": "PORT=3030 mocha --forbid-only -r dotenv/config -r ts-node/register test/**/*.spec.ts",
     "rimraf": "rm -rf node_modules && npm i",
     "lint": "eslint --fix '{src,test}/**/*.ts'",
@@ -65,6 +66,7 @@
     "chai-http": "^4.3.0",
     "chalk": "^4.0.0",
     "cors": "^2.8.5",
+    "csv-parser": "^2.3.3",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
