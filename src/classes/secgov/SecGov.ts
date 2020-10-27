@@ -96,10 +96,6 @@ class SecGov {
   }
 
   async getFilings(...downloadables: Downloadable[]): Promise<Downloadable[]> {
-    // const map = downloadables.map((d) => ({
-    //   url: `${SecGov.INDICES_ROOT}${d.url}`,
-    //   fileName: d.fileName
-    // }));
     return await this.dm.get(...downloadables);
   }
 

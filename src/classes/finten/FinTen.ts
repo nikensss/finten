@@ -3,7 +3,7 @@ import SecGov from '../secgov/SecGov';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { LogLevel } from '../logger/LogLevel';
 import XBRLUtilities from '../secgov/XBRLUtilities';
-import { VisitedLinkDocument, VisitedLinkStatus } from '../db/models/VisitedLink';
+import VisitedLinkModel, { VisitedLinkDocument, VisitedLinkStatus } from '../db/models/VisitedLink';
 import { Schema } from 'mongoose';
 import { Filing } from '../db/models/Filing';
 import Downloadable from '../download/Downloadable';
@@ -104,22 +104,17 @@ class FinTen {
 
   private async getNewFilingsMetaData(start: number, end: number) {
     try {
-      const NOT_FOUND = -1;
-      const filingReportsMetaData = await this.getFilingsMetaData(start, end);
-      const db = await this.db.connect();
+      const filingReportsMetadata = await this.getFilingsMetaData(start, end);
+      await this.db.connect();
       this.logger.info('disposing of already visited links...');
-      await db.findVisitedLinks({}).eachAsync(async (l: VisitedLinkDocument) => {
-        let index = -1;
-        //loop in case several filings have the same link (which would be really weird)
-        do {
-          index = filingReportsMetaData.findIndex((f) => f.url === l.url);
-          if (index !== NOT_FOUND) {
-            this.logger.info('link already visited, eliminating...');
-            filingReportsMetaData.splice(index, 1);
-          }
-        } while (index !== -1);
-      });
-      return filingReportsMetaData;
+      for (let index = 0; index < filingReportsMetadata.length; index++) {
+        if (await VisitedLinkModel.exists({ url: filingReportsMetadata[index].url })) {
+          this.logger.info(`removing already visited link... [${filingReportsMetadata.length}]`);
+          filingReportsMetadata.splice(index, 1);
+        }
+      }
+
+      return filingReportsMetadata;
     } catch (e) {
       throw new Error(e);
     }
