@@ -107,12 +107,14 @@ class FinTen {
       const NOT_FOUND = -1;
       const filingReportsMetaData = await this.getFilingsMetaData(start, end);
       const db = await this.db.connect();
+      this.logger.info('disposing of already visited links...');
       await db.findVisitedLinks({}).eachAsync(async (l: VisitedLinkDocument) => {
         let index = -1;
         //loop in case several filings have the same link (which would be really weird)
         do {
           index = filingReportsMetaData.findIndex((f) => f.url === l.url);
           if (index !== NOT_FOUND) {
+            this.logger.info('link already visited, eliminating...');
             filingReportsMetaData.splice(index, 1);
           }
         } while (index !== -1);
