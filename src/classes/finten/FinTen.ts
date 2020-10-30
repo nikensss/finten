@@ -3,12 +3,13 @@ import SecGov from '../secgov/SecGov';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { LogLevel } from '../logger/LogLevel';
 import XBRLUtilities from '../secgov/XBRLUtilities';
-import { VisitedLinkDocument, VisitedLinkStatus } from '../db/models/VisitedLink';
+import VisitedLinkModel, { VisitedLinkDocument, VisitedLinkStatus } from '../db/models/VisitedLink';
 import { Schema } from 'mongoose';
 import { Filing } from '../db/models/Filing';
 import Downloadable from '../download/Downloadable';
 import Database from '../db/Database';
 import CompanyInfoModel, { CompanyInfo } from '../db/models/CompanyInfo';
+import FilingMetadata from '../filings/FilingMetadata';
 
 class FinTen {
   private _secgov: SecGov;
@@ -80,52 +81,60 @@ class FinTen {
   async addNewFilings(start: number, end: number = start): Promise<void> {
     this.logger.logLevel = LogLevel.DEBUG;
 
-    const newFilings = await this.getNewFilingsMetaData(start, end);
+    try {
+      const filingsMetadata = await this.getNewFilingsMetadata(start, end);
 
-    for (let n = 0; n < newFilings.length; n++) {
-      this.logPercentage(n, newFilings.length);
+      for (let n = 0; n < filingsMetadata.length; n++) {
+        this.logPercentage(n, filingsMetadata.length);
 
-      const filings = await this.secgov.getFilings(newFilings[n]);
+        const filings = await this.secgov.getFilings(filingsMetadata[n]);
 
-      for (const filing of filings) {
-        try {
-          const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
-          const result = await this.createFiling(xbrl.get());
-          await this.createVisitedLink(filing.url, result._id);
-        } catch (ex) {
-          await this.handleExceptionDuringFilingCreation(filing.url, ex);
+        for (const filing of filings) {
+          try {
+            const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
+            const result = await this.createFiling(xbrl.get());
+            await this.createVisitedLink(filing.url, result._id);
+          } catch (ex) {
+            await this.handleExceptionDuringFilingCreation(filing.url, ex);
+          }
         }
+        this.secgov.flush();
       }
       this.secgov.flush();
+      this.logger.info('Done filling!');
+    } catch (e) {
+      this.logger.error(`Could not add new filings: ${e.toString()}`);
     }
-    this.secgov.flush();
-    this.logger.info('Done filling!');
   }
 
-  private async getNewFilingsMetaData(start: number, end: number) {
+  private async getNewFilingsMetadata(start: number, end: number): Promise<FilingMetadata[]> {
     try {
       const NOT_FOUND = -1;
-      const filingReportsMetaData = await this.getFilingsMetaData(start, end);
+      const filingReportsMetaData = await this.getFilingsMetadata(start, end);
       const db = await this.db.connect();
-      this.logger.info('disposing of already visited links...');
+      this.logger.info('disposing of filings already in db...');
+      let visitedLinksTally = 0;
+      const visitedLinksCount = await VisitedLinkModel.countDocuments().exec();
       await db.findVisitedLinks({}).eachAsync(async (l: VisitedLinkDocument) => {
-        let index = -1;
+        let index = NOT_FOUND;
+        visitedLinksTally += 1;
         //loop in case several filings have the same link (which would be really weird)
         do {
           index = filingReportsMetaData.findIndex((f) => f.url === l.url);
           if (index !== NOT_FOUND) {
-            this.logger.info('link already visited, eliminating...');
+            this.logger.info(`disposing... [${visitedLinksTally}/${visitedLinksCount}]`);
             filingReportsMetaData.splice(index, 1);
           }
-        } while (index !== -1);
+        } while (index !== NOT_FOUND);
       });
       return filingReportsMetaData;
     } catch (e) {
-      throw new Error(e);
+      this.logger.error(`::getNewFilingsMetadata -> ${e.toString()}`);
+      throw e;
     }
   }
 
-  private async getFilingsMetaData(start: number, end: number) {
+  private async getFilingsMetadata(start: number, end: number) {
     this.secgov.flush();
 
     const indices = await this.secgov.getIndices(start, end); //?

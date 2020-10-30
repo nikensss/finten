@@ -17,7 +17,8 @@ const VisitedLinkSchema = new Schema({
   url: {
     type: String,
     require: [true, 'URL is required'],
-    unique: true
+    unique: true,
+    index: true
   },
   status: {
     type: String,
