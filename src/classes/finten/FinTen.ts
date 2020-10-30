@@ -110,8 +110,8 @@ class FinTen {
   private async getNewFilingsMetadata(start: number, end: number): Promise<FilingMetadata[]> {
     try {
       const NOT_FOUND = -1;
-      const filingReportsMetaData = await this.getFilingsMetadata(start, end);
       const db = await this.db.connect();
+      const filingReportsMetaData = await this.getFilingsMetadata(start, end);
       this.logger.info('disposing of filings already in db...');
       let visitedLinksTally = 0;
       const visitedLinksCount = await VisitedLinkModel.countDocuments().exec();
@@ -134,43 +134,51 @@ class FinTen {
     }
   }
 
-  private async getFilingsMetadata(start: number, end: number) {
-    this.secgov.flush();
-
-    const indices = await this.secgov.getIndices(start, end); //?
-    const filings = this.secgov.parseIndices(indices, [FormType.F10K, FormType.F10Q]);
-    this.secgov.flush();
-    return filings;
+  private async getFilingsMetadata(start: number, end: number): Promise<FilingMetadata[]> {
+    try {
+      this.secgov.flush();
+      const indices = await this.secgov.getIndices(start, end); //?
+      const filings = this.secgov.parseIndices(indices, [FormType.F10K, FormType.F10Q]);
+      this.secgov.flush();
+      return filings;
+    } catch (e) {
+      this.logger.error(`Could not get filings metadata: ${e.toString()}`);
+      return [];
+    }
   }
 
   async retryProblematicFilings(): Promise<void> {
     this.logger.logLevel = LogLevel.DEBUG;
-    this.logger.info('Getting broken links');
-    const db: Database = await this.db.connect();
+    try {
+      this.logger.info('Getting broken links');
+      const db: Database = await this.db.connect();
 
-    const cursor = db.findVisitedLinks({ status: VisitedLinkStatus.ERROR });
-    await cursor.eachAsync(async (visitedLink: VisitedLinkDocument) => {
-      const downloadable: Downloadable = {
-        url: visitedLink.url,
-        fileName: 'filing.txt'
-      };
+      const cursor = db.findVisitedLinks({ status: VisitedLinkStatus.ERROR });
+      await cursor.eachAsync(async (visitedLink: VisitedLinkDocument) => {
+        const downloadable: Downloadable = {
+          url: visitedLink.url,
+          fileName: 'filing.txt'
+        };
 
-      const filings = await this.secgov.getFilings(downloadable);
+        const filings = await this.secgov.getFilings(downloadable);
 
-      for (const filing of filings) {
-        try {
-          const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
-          const result = await this.createFiling(xbrl.get());
-          await visitedLink.hasBeenFixed(result._id);
-          await visitedLink.save();
-          this.logger.info(`Could now parse from ${filing.url}!`);
-        } catch (ex) {
-          this.logger.info(`Could not parse from ${filing.url}. Error: ${ex}`);
+        for (const filing of filings) {
+          try {
+            const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
+            const result = await this.createFiling(xbrl.get());
+            await visitedLink.hasBeenFixed(result._id);
+            await visitedLink.save();
+            this.logger.info(`Could now parse from ${filing.url}!`);
+          } catch (ex) {
+            this.logger.info(`Could not parse from ${filing.url}. Error: ${ex}`);
+          }
         }
-      }
+        this.secgov.flush();
+      });
       this.secgov.flush();
-    });
-    this.secgov.flush();
+    } catch (e) {
+      this.logger.error(`Could not retry problematic filings: ${e.toString()}`);
+    }
   }
 
   private async createFiling(filing: Filing) {
