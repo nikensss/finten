@@ -24,6 +24,28 @@ company.get('/', (req, res) => {
   });
 });
 
+/**
+ * Description: returns the tickers of all available companies. Use this endpoint
+ * to figure out which tickers can be used in the /filings endpoint.
+ *
+ * URL: https://finten.weirwood.ai/api/company/tickers
+ *
+ * Method: GET
+ *
+ * URL params:
+ *  -None
+ *
+ * Success response:
+ *  -Code: 200
+ *  -Content: JSON with the following properties
+ *    *tickers:
+ *      +type: string[]
+ *      +content: the tickers of the available companies
+ *
+ * Error response:
+ *  -Code: 401 Unauthorized
+ *    *Invalid authentication token (must be, at least, preimum user)
+ */
 company.get('/tickers', async (req, res) => {
   // await FinTenDB.getInstance().connect();
   // const tickers = (
@@ -38,6 +60,43 @@ company.get('/tickers', async (req, res) => {
   res.status(200).json({ tickers });
 });
 
+/**
+ * Description: returns all the filings available for the indicated company.
+ *
+ * URL: https://finten.weirwood.ai/api/company/filings?ticker={TICKER}
+ *
+ * Method: GET
+ *
+ * URL params:
+ *  -ticker=[string]: the ticker of the company whose filings are requested
+ *
+ * Success response:
+ *  -Code: 200
+ *  -Content: JSON with the following properties
+ *    *ticker:
+ *      +type: string
+ *      +content: the received ticker (as an ACK)
+ *    *filings:
+ *      +type: FilingDocument[]
+ *      +content: all the available filings
+ *    *companyInfo:
+ *      +type: CompanyInfoDocument
+ *      +content: an object with all the data known of this company
+ *
+ * Error responses:
+ *  -Code: 400 Bad request
+ *    *ticker param is not present of has invalid format
+ *
+ * -Code: 401 Unauthorized
+ *    *invalid authentication token (must be, at least, premium)
+ *
+ * -Code: 403 Forbidden
+ *    *the requested ticker cannot be accessed
+ *
+ * -Code: 500 Internal server error
+ *    *the request could not be processed
+ *    *the error is sent in a JSON response (under the property error)
+ */
 company.get('/filings', async (req, res) => {
   const { ticker } = req.query;
 
