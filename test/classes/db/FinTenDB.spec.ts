@@ -12,7 +12,7 @@ import CompanyInfoModel, { CompanyInfo } from '../../../src/classes/db/models/Co
 chai.use(chaiAsPromised);
 
 describe('FinTenDB tests', function () {
-  this.slow(500);
+  this.slow(2500);
 
   let mongod: MongoMemoryServer, uri: string;
 

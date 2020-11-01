@@ -16,9 +16,11 @@ secgovRoutes.get('/', (req, res) => {
 });
 
 /**
- * URL: /api/secgov/fill
+ * URL: https://finten.weirwood.ai/api/secgov/fill?start={START}[&end={END}]
  *
  * Method: GET
+ *
+ * Requires admin authentication
  *
  * URL params:
  *  -Required:
@@ -30,9 +32,12 @@ secgovRoutes.get('/', (req, res) => {
  *  -Code: 200
  *  -Content: JSON object with the received start and end dates as an ACK.
  *
- * Error response:
+ * Error responses:
  *  -Code: 400 Bad Request Error
- *  -Content: JSON object with property 'error' and value 'missing data: start'
+ *    *Content: JSON object with property 'error' and value 'missing data: start'
+ *
+ *  -Code: 401 Unauthorized
+ *    *Invalid authentication token
  */
 secgovRoutes.get('/fill', async (req, res) => {
   const { start, end = start } = req.query;
@@ -47,13 +52,17 @@ secgovRoutes.get('/fill', async (req, res) => {
     `filling database with all the data between ${start} and ${end}`
   );
 
-  const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
-  finten.addNewFilings(parseInt(start as string), parseInt(end as string));
+  try {
+    const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
+    finten.addNewFilings(parseInt(start as string), parseInt(end as string));
 
-  return res.status(200).json({
-    start,
-    end
-  });
+    return res.status(200).json({
+      start,
+      end
+    });
+  } catch (e) {
+    return res.status(400).json({ error: e });
+  }
 });
 
 secgovRoutes.get('/reparse', async (req, res) => {
