@@ -4,6 +4,8 @@ import { secret } from './Passport';
 
 export default class TokenFactory {
   public static sign(data: string | object): string {
-    return jwt.sign(data, secret);
+    return jwt.sign(data, secret, {
+      expiresIn: '12h'
+    });
   }
 }
