@@ -93,7 +93,9 @@ class FinTen {
           try {
             const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
             const result = await this.createFiling(xbrl.get());
+            this.logger.info('added new filing!');
             await this.createVisitedLink(filing.url, result._id);
+            this.logger.info('saved visited link!');
           } catch (ex) {
             await this.handleExceptionDuringFilingCreation(filing.url, ex);
           }

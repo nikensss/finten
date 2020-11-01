@@ -17,7 +17,7 @@ interface Queue {
   /**
    * Return the first element of the queue.
    */
-  dequeue(): Promise<Downloadable | undefined>;
+  dequeue(): Promise<Downloadable>;
 }
 
 export default Queue;

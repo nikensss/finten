@@ -17,9 +17,9 @@ class DownloadManager implements Downloader {
     this._directory = directory;
 
     if (!fs.existsSync(this.dir)) {
-      LOGGER.get(this.constructor.name).info(`directory '${this.dir}' doesn't exist, creating...`);
+      this.logger.info(`directory '${this.dir}' doesn't exist, creating...`);
       fs.mkdirSync(this.dir);
-      LOGGER.get(this.constructor.name).info('creation successful!');
+      this.logger.info('creation successful!');
     }
 
     this.q = new DefaultQueue();
@@ -45,25 +45,25 @@ class DownloadManager implements Downloader {
   }
 
   static get activeDownloads(): number {
-    return DownloadManager._activeFileWrites;
+    return DownloadManager._activeDownloads;
   }
 
   static set activeDownloads(amount: number) {
-    DownloadManager._activeFileWrites = amount;
+    DownloadManager._activeDownloads = amount;
     LOGGER.get(DownloadManager.name).info(`active downloads: ${DownloadManager._activeDownloads}`);
   }
 
   public flush(): void {
-    LOGGER.get(this.constructor.name).info('flushing downloads! 🚾');
+    this.logger.info('flushing downloads! 🚾');
     fs.readdirSync(this.dir).forEach((f) => {
       const currentPath = path.join(this.dir.toString(), f);
       if (fs.lstatSync(currentPath).isDirectory()) {
         this.deleteDirectory(currentPath);
       }
-      LOGGER.get(this.constructor.name).debug(`deleting ${f}`);
+      this.logger.debug(`deleting ${f}`);
       fs.unlinkSync(currentPath);
     });
-    LOGGER.get(this.constructor.name).info('done flusing 🚽');
+    this.logger.info('done flusing 🚽');
   }
 
   public queue(...d: Downloadable[]): void {
@@ -80,9 +80,11 @@ class DownloadManager implements Downloader {
     const downloads: Downloadable[] = [];
     while (!this.q.isEmpty()) {
       try {
-        downloads.push(await this._get((await this.q.dequeue()) as Downloadable));
+        const gettable = await this.q.dequeue();
+        const downloadedElement = await this._get(gettable);
+        downloads.push(downloadedElement);
       } catch (ex) {
-        LOGGER.get(this.constructor.name).warning(`couldn't 'GET': ${ex}`);
+        this.logger.warning(`couldn't 'GET': ${ex}`);
       }
     }
     return Promise.resolve(downloads);
@@ -120,37 +122,46 @@ class DownloadManager implements Downloader {
    * @returns a promise that resolves to the location of the downloaded file
    */
   private async _get(d: Downloadable): Promise<Downloadable> {
-    LOGGER.get(this.constructor.name).info(`downloading: ${d.url}`);
+    this.logger.info(`downloading: ${d.url}`);
     DownloadManager.activeDownloads += 1;
     const p: Downloadable = {
       fileName: path.join(this.dir.toString(), d.fileName),
       url: d.url
     };
-    const writer = fs.createWriteStream(p.fileName);
 
+    this.logger.info('await for axios...');
     const response = await axios({
       url: d.url,
       method: 'GET',
       responseType: 'stream'
     });
+    this.logger.info('axios finished!');
 
     DownloadManager.activeFileWrites += 1;
-    response.data.pipe(writer);
+
+    const writer = fs.createWriteStream(p.fileName);
+    writer.on('pipe', () => this.logger.info('piping started'));
+
     DownloadManager.activeDownloads -= 1;
 
-    return new Promise((res, rej) => {
+    const promise: Promise<Downloadable> = new Promise((res, rej) => {
       writer.on('finish', () => {
         DownloadManager.activeFileWrites -= 1;
-        LOGGER.get(this.constructor.name).info(`done writting: ${d.fileName}`);
+        this.logger.info(`done writting: ${d.fileName}`);
         res(p);
       });
-      writer.on('close', () => LOGGER.get(this.constructor.name).debug(`closing ${d.fileName}`));
+
+      writer.on('close', () => this.logger.debug(`closing ${d.fileName}`));
+
       writer.on('error', () => {
         DownloadManager.activeFileWrites -= 1;
-        LOGGER.get(this.constructor.name).error(`error while writting: ${d.fileName}`);
+        this.logger.error(`error while writting: ${d.fileName}`);
         rej();
       });
     });
+
+    response.data.pipe(writer);
+    return await promise;
   }
 
   private deleteDirectory(src: PathLike): void {
@@ -165,6 +176,10 @@ class DownloadManager implements Downloader {
       }
     });
     fs.rmdirSync(src);
+  }
+
+  private get logger() {
+    return LOGGER.get(this.constructor.name);
   }
 }
 
