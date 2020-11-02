@@ -88,9 +88,11 @@ class FinTen {
         this.logPercentage(n, filingsMetadata.length);
 
         const filings = await this.secgov.getFilings(filingsMetadata[n]);
+        this.logger.info('filing downloaded');
 
         for (const filing of filings) {
           try {
+            this.logger.info('parsing xbrl...');
             const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
             const result = await this.createFiling(xbrl.get());
             this.logger.info('added new filing!');

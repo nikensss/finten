@@ -136,31 +136,37 @@ class DownloadManager implements Downloader {
       responseType: 'stream'
     });
     this.logger.info('axios finished!');
+    DownloadManager.activeDownloads -= 1;
 
     DownloadManager.activeFileWrites += 1;
-
     const writer = fs.createWriteStream(p.fileName);
     writer.on('pipe', () => this.logger.info('piping started'));
 
-    DownloadManager.activeDownloads -= 1;
-
     const promise: Promise<Downloadable> = new Promise((res, rej) => {
       writer.on('finish', () => {
-        DownloadManager.activeFileWrites -= 1;
         this.logger.info(`done writting: ${d.fileName}`);
         res(p);
       });
 
-      writer.on('close', () => this.logger.debug(`closing ${d.fileName}`));
+      writer.on('close', () => {
+        DownloadManager.activeFileWrites -= 1;
+        this.logger.info(`closing ${d.fileName}`);
+      });
 
       writer.on('error', () => {
-        DownloadManager.activeFileWrites -= 1;
         this.logger.error(`error while writting: ${d.fileName}`);
         rej();
       });
     });
 
+    response.data.on('error', (error: Error) => {
+      writer.close();
+      this.logger.error(`Error when getting ${d.url}:`);
+      console.error(error);
+    });
+
     response.data.pipe(writer);
+    this.logger.info('starting pipe');
     return await promise;
   }
 
