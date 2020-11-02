@@ -32,7 +32,7 @@ class TimedQueue implements Queue {
    * Return the first element of the queue with guarantees that the limit of
    * API calls per second won't be exceeded.
    */
-  async dequeue(): Promise<Downloadable> {
+  async shift(): Promise<Downloadable> {
     const next = this.q.shift();
     if (typeof next === 'undefined') {
       throw new Error('Empty queue!');

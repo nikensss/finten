@@ -12,7 +12,7 @@ class DefaultQueue implements Queue {
     this.q.push(...d);
   }
 
-  async dequeue(): Promise<Downloadable> {
+  async shift(): Promise<Downloadable> {
     const next = this.q.shift();
     if (typeof next === 'undefined') {
       throw new Error('Empty queue');

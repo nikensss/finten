@@ -17,7 +17,7 @@ interface Queue {
   /**
    * Return the first element of the queue.
    */
-  dequeue(): Promise<Downloadable>;
+  shift(): Promise<Downloadable>;
 }
 
 export default Queue;

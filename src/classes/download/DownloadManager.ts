@@ -80,7 +80,7 @@ class DownloadManager implements Downloader {
     const downloads: Downloadable[] = [];
     while (!this.q.isEmpty()) {
       try {
-        const gettable = await this.q.dequeue();
+        const gettable = await this.q.shift();
         const downloadedElement = await this._get(gettable);
         downloads.push(downloadedElement);
       } catch (ex) {

@@ -82,28 +82,23 @@ class FinTen {
     this.logger.logLevel = LogLevel.DEBUG;
 
     try {
-      const filingsMetadata = await this.getNewFilingsMetadata(start, end);
+      const filingsMetadata = await this.getFilingsMetadata(start, end);
+      const total = filingsMetadata.length;
 
-      for (let n = 0; n < filingsMetadata.length; n++) {
-        this.logPercentage(n, filingsMetadata.length);
+      for (
+        let filingMetadata = filingsMetadata.shift();
+        typeof filingMetadata !== 'undefined';
+        filingMetadata = filingsMetadata.shift()
+      ) {
+        this.logPercentage(total - filingsMetadata.length, total);
 
-        const filings = await this.secgov.getFilings(filingsMetadata[n]);
-        this.logger.info('filing downloaded');
+        if (await this.isAlreadyVisited(filingMetadata)) continue;
 
-        for (const filing of filings) {
-          try {
-            this.logger.info('parsing xbrl...');
-            const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
-            const result = await this.createFiling(xbrl.get());
-            this.logger.info('added new filing!');
-            await this.createVisitedLink(filing.url, result._id);
-            this.logger.info('saved visited link!');
-          } catch (ex) {
-            await this.handleExceptionDuringFilingCreation(filing.url, ex);
-          }
-        }
+        const filings = await this.secgov.getFilings(filingMetadata);
+        await this.addFilings(filings);
         this.secgov.flush();
       }
+
       this.secgov.flush();
       this.logger.info('Done filling!');
     } catch (e) {
@@ -111,37 +106,39 @@ class FinTen {
     }
   }
 
-  private async getNewFilingsMetadata(start: number, end: number): Promise<FilingMetadata[]> {
+  private async isAlreadyVisited(filingMetadata: FilingMetadata): Promise<boolean> {
     try {
-      const NOT_FOUND = -1;
-      const db = await this.db.connect();
-      const filingReportsMetaData = await this.getFilingsMetadata(start, end);
-      this.logger.info('disposing of filings already in db...');
-      let visitedLinksTally = 0;
-      const visitedLinksCount = await VisitedLinkModel.countDocuments().exec();
-      await db.findVisitedLinks({}).eachAsync(async (l: VisitedLinkDocument) => {
-        let index = NOT_FOUND;
-        visitedLinksTally += 1;
-        //loop in case several filings have the same link (which would be really weird)
-        do {
-          index = filingReportsMetaData.findIndex((f) => f.url === l.url);
-          if (index !== NOT_FOUND) {
-            this.logger.info(`disposing... [${visitedLinksTally}/${visitedLinksCount}]`);
-            filingReportsMetaData.splice(index, 1);
-          }
-        } while (index !== NOT_FOUND);
-      });
-      return filingReportsMetaData;
+      return await VisitedLinkModel.exists({ url: filingMetadata.url });
     } catch (e) {
-      this.logger.error(`::getNewFilingsMetadata -> ${e.toString()}`);
-      throw e;
+      this.logger.error(`::isAlreadyVisited -> ${e.toString()}`);
+      return true; //default to true just to avoid duplicates in the DB
     }
+  }
+
+  private async addFilings(filings: Downloadable[]) {
+    this.logger.info(`adding ${filings.length} filing(s)`);
+    for (const filing of filings) {
+      try {
+        await this.addFiling(filing);
+      } catch (ex) {
+        await this.handleExceptionDuringFilingCreation(filing.url, ex);
+      }
+    }
+  }
+
+  private async addFiling(filing: Downloadable): Promise<void> {
+    this.logger.info('parsing xbrl...');
+    const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
+    const result = await this.createFiling(xbrl.get());
+    this.logger.info('added new filing!');
+    await this.createVisitedLink(filing.url, result._id);
+    this.logger.info('saved visited link!');
   }
 
   private async getFilingsMetadata(start: number, end: number): Promise<FilingMetadata[]> {
     try {
       this.secgov.flush();
-      const indices = await this.secgov.getIndices(start, end); //?
+      const indices = await this.secgov.getIndices(start, end);
       const filings = this.secgov.parseIndices(indices, [FormType.F10K, FormType.F10Q]);
       this.secgov.flush();
       return filings;
@@ -223,9 +220,9 @@ class FinTen {
     return LOGGER.get(this.constructor.name);
   }
 
-  private logPercentage(currentIndex: number, length: number) {
-    const percentageDownloads = ((currentIndex + 1) / length) * 100;
-    this.logger.info(`🛎  ${currentIndex + 1}/${length} (${percentageDownloads.toFixed(3)} %)`);
+  private logPercentage(currentAmount: number, length: number) {
+    const percentageDownloads = ((currentAmount + 1) / length) * 100;
+    this.logger.info(`🛎  ${currentAmount + 1}/${length} (${percentageDownloads.toFixed(3)} %)`);
   }
 }
 
