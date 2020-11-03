@@ -33,22 +33,22 @@ class DownloadManager implements Downloader {
     return this._directory;
   }
 
-  static get activeFileWrites(): number {
+  private static get fileWrites(): number {
     return DownloadManager._activeFileWrites;
   }
 
-  static set activeFileWrites(amount: number) {
+  private static set fileWrites(amount: number) {
     DownloadManager._activeFileWrites = amount;
     LOGGER.get(DownloadManager.name).info(
       `active file writes: ${DownloadManager._activeFileWrites}`
     );
   }
 
-  static get activeDownloads(): number {
+  private static get downloads(): number {
     return DownloadManager._activeDownloads;
   }
 
-  static set activeDownloads(amount: number) {
+  private static set downloads(amount: number) {
     DownloadManager._activeDownloads = amount;
     LOGGER.get(DownloadManager.name).info(`active downloads: ${DownloadManager._activeDownloads}`);
   }
@@ -123,7 +123,7 @@ class DownloadManager implements Downloader {
    */
   private async _get(d: Downloadable): Promise<Downloadable> {
     this.logger.info(`downloading: ${d.url}`);
-    DownloadManager.activeDownloads += 1;
+    DownloadManager.downloads += 1;
     const p: Downloadable = {
       fileName: path.join(this.dir.toString(), d.fileName),
       url: d.url
@@ -135,10 +135,11 @@ class DownloadManager implements Downloader {
       method: 'GET',
       responseType: 'stream'
     });
-    this.logger.info('axios finished!');
-    DownloadManager.activeDownloads -= 1;
+    this.logger.info(`axios finished with status ${response.status}`);
+    console.log(response.data);
+    DownloadManager.downloads -= 1;
 
-    DownloadManager.activeFileWrites += 1;
+    DownloadManager.fileWrites += 1;
     const writer = fs.createWriteStream(p.fileName);
     writer.on('pipe', () => this.logger.info('💈 piping to writer'));
 
@@ -149,7 +150,7 @@ class DownloadManager implements Downloader {
       });
 
       writer.on('close', () => {
-        DownloadManager.activeFileWrites -= 1;
+        DownloadManager.fileWrites -= 1;
         this.logger.info(`closing ${d.fileName}`);
       });
 
