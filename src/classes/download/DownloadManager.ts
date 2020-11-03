@@ -124,11 +124,13 @@ class DownloadManager implements Downloader {
    */
   private async _get(d: Downloadable): Promise<Downloadable> {
     this.logger.info(`downloading: ${d.url}`);
+    let response;
 
-    const response = await this.download(d.url);
-
-    if (response.status !== 200) {
-      throw new Error(`${d.url} responded with ${response.status}`);
+    try {
+      response = await this.download(d.url);
+      if (response.status !== 200) throw new Error(`${d.url} responded with ${response.status}`);
+    } catch (e) {
+      throw new Error(`Download failed! Status: ${e.response.status}. Full message: ${e.message}`);
     }
 
     try {
@@ -146,6 +148,7 @@ class DownloadManager implements Downloader {
     try {
       DownloadManager.downloads += 1;
       this.logger.info('await for axios...');
+
       const r = await axios({
         url,
         method: 'GET',
@@ -155,7 +158,7 @@ class DownloadManager implements Downloader {
 
       return r;
     } catch (e) {
-      return e.response;
+      throw new Error(e.response);
     } finally {
       DownloadManager.downloads -= 1;
     }
