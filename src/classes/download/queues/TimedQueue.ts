@@ -28,6 +28,10 @@ class TimedQueue implements Queue {
     this.q.push(...d);
   }
 
+  flush(): void {
+    this.q = [];
+  }
+
   /**
    * Return the first element of the queue with guarantees that the limit of
    * API calls per second won't be exceeded.

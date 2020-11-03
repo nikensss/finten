@@ -18,6 +18,11 @@ interface Queue {
    * Return the first element of the queue.
    */
   shift(): Promise<Downloadable>;
+
+  /**
+   * Empties the queue
+   */
+  flush(): void;
 }
 
 export default Queue;

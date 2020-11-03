@@ -1,6 +1,6 @@
 import fs, { PathLike } from 'fs';
 import path from 'path';
-import axios from 'axios';
+import axios, { AxiosPromise } from 'axios';
 import Downloadable from './Downloadable';
 import Queue from './queues/Queue';
 import DefaultQueue from './queues/DefaultQueue';
@@ -53,6 +53,18 @@ class DownloadManager implements Downloader {
     LOGGER.get(DownloadManager.name).info(`active downloads: ${DownloadManager._activeDownloads}`);
   }
 
+  /**
+   * Returns all the downloads or all the downloads with the specified extensions.
+   *
+   * @param extension the extension of the file including the '.' (dot)
+   */
+  public listDownloads(extension?: string): PathLike[] {
+    return fs
+      .readdirSync(this.dir)
+      .map((f) => path.join(this.dir.toString(), f.toString()))
+      .filter((f) => path.extname(f).toLowerCase() === (extension || ''));
+  }
+
   public flush(): void {
     this.logger.info('flushing downloads! 🚾');
     fs.readdirSync(this.dir).forEach((f) => {
@@ -64,6 +76,20 @@ class DownloadManager implements Downloader {
       fs.unlinkSync(currentPath);
     });
     this.logger.info('done flusing 🚽');
+  }
+
+  /**
+   * Queues and immediately downloads (respecting the request rate limit) the
+   * given collection of Downloadables.
+   *
+   * @param d Collection of Downloadables
+   * @returns an array of string indicating the location in which the
+   * downloadables were downloaded to.
+   */
+  public async get(...d: Downloadable[]): Promise<Downloadable[]> {
+    this.q.flush();
+    this.queue(...d);
+    return this.dequeue();
   }
 
   public queue(...d: Downloadable[]): void {
@@ -80,39 +106,14 @@ class DownloadManager implements Downloader {
     const downloads: Downloadable[] = [];
     while (!this.q.isEmpty()) {
       try {
-        const gettable = await this.q.shift();
-        const downloadedElement = await this._get(gettable);
+        const downloadable = await this.q.shift();
+        const downloadedElement = await this._get(downloadable);
         downloads.push(downloadedElement);
       } catch (ex) {
         this.logger.warning(`couldn't 'GET': ${ex}`);
       }
     }
     return Promise.resolve(downloads);
-  }
-
-  /**
-   * Queues and immediately downloads (respecting the request rate limit) the
-   * given collection of Downloadables.
-   *
-   * @param d Collection of Downloadables
-   * @returns an array of string indicating the location in which the
-   * downloadables were downloaded to.
-   */
-  public async get(...d: Downloadable[]): Promise<Downloadable[]> {
-    this.queue(...d);
-    return this.dequeue();
-  }
-
-  /**
-   * Returns all the downloads or all the downloads with the specified extensions.
-   *
-   * @param extension the extension of the file including the '.' (dot)
-   */
-  public listDownloads(extension?: string): PathLike[] {
-    return fs
-      .readdirSync(this.dir)
-      .map((f) => path.join(this.dir.toString(), f.toString()))
-      .filter((f) => path.extname(f).toLowerCase() === (extension || ''));
   }
 
   /**
@@ -123,51 +124,66 @@ class DownloadManager implements Downloader {
    */
   private async _get(d: Downloadable): Promise<Downloadable> {
     this.logger.info(`downloading: ${d.url}`);
-    DownloadManager.downloads += 1;
-    const p: Downloadable = {
-      fileName: path.join(this.dir.toString(), d.fileName),
-      url: d.url
+
+    const response = await this.download(d.url);
+
+    if (response.status !== 200) {
+      throw new Error(`${d.url} responded with ${response.status}`);
+    }
+
+    try {
+      DownloadManager.fileWrites += 1;
+      return await this.writeStream(response.data, d);
+    } catch (e) {
+      throw new Error(`Error while writing stream: ${e.toString()}`);
+    } finally {
+      DownloadManager.fileWrites -= 1;
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async download(url: string): Promise<AxiosPromise<any>> {
+    try {
+      DownloadManager.downloads += 1;
+      this.logger.info('await for axios...');
+      const r = await axios({
+        url,
+        method: 'GET',
+        responseType: 'stream'
+      });
+      this.logger.info(`axios finished with status ${r.status}`);
+
+      return r;
+    } catch (e) {
+      return e.response;
+    } finally {
+      DownloadManager.downloads -= 1;
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async writeStream(data: any, downloadable: Downloadable): Promise<Downloadable> {
+    const downloadedFile: Downloadable = {
+      fileName: path.join(this.dir.toString(), downloadable.fileName),
+      url: downloadable.url
     };
 
-    this.logger.info('await for axios...');
-    const response = await axios({
-      url: d.url,
-      method: 'GET',
-      responseType: 'stream'
-    });
-    this.logger.info(`axios finished with status ${response.status}`);
-    console.log(response.data);
-    DownloadManager.downloads -= 1;
-
-    DownloadManager.fileWrites += 1;
-    const writer = fs.createWriteStream(p.fileName);
-    writer.on('pipe', () => this.logger.info('💈 piping to writer'));
-
+    const writer = fs.createWriteStream(downloadedFile.fileName);
     const promise: Promise<Downloadable> = new Promise((res, rej) => {
-      writer.on('finish', () => {
-        this.logger.info(`✅ done writting: ${d.fileName}`);
-        res(p);
-      });
-
-      writer.on('close', () => {
-        DownloadManager.fileWrites -= 1;
-        this.logger.info(`closing ${d.fileName}`);
-      });
-
-      writer.on('error', () => {
-        this.logger.error(`❌ error while writting: ${d.fileName}`);
-        rej();
-      });
+      writer
+        .on('pipe', () => this.logger.info('💈 piping to writer'))
+        .on('close', () => {
+          this.logger.info(`✅ done writting, closing: ${downloadable.fileName}`);
+          res(downloadedFile);
+        })
+        .on('error', (error) => {
+          this.logger.error(`❌ error while writting: ${downloadable.fileName}`);
+          rej(error);
+        });
     });
 
-    response.data.on('error', (error: Error) => {
-      writer.close();
-      this.logger.error(`❌ Error when getting ${d.url}:`);
-      console.error(error);
-    });
+    data.pipe(writer);
 
-    response.data.pipe(writer);
-    this.logger.info('starting pipe');
     return await promise;
   }
 
