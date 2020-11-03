@@ -91,12 +91,16 @@ class FinTen {
         filingMetadata = filingsMetadata.shift()
       ) {
         this.logPercentage(total - filingsMetadata.length, total);
+        try {
+          if (await this.isAlreadyVisited(filingMetadata)) continue;
 
-        if (await this.isAlreadyVisited(filingMetadata)) continue;
-
-        const filings = await this.secgov.getFilings(filingMetadata);
-        await this.addFilings(filings);
-        this.secgov.flush();
+          const filings = await this.secgov.getFilings(filingMetadata);
+          await this.addFilings(filings);
+        } catch (e) {
+          this.logger.error(`Error while getting and adding filings: ${e.toString()}`);
+        } finally {
+          this.secgov.flush();
+        }
       }
 
       this.secgov.flush();

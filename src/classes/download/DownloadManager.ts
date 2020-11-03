@@ -140,11 +140,11 @@ class DownloadManager implements Downloader {
 
     DownloadManager.activeFileWrites += 1;
     const writer = fs.createWriteStream(p.fileName);
-    writer.on('pipe', () => this.logger.info('piping started'));
+    writer.on('pipe', () => this.logger.info('💈 piping to writer'));
 
     const promise: Promise<Downloadable> = new Promise((res, rej) => {
       writer.on('finish', () => {
-        this.logger.info(`done writting: ${d.fileName}`);
+        this.logger.info(`✅ done writting: ${d.fileName}`);
         res(p);
       });
 
@@ -154,14 +154,14 @@ class DownloadManager implements Downloader {
       });
 
       writer.on('error', () => {
-        this.logger.error(`error while writting: ${d.fileName}`);
+        this.logger.error(`❌ error while writting: ${d.fileName}`);
         rej();
       });
     });
 
     response.data.on('error', (error: Error) => {
       writer.close();
-      this.logger.error(`Error when getting ${d.url}:`);
+      this.logger.error(`❌ Error when getting ${d.url}:`);
       console.error(error);
     });
 
