@@ -5,6 +5,7 @@
   "main": "src/main.ts",
   "scripts": {
     "start": "ts-node -r dotenv/config src/main.ts",
+    "fix": "ts-node -r dotenv/config src/tests/test.ts",
     "nodemon": "nodemon",
     "test": "PORT=3030 mocha -r dotenv/config -r ts-node/register test/**/*.spec.ts",
     "test-debug": "PORT=3030 mocha -r dotenv/config -r ts-node/register test/**/*.spec.ts --timeout 300000",
