@@ -106,7 +106,7 @@ class FinTen {
       this.secgov.flush();
       this.logger.info('Done filling!');
     } catch (e) {
-      this.logger.error(`Could not add new filings: ${e.toString()}`);
+      this.logger.error(`Could not get filings metadata: ${e.toString()}`);
     }
   }
 

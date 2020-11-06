@@ -52,17 +52,15 @@ secgovRoutes.get('/fill', async (req, res) => {
     `filling database with all the data between ${start} and ${end}`
   );
 
-  try {
-    const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
-    finten.addNewFilings(parseInt(start as string), parseInt(end as string));
-
-    return res.status(200).json({
-      start,
-      end
-    });
-  } catch (e) {
+  const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
+  finten.addNewFilings(parseInt(start as string), parseInt(end as string)).catch((e) => {
     return res.status(400).json({ error: e });
-  }
+  });
+
+  return res.status(200).json({
+    start,
+    end
+  });
 });
 
 secgovRoutes.get('/reparse', async (req, res) => {

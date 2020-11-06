@@ -183,6 +183,8 @@ class DownloadManager implements Downloader {
           this.logger.error(`❌ error while writting: ${downloadable.fileName}`);
           rej(error);
         });
+
+      setTimeout(() => rej('timeout'), 5 * 60 * 1000);
     });
 
     data.pipe(writer);
