@@ -113,7 +113,7 @@ finten_downloads/*.idx
 # .ds_store
 .DS_Store
 .db
-src/tests
+src/classes/tests
 
 # secrets
 
