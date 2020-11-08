@@ -184,7 +184,7 @@ class DownloadManager implements Downloader {
           rej(error);
         });
 
-      setTimeout(() => rej('timeout'), 5 * 60 * 1000);
+      setTimeout(() => rej(new Error('timeout')), 5 * 60 * 1000);
     });
 
     data.pipe(writer);
