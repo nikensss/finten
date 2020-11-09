@@ -114,11 +114,16 @@ company.get('/filings', async (req, res) => {
 
   try {
     const db = await FinTenDB.getInstance().connect();
-    const filingsCursor = db.findFilings({
-      TradingSymbol: ticker
-    });
+    const companyInfo = await db.findCompanyInfoByTradingSymbol(ticker);
+
+    if (companyInfo === null) {
+      throw new Error(`Unknown company '${ticker}'!`);
+    }
 
     const filings: FilingDocument[] = [];
+    const filingsCursor = db.findFilings({
+      EntityCentralIndexKey: companyInfo.EntityCentralIndexKey
+    });
     await filingsCursor.eachAsync(async (f: FilingDocument) => {
       filings.push(f);
     });
@@ -129,9 +134,7 @@ company.get('/filings', async (req, res) => {
       // companyInfo
     });
   } catch (ex) {
-    return res.status(500).json({
-      error: ex
-    });
+    return res.status(500).json({ error: ex });
   }
 });
 
@@ -140,9 +143,7 @@ company.get('/eciks', async (req, res) => {
 
   const ciks = await db.distinctFilingKey('EntityCentralIndexKey');
 
-  res.status(200).json({
-    ciks
-  });
+  res.status(200).json({ ciks });
 });
 
 export default company;
