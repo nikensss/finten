@@ -3,6 +3,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import User from '../db/models/User';
 import { Secret } from 'jsonwebtoken';
 import FinTenDB from '../db/FinTenDB';
+import { default as LOGGER } from '../logger/DefaultLogger';
 
 if (typeof process.env.SECRET !== 'string') {
   throw new Error('No SECRET available');
@@ -17,7 +18,6 @@ const options = {
 passport.use(
   'userAuthentication',
   new Strategy(options, (payload, next) => {
-    console.log('Auth user. Payload is', payload);
     FinTenDB.getInstance()
       .connect()
       .then(() => User.findOne({ _id: payload.id }))
@@ -38,11 +38,13 @@ passport.use(
         }
 
         if (user.isPremium) {
-          console.log(`user ${user.username} is ${user.isAdmin ? 'admin' : 'premium'}`);
+          LOGGER.get('isPremium').info(
+            `user ${user.username} is ${user.isAdmin ? 'admin' : 'premium'}`
+          );
           return next(null, user);
         }
 
-        console.log(`user ${user.username} is neither admin nor premium`);
+        LOGGER.get('isPremium').info(`user ${user.username} is neither admin nor premium`);
         return next(null, false, { message: 'Invalid credentials' });
       })
       .catch((e) => next(e));
@@ -60,10 +62,10 @@ passport.use(
           return next(null, false, { message: 'Invalid credentials' });
         }
         if (user.isAdmin === true) {
-          console.log(`user ${user.username} is admin`);
+          LOGGER.get('isAdmin').info(`user ${user.username} is admin`);
           return next(null, user);
         }
-        console.log(`user ${user.username} not admin`);
+        LOGGER.get('isAdmin').info(`user ${user.username} not admin`);
 
         return next(null, false, { message: 'Invalid credentials' });
       })

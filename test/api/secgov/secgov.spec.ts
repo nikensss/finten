@@ -11,7 +11,7 @@ chai.use(chaiHttp);
 
 let mongod: MongoMemoryServer, uri: string;
 
-describe('/GET', function () {
+describe('SecGov routes', function () {
   this.timeout(5000);
   before(async () => {
     request.agent(app);
@@ -53,7 +53,7 @@ describe('/GET', function () {
   it('should fail with 401 Unauthorized because no token is given', () => {
     chai
       .request(app)
-      .get('/api/secgov/fill')
+      .get('/secgov/fill')
       .set('Connection', 'close')
       .end((err, res) => {
         res.should.have.status(401);

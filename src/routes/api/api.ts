@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { userAuthentication, isAdmin } from '../../classes/auth/Passport';
+import { isAdmin } from '../../classes/auth/Passport';
 import users from './admin/users';
-import company from './company/company';
 import secgov from './secgov/secgov';
 
 const api = Router();
@@ -18,7 +17,6 @@ api.get('/', (req, res) => {
 });
 
 api.use('/secgov', isAdmin, secgov);
-api.use('/company', userAuthentication, company);
 api.use('/users', users);
 
 export default api;

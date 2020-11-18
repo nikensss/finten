@@ -4,22 +4,29 @@ import { default as LOGGER } from '../logger/DefaultLogger';
 import api from '../../routes/api/api';
 import cors from 'cors';
 import { Server } from 'http';
+import Controller from './controllers/Controller.interface';
 
 class FinTenAPI {
   private readonly app: Application;
   private readonly port: number = parseInt(process.env.PORT || '3000');
 
-  constructor() {
+  constructor(controllers: Controller[]) {
     //establish the connection with the DB at the very beginning
     this.app = express();
-
     this.initialiseMiddlewares();
+    this.initialiseControllers(controllers);
   }
 
   private initialiseMiddlewares() {
     this.app.use(cors());
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: false }));
+  }
+
+  private initialiseControllers(controllers: Controller[]) {
+    for (const controller of controllers) {
+      this.app.use(controller.path, controller.router);
+    }
   }
 
   setRoutes(): FinTenAPI {
@@ -29,7 +36,7 @@ class FinTenAPI {
       });
     });
 
-    this.app.use('/api', api);
+    this.app.use('', api);
 
     return this;
   }
