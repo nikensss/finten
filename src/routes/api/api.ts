@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { isAdmin, isPremium } from '../../classes/auth/Passport';
+import { userAuthentication, isAdmin } from '../../classes/auth/Passport';
 import users from './admin/users';
 import company from './company/company';
 import secgov from './secgov/secgov';
@@ -18,7 +18,7 @@ api.get('/', (req, res) => {
 });
 
 api.use('/secgov', isAdmin, secgov);
-api.use('/company', isPremium, company);
+api.use('/company', userAuthentication, company);
 api.use('/users', users);
 
 export default api;

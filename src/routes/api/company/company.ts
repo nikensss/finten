@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import FinTenDB from '../../../classes/db/FinTenDB';
 import { FilingDocument } from '../../../classes/db/models/Filing';
+import { UserDocument } from '../../../classes/db/models/User';
 
 const company = Router();
 
@@ -17,12 +18,6 @@ const accessibleTickers = [
   'TSLA',
   'JPM'
 ];
-
-company.get('/', (req, res) => {
-  res.json({
-    message: 'company route 😎'
-  });
-});
 
 /**
  * Description: returns the tickers of all available companies. Use this endpoint
@@ -98,17 +93,23 @@ company.get('/tickers', async (req, res) => {
  *    *the error is sent in a JSON response (under the property error)
  */
 company.get('/filings', async (req, res) => {
-  const { ticker } = req.query;
+  const user: UserDocument = req.user as UserDocument;
+  if (typeof user === 'undefined') {
+    return res.status(403).json({
+      error: 'Invalid credentials'
+    });
+  }
 
+  const { ticker } = req.query;
   if (!ticker || typeof ticker !== 'string' || (ticker as string).length === 0) {
     return res.status(400).json({
-      error: 'no ticker given'
+      error: 'Invalid ticker'
     });
   }
 
   if (!accessibleTickers.includes(ticker as string)) {
     return res.status(403).json({
-      error: 'forbidden access'
+      error: 'Invalid credentials'
     });
   }
 
@@ -120,18 +121,23 @@ company.get('/filings', async (req, res) => {
       throw new Error(`Unknown company '${ticker}'!`);
     }
 
-    const filings: FilingDocument[] = [];
+    let filings: FilingDocument[] = [];
     const filingsCursor = db.findFilings({
       EntityCentralIndexKey: companyInfo.EntityCentralIndexKey
     });
+
     await filingsCursor.eachAsync(async (f: FilingDocument) => {
       filings.push(f);
     });
 
+    if (!user.isPremium) {
+      filings = filings.slice(-8);
+    }
+
     return res.status(200).json({
       ticker,
-      filings
-      // companyInfo
+      filings,
+      companyInfo
     });
   } catch (ex) {
     return res.status(500).json({ error: ex });
@@ -140,10 +146,8 @@ company.get('/filings', async (req, res) => {
 
 company.get('/eciks', async (req, res) => {
   const db = await FinTenDB.getInstance().connect();
-
-  const ciks = await db.distinctFilingKey('EntityCentralIndexKey');
-
-  res.status(200).json({ ciks });
+  const eciks = await db.distinctFilingKey('EntityCentralIndexKey');
+  res.status(200).json({ eciks });
 });
 
 export default company;
