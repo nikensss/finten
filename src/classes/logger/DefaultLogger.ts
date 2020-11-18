@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { Logger } from './Logger';
+import { Logger } from './Logger.interface';
 import { LogLevel } from './LogLevel';
 import { Writable } from 'stream';
 import moment from 'moment';

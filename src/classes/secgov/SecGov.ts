@@ -4,8 +4,8 @@ import fs, { PathLike } from 'fs';
 import FilingMetadata from '../filings/FilingMetadata';
 import FormType from '../filings/FormType';
 import { default as LOGGER } from '../logger/DefaultLogger';
-import Downloadable from '../download/Downloadable';
-import Downloader from '../download/Downloader';
+import Downloadable from '../download/Downloadable.interface';
+import Downloader from '../download/Downloader.interface';
 
 class SecGov {
   public static readonly INDICES_ROOT = 'https://www.sec.gov/Archives/edgar/full-index/';

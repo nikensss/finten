@@ -1,4 +1,4 @@
-import Downloadable from '../Downloadable';
+import Downloadable from '../Downloadable.interface';
 
 interface Queue {
   /**

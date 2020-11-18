@@ -1,5 +1,5 @@
-import Downloadable from './Downloadable';
-import Queue from './queues/Queue';
+import Downloadable from './Downloadable.interface';
+import Queue from './queues/Queue.interface';
 
 interface Downloader {
   get(...d: Downloadable[]): Promise<Downloadable[]>;

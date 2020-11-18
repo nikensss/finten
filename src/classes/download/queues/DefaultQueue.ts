@@ -1,5 +1,5 @@
-import Downloadable from '../Downloadable';
-import Queue from './Queue';
+import Downloadable from '../Downloadable.interface';
+import Queue from './Queue.interface';
 
 class DefaultQueue implements Queue {
   private q: Downloadable[] = [];

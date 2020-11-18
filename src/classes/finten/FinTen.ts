@@ -6,8 +6,8 @@ import XBRLUtilities from '../secgov/XBRLUtilities';
 import VisitedLinkModel, { VisitedLinkDocument, VisitedLinkStatus } from '../db/models/VisitedLink';
 import { Schema } from 'mongoose';
 import { Filing } from '../db/models/Filing';
-import Downloadable from '../download/Downloadable';
-import Database from '../db/Database';
+import Downloadable from '../download/Downloadable.interface';
+import Database from '../db/Database.interface.';
 import CompanyInfoModel, { CompanyInfo } from '../db/models/CompanyInfo';
 import FilingMetadata from '../filings/FilingMetadata';
 

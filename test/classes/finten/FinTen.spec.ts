@@ -10,7 +10,7 @@ import FilingModel from '../../../src/classes/db/models/Filing';
 import CompanyInfoModel from '../../../src/classes/db/models/CompanyInfo';
 import { anyNumber, anything, instance, mock, verify, when } from 'ts-mockito';
 import FilingMetadata from '../../../src/classes/filings/FilingMetadata';
-import Downloadable from '../../../src/classes/download/Downloadable';
+import Downloadable from '../../../src/classes/download/Downloadable.interface';
 
 chai.should();
 chai.use(chaiAsPromised);

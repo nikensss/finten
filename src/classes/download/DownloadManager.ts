@@ -1,11 +1,11 @@
 import fs, { PathLike } from 'fs';
 import path from 'path';
 import axios, { AxiosPromise } from 'axios';
-import Downloadable from './Downloadable';
-import Queue from './queues/Queue';
+import Downloadable from './Downloadable.interface';
+import Queue from './queues/Queue.interface';
 import DefaultQueue from './queues/DefaultQueue';
 import { default as LOGGER } from '../logger/DefaultLogger';
-import Downloader from './Downloader';
+import Downloader from './Downloader.interface';
 
 class DownloadManager implements Downloader {
   private _directory: PathLike;

@@ -1,5 +1,5 @@
 import FormType, { byName } from './FormType';
-import Downloadable from '../download/Downloadable';
+import Downloadable from '../download/Downloadable.interface';
 import SecGov from '../secgov/SecGov';
 
 class FilingMetadata implements Downloadable {
