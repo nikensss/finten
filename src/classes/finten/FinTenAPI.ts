@@ -30,6 +30,13 @@ class FinTenAPI {
   }
 
   setRoutes(): FinTenAPI {
+    //loggin middleware
+    this.app.use('', (req, res, next) => {
+      console.log(`requested ${req.url}`);
+      next();
+    });
+
+    //greeting route
     this.app.get('/', (req, res) => {
       res.status(200).json({
         greeting: 'You reached the FinTen API! 🥳'
