@@ -55,7 +55,7 @@ class CompanyController implements Controller {
    *  -Code: 401 Unauthorized
    *    *Invalid authentication token (must be, at least, preimum user)
    */
-  private async getTickers(req: Request, res: Response) {
+  private async getTickers(req: Request, res: Response): Promise<Response> {
     // await FinTenDB.getInstance().connect();
     // const tickers = (
     //   await CompanyInfoModel.find({}, null, { sort: { TradingSymbol: 1 } })
@@ -66,7 +66,7 @@ class CompanyController implements Controller {
     //   .filter((tradingSmbol) => typeof tradingSmbol === 'string');
 
     const tickers = CompanyController.ACCESSIBLE_TICKERS;
-    res.status(200).json({ tickers });
+    return res.status(200).json({ tickers });
   }
 
   /**
@@ -106,7 +106,7 @@ class CompanyController implements Controller {
    *    *the request could not be processed
    *    *the error is sent in a JSON response (under the property error)
    */
-  private async getFilings(req: Request, res: Response) {
+  private async getFilings(req: Request, res: Response): Promise<Response> {
     const user: UserDocument = req.user as UserDocument;
     if (typeof user === 'undefined') {
       return res.status(403).json({
@@ -158,10 +158,10 @@ class CompanyController implements Controller {
     }
   }
 
-  private async getEciks(req: Request, res: Response) {
+  private async getEciks(req: Request, res: Response): Promise<Response> {
     const db = await FinTenDB.getInstance().connect();
     const eciks = await db.distinctFilingKey('EntityCentralIndexKey');
-    res.status(200).json({ eciks });
+    return res.status(200).json({ eciks });
   }
 }
 

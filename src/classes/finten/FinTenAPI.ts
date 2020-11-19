@@ -1,7 +1,6 @@
 import express, { Application } from 'express';
 import bodyParser from 'body-parser';
 import { default as LOGGER } from '../logger/DefaultLogger';
-import api from '../../routes/api/api';
 import cors from 'cors';
 import { Server } from 'http';
 import Controller from './controllers/Controller.interface';
@@ -21,15 +20,7 @@ class FinTenAPI {
     this.app.use(cors());
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: false }));
-  }
 
-  private initialiseControllers(controllers: Controller[]) {
-    for (const controller of controllers) {
-      this.app.use(controller.path, controller.router);
-    }
-  }
-
-  setRoutes(): FinTenAPI {
     //loggin middleware
     this.app.use('', (req, res, next) => {
       console.log(`requested ${req.url}`);
@@ -42,10 +33,12 @@ class FinTenAPI {
         greeting: 'You reached the FinTen API! 🥳'
       });
     });
+  }
 
-    this.app.use('', api);
-
-    return this;
+  private initialiseControllers(controllers: Controller[]) {
+    for (const controller of controllers) {
+      this.app.use(controller.path, controller.router);
+    }
   }
 
   listen(): Server {

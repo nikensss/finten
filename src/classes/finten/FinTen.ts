@@ -84,7 +84,6 @@ class FinTen {
     try {
       const filingsMetadata = await this.getFilingsMetadata(start, end);
       const total = filingsMetadata.length;
-
       for (
         let filingMetadata = filingsMetadata.shift();
         typeof filingMetadata !== 'undefined';
@@ -112,7 +111,9 @@ class FinTen {
 
   private async isAlreadyVisited(filingMetadata: FilingMetadata): Promise<boolean> {
     try {
-      return await VisitedLinkModel.exists({ url: filingMetadata.url });
+      await this.db.connect();
+      const result = await VisitedLinkModel.exists({ url: filingMetadata.url });
+      return result;
     } catch (e) {
       this.logger.error(`::isAlreadyVisited -> ${e.toString()}`);
       return true; //default to true just to avoid duplicates in the DB
@@ -225,8 +226,8 @@ class FinTen {
   }
 
   private logPercentage(currentAmount: number, length: number) {
-    const percentageDownloads = ((currentAmount + 1) / length) * 100;
-    this.logger.info(`🛎  ${currentAmount + 1}/${length} (${percentageDownloads.toFixed(3)} %)`);
+    const percentageDownloads = (currentAmount / length) * 100;
+    this.logger.info(`🛎  ${currentAmount}/${length} (${percentageDownloads.toFixed(3)} %)`);
   }
 }
 
