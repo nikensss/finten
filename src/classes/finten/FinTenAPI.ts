@@ -12,16 +12,16 @@ class FinTenAPI {
   constructor(controllers: Controller[]) {
     //establish the connection with the DB at the very beginning
     this.app = express();
-    this.initialiseMiddlewares();
-    this.initialiseControllers(controllers);
+    this.initializeMiddlewares();
+    this.initializeControllers(controllers);
   }
 
-  private initialiseMiddlewares() {
+  private initializeMiddlewares() {
     this.app.use(cors());
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: false }));
 
-    //loggin middleware
+    //logging middleware
     this.app.use('', (req, res, next) => {
       console.log(`requested ${req.url}`);
       next();
@@ -35,7 +35,7 @@ class FinTenAPI {
     });
   }
 
-  private initialiseControllers(controllers: Controller[]) {
+  private initializeControllers(controllers: Controller[]) {
     for (const controller of controllers) {
       this.app.use(controller.path, controller.router);
     }

@@ -13,12 +13,12 @@ class SecGovController implements Controller {
   public readonly router = Router();
 
   constructor() {
-    this.initialiseRoutes();
+    this.initializeRoutes();
   }
 
-  private initialiseRoutes() {
+  private initializeRoutes() {
     //we need to bind all these methods again due to the reference to 'this'
-    //wheng getting the logger
+    //when getting the logger
     this.router.get('/fill', isAdmin, this.fill.bind(this));
     this.router.get('/reparse', isAdmin, this.reparse.bind(this));
     this.router.get('/buildCompanyInfo', isAdmin, this.buildCompanyInfo.bind(this));
