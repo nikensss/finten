@@ -11,6 +11,12 @@ import Database from '../db/Database.interface.';
 import CompanyInfoModel, { CompanyInfo } from '../db/models/CompanyInfo';
 import FilingMetadata from '../filings/FilingMetadata';
 
+/**
+ * The FinTen class is the basic driver that builds FinTen. It is the interface
+ * between our database, the sec.gov API, and our own API.
+ *
+ * The main responsibility of this class is to keep the database updated.
+ */
 class FinTen {
   private _secgov: SecGov;
   private _db: Database;
@@ -71,9 +77,9 @@ class FinTen {
   }
 
   /**
-   * Fill the database with the data between the start and end years (both included)
-   * up to the specified amount (if specified). If no end year is given, the method
-   * will fill for only the start year.
+   * Fill the database with the data between the start and end years (both
+   * included). If no end year is given, the method will fill for only the start
+   * year.
    *
    * @param start year from which to start downloading data (inclusive)
    * @param end year at which to stop downloading data (inclusive)

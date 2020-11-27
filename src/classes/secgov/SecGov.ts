@@ -7,6 +7,15 @@ import { default as LOGGER } from '../logger/DefaultLogger';
 import Downloadable from '../download/Downloadable.interface';
 import Downloader from '../download/Downloader.interface';
 
+/**
+ * The SecGov class is a wrapper around the SecGov API so that filings can be
+ * downloaded respecting the limitations on usage.
+ *
+ * In order to get new filings, first call the getIndex(...) (getIndices(...))
+ * method, then parse the returned value using parseIndex(...)
+ * (parseIndices(...)) method. Finally, pass the result of this last call to the
+ * getFilings(...) method.
+ */
 class SecGov {
   public static readonly INDICES_ROOT = 'https://www.sec.gov/Archives/edgar/full-index/';
   public static readonly FILINGS_ROOT = 'https://www.sec.gov/Archives/';
@@ -30,8 +39,8 @@ class SecGov {
   /**
    * Downloads all the .idx files available between the specified period of time.
    *
-   * @param start the year from which to start downloading the .idx files (inlcusive)
-   * @param end the year at which to stop downloading the .idx files (inlcusive)
+   * @param start the year from which to start downloading the .idx files (inclusive)
+   * @param end the year at which to stop downloading the .idx files (inclusive)
    */
   async getIndices(start: number, end: number = start): Promise<Downloadable[]> {
     if (start > end) throw new Error('start > end 🤯');

@@ -5,6 +5,16 @@ import cors from 'cors';
 import { Server } from 'http';
 import Controller from './controllers/Controller.interface';
 
+/**
+ * Connects our FinTen database to the Internet so that other people can use the
+ * database we have built downloading and parsing the data from SecGov.
+ *
+ * Use controllers (classes implementing the Controller interface) to create
+ * endpoints.
+ *
+ * Once a new instance is created, call the listen() method to start up the
+ * server!
+ */
 class FinTenAPI {
   private readonly app: Application;
   private readonly port: number = parseInt(process.env.PORT || '3000');
