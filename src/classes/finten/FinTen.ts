@@ -7,7 +7,7 @@ import VisitedLinkModel, { VisitedLinkDocument, VisitedLinkStatus } from '../db/
 import { Schema } from 'mongoose';
 import { Filing } from '../db/models/Filing';
 import Downloadable from '../download/Downloadable.interface';
-import Database from '../db/Database.interface.';
+import Database from '../db/Database.interface';
 import CompanyInfoModel, { CompanyInfo } from '../db/models/CompanyInfo';
 import FilingMetadata from '../filings/FilingMetadata';
 

@@ -12,7 +12,8 @@
     "full-test": "PORT=3030 mocha --forbid-only -r dotenv/config -r ts-node/register test/**/*.spec.ts",
     "rimraf": "rm -rf node_modules && npm i",
     "lint": "eslint --fix '{src,test}/**/*.ts'",
-    "pretty": "prettier --write {src,test}/**/*.ts"
+    "pretty": "prettier --write {src,test}/**/*.ts",
+    "graph": "depcruise --include-only '^src/classes' --output-type dot src | dot -T svg > dependencygraph.svg"
   },
   "nodemonConfig": {
     "ignore": [
@@ -91,6 +92,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-interface": "^2.0.3",
+    "dependency-cruiser": "^9.17.1",
     "eslint": "^7.10.0",
     "eslint-config-prettier": "^6.12.0",
     "eslint-plugin-prettier": "^3.1.4",

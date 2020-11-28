@@ -1,5 +1,5 @@
 import mongoose, { Mongoose, QueryCursor } from 'mongoose';
-import Database from './Database.interface.';
+import Database from './Database.interface';
 import CompanyInfoModel, { CompanyInfo, CompanyInfoDocument } from './models/CompanyInfo';
 import FilingModel, { Filing, FilingDocument } from './models/Filing';
 import UserModel, { User, UserDocument } from './models/User';
