@@ -26,8 +26,8 @@
 </g>
 <g id="clust4" class="cluster">
 <title>cluster_src/classes/db</title>
-<path fill="#ffffff" stroke="black" stroke-width="2" d="M285,-24C285,-24 501,-24 501,-24 507,-24 513,-30 513,-36 513,-36 513,-248 513,-248 513,-254 507,-260 501,-260 501,-260 285,-260 285,-260 279,-260 273,-254 273,-248 273,-248 273,-36 273,-36 273,-30 279,-24 285,-24"/>
-<text text-anchor="middle" x="393" y="-248.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">db</text>
+<path fill="#ffffff" stroke="black" stroke-width="2" d="M286,-24C286,-24 501,-24 501,-24 507,-24 513,-30 513,-36 513,-36 513,-248 513,-248 513,-254 507,-260 501,-260 501,-260 286,-260 286,-260 280,-260 274,-254 274,-248 274,-248 274,-36 274,-36 274,-30 280,-24 286,-24"/>
+<text text-anchor="middle" x="393.5" y="-248.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">db</text>
 </g>
 <g id="clust5" class="cluster">
 <title>cluster_src/classes/db/models</title>
@@ -60,21 +60,26 @@
 <text text-anchor="middle" x="93" y="-496.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">controllers</text>
 </g>
 <g id="clust11" class="cluster">
+<title>cluster_src/classes/fred</title>
+<path fill="#ffffff" stroke="black" stroke-width="2" d="M58.5,-146C58.5,-146 127.5,-146 127.5,-146 133.5,-146 139.5,-152 139.5,-158 139.5,-158 139.5,-216 139.5,-216 139.5,-222 133.5,-228 127.5,-228 127.5,-228 58.5,-228 58.5,-228 52.5,-228 46.5,-222 46.5,-216 46.5,-216 46.5,-158 46.5,-158 46.5,-152 52.5,-146 58.5,-146"/>
+<text text-anchor="middle" x="93" y="-216.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">fred</text>
+</g>
+<g id="clust12" class="cluster">
 <title>cluster_src/classes/logger</title>
 <path fill="#ffffff" stroke="black" stroke-width="2" d="M415,-362C415,-362 589.5,-362 589.5,-362 595.5,-362 601.5,-368 601.5,-374 601.5,-374 601.5,-432 601.5,-432 601.5,-438 595.5,-444 589.5,-444 589.5,-444 415,-444 415,-444 409,-444 403,-438 403,-432 403,-432 403,-374 403,-374 403,-368 409,-362 415,-362"/>
 <text text-anchor="middle" x="502.25" y="-432.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">logger</text>
 </g>
-<g id="clust12" class="cluster">
+<g id="clust13" class="cluster">
 <title>cluster_src/classes/secgov</title>
 <path fill="#ffffff" stroke="black" stroke-width="2" d="M297.5,-606C297.5,-606 480,-606 480,-606 486,-606 492,-612 492,-618 492,-618 492,-676 492,-676 492,-682 486,-688 480,-688 480,-688 297.5,-688 297.5,-688 291.5,-688 285.5,-682 285.5,-676 285.5,-676 285.5,-618 285.5,-618 285.5,-612 291.5,-606 297.5,-606"/>
 <text text-anchor="middle" x="388.75" y="-676.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">secgov</text>
 </g>
-<g id="clust13" class="cluster">
+<g id="clust14" class="cluster">
 <title>cluster_src/classes/tests</title>
 <path fill="#ffffff" stroke="black" stroke-width="2" d="M190,-208C190,-208 236,-208 236,-208 242,-208 248,-214 248,-220 248,-220 248,-248 248,-248 248,-254 242,-260 236,-260 236,-260 190,-260 190,-260 184,-260 178,-254 178,-248 178,-248 178,-220 178,-220 178,-214 184,-208 190,-208"/>
 <text text-anchor="middle" x="213" y="-248.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">tests</text>
 </g>
-<g id="clust14" class="cluster">
+<g id="clust15" class="cluster">
 <title>cluster_src/classes/time</title>
 <path fill="#ffffff" stroke="black" stroke-width="2" d="M538.5,-520C538.5,-520 584.5,-520 584.5,-520 590.5,-520 596.5,-526 596.5,-532 596.5,-532 596.5,-560 596.5,-560 596.5,-566 590.5,-572 584.5,-572 584.5,-572 538.5,-572 538.5,-572 532.5,-572 526.5,-566 526.5,-560 526.5,-560 526.5,-532 526.5,-532 526.5,-526 532.5,-520 538.5,-520"/>
 <text text-anchor="middle" x="561.5" y="-560.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">time</text>
@@ -229,12 +234,12 @@
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M253.13,-315C267.04,-315 282.64,-315 296.3,-315"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="296.42,-317.1 302.42,-315 296.42,-312.9 296.42,-317.1"/>
 </g>
-<!-- src/classes/db/Database.interface..ts -->
+<!-- src/classes/db/Database.interface.ts -->
 <g id="node7" class="node">
-<title>src/classes/db/Database.interface..ts</title>
-<g id="a_node7"><a xlink:href="src/classes/db/Database.interface..ts" xlink:title="Database.interface..ts">
-<path fill="#ccffcc" stroke="black" d="M380,-107C380,-107 287,-107 287,-107 284,-107 281,-104 281,-101 281,-101 281,-95 281,-95 281,-92 284,-89 287,-89 287,-89 380,-89 380,-89 383,-89 386,-92 386,-95 386,-95 386,-101 386,-101 386,-104 383,-107 380,-107"/>
-<text text-anchor="middle" x="333.5" y="-95.8" font-family="Helvetica,sans-Serif" font-size="9.00">Database.interface..ts</text>
+<title>src/classes/db/Database.interface.ts</title>
+<g id="a_node7"><a xlink:href="src/classes/db/Database.interface.ts" xlink:title="Database.interface.ts">
+<path fill="#ccffcc" stroke="black" d="M379,-107C379,-107 288,-107 288,-107 285,-107 282,-104 282,-101 282,-101 282,-95 282,-95 282,-92 285,-89 288,-89 288,-89 379,-89 379,-89 382,-89 385,-92 385,-95 385,-95 385,-101 385,-101 385,-104 382,-107 379,-107"/>
+<text text-anchor="middle" x="333.5" y="-95.8" font-family="Helvetica,sans-Serif" font-size="9.00">Database.interface.ts</text>
 </a>
 </g>
 </g>
@@ -399,9 +404,9 @@
 <ellipse fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" cx="236.11" cy="-698.24" rx="2.4" ry="2.4"/>
 </g>
 <!-- src/classes/secgov/XBRL.ts -->
-<g id="node32" class="node">
+<g id="node34" class="node">
 <title>src/classes/secgov/XBRL.ts</title>
-<g id="a_node32"><a xlink:href="src/classes/secgov/XBRL.ts" xlink:title="XBRL.ts">
+<g id="a_node34"><a xlink:href="src/classes/secgov/XBRL.ts" xlink:title="XBRL.ts">
 <path fill="#ddfeff" stroke="black" d="M478,-647C478,-647 436,-647 436,-647 433,-647 430,-644 430,-641 430,-641 430,-635 430,-635 430,-632 433,-629 436,-629 436,-629 478,-629 478,-629 481,-629 484,-632 484,-635 484,-635 484,-641 484,-641 484,-644 481,-647 478,-647"/>
 <text text-anchor="middle" x="457" y="-635.8" font-family="Helvetica,sans-Serif" font-size="9.00">XBRL.ts</text>
 </a>
@@ -512,8 +517,8 @@
 <!-- src/classes/finten/controllers/Company.controller.ts&#45;&gt;src/classes/db/FinTenDB.ts -->
 <g id="edge23" class="edge">
 <title>src/classes/finten/controllers/Company.controller.ts&#45;&gt;src/classes/db/FinTenDB.ts</title>
-<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M93.71,-373.63C93.27,-340.42 96.79,-227.85 162,-181 202.92,-151.6 264.77,-163.05 301.64,-174.04"/>
-<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="301.43,-176.17 307.79,-175.93 302.67,-172.15 301.43,-176.17"/>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M98.37,-373.98C109.4,-350.82 138.64,-287.09 154,-231 156.97,-220.15 153.44,-188.3 162,-181 201.46,-147.35 266.72,-161.62 304.02,-173.98"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="303.4,-175.99 309.76,-175.94 304.76,-172.02 303.4,-175.99"/>
 </g>
 <!-- src/classes/finten/controllers/Controller.interface.ts -->
 <g id="node28" class="node">
@@ -596,19 +601,37 @@
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M138.06,-408.08C144.01,-405.78 149.58,-402.54 154,-398 165.44,-386.26 153.89,-376.24 162,-362 169.77,-348.35 182.79,-336.3 193.6,-327.82"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="194.88,-329.48 198.38,-324.18 192.34,-326.14 194.88,-329.48"/>
 </g>
-<!-- src/classes/logger/Logger.interface.ts -->
+<!-- src/classes/fred/Fred.ts -->
 <g id="node31" class="node">
+<title>src/classes/fred/Fred.ts</title>
+<g id="a_node31"><a xlink:href="src/classes/fred/Fred.ts" xlink:title="Fred.ts">
+<path fill="#ccffcc" stroke="black" d="M114,-202C114,-202 72,-202 72,-202 69,-202 66,-199 66,-196 66,-196 66,-190 66,-190 66,-187 69,-184 72,-184 72,-184 114,-184 114,-184 117,-184 120,-187 120,-190 120,-190 120,-196 120,-196 120,-199 117,-202 114,-202"/>
+<text text-anchor="middle" x="93" y="-190.8" font-family="Helvetica,sans-Serif" font-size="9.00">Fred.ts</text>
+</a>
+</g>
+</g>
+<!-- src/classes/fred/Macro.enum.ts -->
+<g id="node32" class="node">
+<title>src/classes/fred/Macro.enum.ts</title>
+<g id="a_node32"><a xlink:href="src/classes/fred/Macro.enum.ts" xlink:title="Macro.enum.ts">
+<path fill="#ccffcc" stroke="black" d="M125.5,-172C125.5,-172 60.5,-172 60.5,-172 57.5,-172 54.5,-169 54.5,-166 54.5,-166 54.5,-160 54.5,-160 54.5,-157 57.5,-154 60.5,-154 60.5,-154 125.5,-154 125.5,-154 128.5,-154 131.5,-157 131.5,-160 131.5,-160 131.5,-166 131.5,-166 131.5,-169 128.5,-172 125.5,-172"/>
+<text text-anchor="middle" x="93" y="-160.8" font-family="Helvetica,sans-Serif" font-size="9.00">Macro.enum.ts</text>
+</a>
+</g>
+</g>
+<!-- src/classes/logger/Logger.interface.ts -->
+<g id="node33" class="node">
 <title>src/classes/logger/Logger.interface.ts</title>
-<g id="a_node31"><a xlink:href="src/classes/logger/Logger.interface.ts" xlink:title="Logger.interface.ts">
+<g id="a_node33"><a xlink:href="src/classes/logger/Logger.interface.ts" xlink:title="Logger.interface.ts">
 <path fill="#ccffcc" stroke="black" d="M497,-388C497,-388 417,-388 417,-388 414,-388 411,-385 411,-382 411,-382 411,-376 411,-376 411,-373 414,-370 417,-370 417,-370 497,-370 497,-370 500,-370 503,-373 503,-376 503,-376 503,-382 503,-382 503,-385 500,-388 497,-388"/>
 <text text-anchor="middle" x="457" y="-376.8" font-family="Helvetica,sans-Serif" font-size="9.00">Logger.interface.ts</text>
 </a>
 </g>
 </g>
 <!-- src/classes/tests/test.ts -->
-<g id="node33" class="node">
+<g id="node35" class="node">
 <title>src/classes/tests/test.ts</title>
-<g id="a_node33"><a xlink:href="src/classes/tests/test.ts" xlink:title="test.ts">
+<g id="a_node35"><a xlink:href="src/classes/tests/test.ts" xlink:title="test.ts">
 <path fill="#ddfeff" stroke="black" d="M234,-234C234,-234 192,-234 192,-234 189,-234 186,-231 186,-228 186,-228 186,-222 186,-222 186,-219 189,-216 192,-216 192,-216 234,-216 234,-216 237,-216 240,-219 240,-222 240,-222 240,-228 240,-228 240,-231 237,-234 234,-234"/>
 <text text-anchor="middle" x="213" y="-222.8" font-family="Helvetica,sans-Serif" font-size="9.00">test.ts</text>
 </a>

@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { userAuthentication } from '../../auth/Passport';
+import Database from '../../db/Database.interface';
 import FinTenDB from '../../db/FinTenDB';
 import { FilingDocument } from '../../db/models/Filing';
 import { UserDocument } from '../../db/models/User';
@@ -24,10 +25,10 @@ class CompanyController implements Controller {
   ];
 
   constructor() {
-    this.initialiseRoutes();
+    this.initializeRoutes();
   }
 
-  private initialiseRoutes() {
+  private initializeRoutes() {
     this.router.get('/tickers', this.getTickers);
     this.router.get('/filings', userAuthentication, this.getFilings);
     this.router.get('/eciks', this.getEciks);
@@ -53,7 +54,7 @@ class CompanyController implements Controller {
    *
    * Error response:
    *  -Code: 401 Unauthorized
-   *    *Invalid authentication token (must be, at least, preimum user)
+   *    *Invalid authentication token (must be, at least, premium user)
    */
   private async getTickers(req: Request, res: Response): Promise<Response> {
     // await FinTenDB.getInstance().connect();
@@ -63,7 +64,7 @@ class CompanyController implements Controller {
     //     .exec()
     // )
     //   .map((d) => d.TradingSymbol)
-    //   .filter((tradingSmbol) => typeof tradingSmbol === 'string');
+    //   .filter((tradingSymbol) => typeof tradingSymbol === 'string');
 
     const tickers = CompanyController.ACCESSIBLE_TICKERS;
     return res.status(200).json({ tickers });
@@ -128,7 +129,7 @@ class CompanyController implements Controller {
     }
 
     try {
-      const db = await FinTenDB.getInstance().connect();
+      const db: Database = await FinTenDB.getInstance().connect();
       const companyInfo = await db.findCompanyInfoByTradingSymbol(ticker);
 
       if (companyInfo === null) {
@@ -159,7 +160,7 @@ class CompanyController implements Controller {
   }
 
   private async getEciks(req: Request, res: Response): Promise<Response> {
-    const db = await FinTenDB.getInstance().connect();
+    const db: Database = await FinTenDB.getInstance().connect();
     const eciks = await db.distinctFilingKey('EntityCentralIndexKey');
     return res.status(200).json({ eciks });
   }
