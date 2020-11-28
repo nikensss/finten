@@ -5,7 +5,13 @@
     "XBRL",
     "downloadables",
     "finten",
+    "fintendb",
+    "mockito",
+    "mongodb",
+    "mongodb user",
     "reparse",
-    "reparsing"
+    "reparsing",
+    "user",
+    "vvwni"
   ]
 }
