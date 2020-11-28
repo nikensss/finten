@@ -75,7 +75,7 @@ class DownloadManager implements Downloader {
       this.logger.debug(`deleting ${f}`);
       fs.unlinkSync(currentPath);
     });
-    this.logger.info('done flusing 🚽');
+    this.logger.info('done flushing 🚽');
   }
 
   /**
@@ -97,9 +97,9 @@ class DownloadManager implements Downloader {
   }
 
   /**
-   * Starts emptying the queue by 'GET'ting all the elements in it.
+   * Starts emptying the queue by 'GET'-ting all the elements in it.
    *
-   * @returns a promise that resolves to the locations of where the downloadbles
+   * @returns a promise that resolves to the locations of where the downloadables
    * were downloaded to.
    */
   public async dequeue(): Promise<Downloadable[]> {
@@ -176,11 +176,11 @@ class DownloadManager implements Downloader {
       writer
         .on('pipe', () => this.logger.info('💈 piping to writer'))
         .on('close', () => {
-          this.logger.info(`✅ done writting, closing: ${downloadable.fileName}`);
+          this.logger.info(`✅ done writing, closing: ${downloadable.fileName}`);
           res(downloadedFile);
         })
         .on('error', (error) => {
-          this.logger.error(`❌ error while writting: ${downloadable.fileName}`);
+          this.logger.error(`❌ error while writing: ${downloadable.fileName}`);
           rej(error);
         });
 
