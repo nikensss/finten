@@ -1,24 +1,72 @@
-import Downloader from '../download/Downloader.interface';
+import { AxiosInstance } from 'axios';
+import FredResponse from './FredResponse.interface';
 import Macro from './Macro.enum';
 
 class Fred {
-  private dm: Downloader;
+  public static readonly FILE_TYPE: 'json' | 'xml' = 'json';
+  public static readonly SORT_ORDER: 'asc' | 'desc' = 'asc';
+  public static readonly ORDER_BY: string = 'observation_date';
+  public static readonly API_KEY = process.env.FRED_API_KEY;
 
-  constructor(dm: Downloader) {
-    if (!dm) {
+  private httpClient: AxiosInstance;
+
+  constructor(httpClient: AxiosInstance) {
+    if (!httpClient) {
       throw new TypeError('Please, provide a valid Downloader');
     }
-    this.dm = dm;
+    this.httpClient = httpClient;
   }
 
-  getDM(): Downloader {
-    return this.dm;
-  }
-
-  getMacro(macro: Macro): void {
+  async getMacro(macro: Macro): Promise<FredResponse> {
     console.log(`getting ${macro}`);
-    throw new Error('Method not implemented.');
+    const response = await this.httpClient.get(this.buildUrl(macro));
+
+    return response.data as FredResponse;
+  }
+
+  private buildUrl(macro: Macro): string {
+    if (typeof Fred.API_KEY === 'undefined') {
+      throw new Error('No API key for Fred is provided!');
+    }
+    const urlBuilder = new FredUrlBuilder()
+      .setApiKey(Fred.API_KEY)
+      .setSeriesId(macro)
+      .setFileType(Fred.FILE_TYPE)
+      .setSortOrder(Fred.SORT_ORDER);
+    return urlBuilder.build();
   }
 }
 
+class FredUrlBuilder {
+  public static readonly FRED_API = 'https://api.stlouisfed.org/fred/series/observations?';
+
+  private apiKey: string | undefined;
+  private seriesId: Macro | undefined;
+  private fileType: 'json' | 'xml' = 'json';
+  private sortOrder: 'asc' | 'desc' = 'asc';
+
+  setApiKey(apiKey: string) {
+    this.apiKey = apiKey;
+    return this;
+  }
+
+  setSeriesId(seriesId: Macro) {
+    this.seriesId = seriesId;
+    return this;
+  }
+
+  setFileType(fileType: 'json' | 'xml') {
+    this.fileType = fileType;
+    return this;
+  }
+
+  setSortOrder(sortOrder: 'asc' | 'desc') {
+    this.sortOrder = sortOrder;
+    return this;
+  }
+
+  build(): string {
+    return `${FredUrlBuilder.FRED_API}&api_key=${this.apiKey}&series_id=${this.seriesId}&file_type=${this.fileType}&sort_order=${this.sortOrder}`;
+  }
+}
 export default Fred;
