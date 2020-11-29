@@ -1,18 +1,18 @@
 import { Request, Response, Router } from 'express';
 import TokenFactory from '../../auth/TokenFactory';
-import FinTenDB from '../../db/FinTenDB';
 import Controller from './Controller.interface';
 import { default as LOGGER } from '../../logger/DefaultLogger';
+import UserModel from '../../db/models/User';
 
 class UsersController implements Controller {
   public readonly path = '/users';
   public readonly router = Router();
 
   constructor() {
-    this.initialiseRoutes();
+    this.initializeRoutes();
   }
 
-  private initialiseRoutes() {
+  private initializeRoutes() {
     this.router.post('/signup', this.signup.bind(this));
     this.router.post('/login', this.login.bind(this));
   }
@@ -68,8 +68,7 @@ class UsersController implements Controller {
     }
 
     try {
-      const db = await FinTenDB.getInstance().connect();
-      const user = await db.createUser({ username, password, email });
+      const user = await new UserModel({ username, password, email }).save();
 
       LOGGER.get(this.constructor.name).info(
         `New user signed up successfully: ${JSON.stringify(user, null, 2)}`
@@ -140,8 +139,7 @@ class UsersController implements Controller {
     }
 
     try {
-      const db = await FinTenDB.getInstance().connect();
-      const user = await db.findUser({ username });
+      const user = await UserModel.findOne({ username });
 
       if (user === null) {
         return res.status(400).json({ error: 'Invalid credentials' });

@@ -58,8 +58,8 @@ describe('FinTenDB tests', function () {
       IndustryTitle: 'INDUSTRIAL INSTRUMENTS FOR MEASUREMENT, DISPLAY, AND CONTROL',
       TradingSymbol: 'TRSB'
     };
-    const db = await FinTenDB.getInstance().connect(uri);
-    await db.createCompanyInfo(companyInfo);
+    await FinTenDB.getInstance().connect(uri);
+    await new CompanyInfoModel(companyInfo).save();
 
     expect(await CompanyInfoModel.countDocuments(companyInfo).exec()).to.equal(1);
   });
@@ -83,9 +83,9 @@ describe('FinTenDB tests', function () {
       IndustryTitle: 'INDUSTRIAL INSTRUMENTS FOR MEASUREMENT, DISPLAY, AND CONTROL',
       TradingSymbol: 'TRSB-B'
     };
-    const db = await FinTenDB.getInstance().connect(uri);
-    const dbCompanyInfoA = await db.createCompanyInfo(companyInfoA);
-    const dbCompanyInfoB = await db.createCompanyInfo(companyInfoB);
+    await FinTenDB.getInstance().connect(uri);
+    const dbCompanyInfoA = await new CompanyInfoModel(companyInfoA).save();
+    const dbCompanyInfoB = await new CompanyInfoModel(companyInfoB).save();
 
     expect(dbCompanyInfoA).to.not.be.null;
     expect(dbCompanyInfoB).to.not.be.null;
@@ -99,18 +99,20 @@ describe('FinTenDB tests', function () {
       const EXPECTED_TOTAL = 40;
       let total = 0;
 
-      const db = await FinTenDB.getInstance().connect(uri);
+      await FinTenDB.getInstance().connect(uri);
       const files = (await fs.readdir(__dirname)).filter((f) => f.endsWith('_10k.txt'));
       const xbrls = await Promise.all(
         files.map((f) => XBRLUtilities.fromTxt(path.join(__dirname, f)))
       );
       for (let index = 0; index < 10; index++) {
-        await Promise.all(xbrls.map((xbrl) => db.createFiling(xbrl.get())));
+        await Promise.all(xbrls.map((xbrl) => new FilingModel(xbrl.get()).save()));
       }
 
-      await db.findFilings({}).eachAsync(() => {
-        total += 1;
-      });
+      await FilingModel.find()
+        .cursor()
+        .eachAsync(() => {
+          total += 1;
+        });
 
       expect(total).to.be.equal(EXPECTED_TOTAL);
     } catch (ex) {
@@ -120,24 +122,28 @@ describe('FinTenDB tests', function () {
 
   it('should update TradingSymbol', async () => {
     try {
-      const db = await FinTenDB.getInstance().connect(uri);
+      await FinTenDB.getInstance().connect(uri);
 
       const files = (await fs.readdir(__dirname)).filter((f) => f.endsWith('_10k.txt'));
       const xbrls = await Promise.all(
         files.map((f) => XBRLUtilities.fromTxt(path.join(__dirname, f)))
       );
       for (let index = 0; index < 10; index++) {
-        await Promise.all(xbrls.map((xbrl) => db.createFiling(xbrl.get())));
+        await Promise.all(xbrls.map((xbrl) => new FilingModel(xbrl.get()).save()));
       }
 
-      await db.findFilings({}).eachAsync(async (filing: FilingDocument) => {
-        filing.TradingSymbol = 'FOO';
-        return await filing.save();
-      });
+      await FilingModel.find({})
+        .cursor()
+        .eachAsync(async (filing: FilingDocument) => {
+          filing.TradingSymbol = 'FOO';
+          return await filing.save();
+        });
 
-      await db.findFilings({}).eachAsync((filing: FilingDocument) => {
-        expect(filing.TradingSymbol).to.equal('FOO');
-      });
+      await FilingModel.find({})
+        .cursor()
+        .eachAsync((filing: FilingDocument) => {
+          expect(filing.TradingSymbol).to.equal('FOO');
+        });
     } catch (ex) {
       fail(ex);
     }

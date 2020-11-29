@@ -45,8 +45,8 @@ describe('User model tests', function () {
       email: 'email@internet.com'
     };
     try {
-      const db = await FinTenDB.getInstance().connect(uri);
-      const newUser = await db.createUser(user);
+      await FinTenDB.getInstance().connect(uri);
+      const newUser = await new UserModel(user).save();
 
       expect(newUser.isAdmin).to.be.false;
       expect(newUser.isPremium).to.be.false;
@@ -112,13 +112,8 @@ describe('User model tests', function () {
     const newUserRepeatedEmail = new UserModel(userRepeatedEmail);
 
     return Promise.all([
-      newUserRepeatedUsername
-        .save()
-        .should.be.rejectedWith('duplicate key error dup key: { : "testuser" }'),
-
-      newUserRepeatedEmail
-        .save()
-        .should.be.rejectedWith('duplicate key error dup key: { : "email@internet.com" }')
+      newUserRepeatedUsername.save().should.be.rejectedWith(/dup key: { : "testuser" }/),
+      newUserRepeatedEmail.save().should.be.rejectedWith(/dup key: { : "email@internet.com" }/)
     ]);
   });
 
@@ -225,7 +220,7 @@ describe('User model tests', function () {
     expect(retrievedTestUser.lastPayment.equals(secondPayment)).to.be.true;
   });
 
-  it('the last payment from a populated UserDocument should equal the PaymenDocument that was added last', async () => {
+  it('the last payment from a populated UserDocument should equal the PaymentDocument that was added last', async () => {
     const user: User = {
       username: 'testuser',
       password: 'testpassword',

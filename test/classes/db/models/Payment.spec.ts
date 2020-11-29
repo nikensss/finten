@@ -4,7 +4,7 @@ import chaiAsPromised from 'chai-as-promised';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import FinTenDB from '../../../../src/classes/db/FinTenDB';
 import PaymentModel, { Payment } from '../../../../src/classes/db/models/Payment';
-import { User, UserDocument } from '../../../../src/classes/db/models/User';
+import UserModel, { User, UserDocument } from '../../../../src/classes/db/models/User';
 
 chai.use(chaiAsPromised);
 
@@ -24,8 +24,8 @@ describe('Payment model tests', function () {
     mongod = new MongoMemoryServer();
     try {
       uri = await mongod.getUri();
-      const db = await FinTenDB.getInstance().connect(uri);
-      newUser = await db.createUser(user);
+      await FinTenDB.getInstance().connect(uri);
+      newUser = await new UserModel(user).save();
     } catch (ex) {
       throw ex;
     }

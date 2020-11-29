@@ -1,8 +1,7 @@
 import { Request, Response, Router } from 'express';
 import { userAuthentication } from '../../auth/Passport';
-import Database from '../../db/Database.interface';
-import FinTenDB from '../../db/FinTenDB';
-import { FilingDocument } from '../../db/models/Filing';
+import CompanyInfoModel from '../../db/models/CompanyInfo';
+import FilingModel, { FilingDocument } from '../../db/models/Filing';
 import { UserDocument } from '../../db/models/User';
 import Controller from './Controller.interface';
 
@@ -129,17 +128,16 @@ class CompanyController implements Controller {
     }
 
     try {
-      const db: Database = await FinTenDB.getInstance().connect();
-      const companyInfo = await db.findCompanyInfoByTradingSymbol(ticker);
+      const companyInfo = await CompanyInfoModel.findByTradingSymbol(ticker);
 
       if (companyInfo === null) {
         throw new Error(`Unknown company '${ticker}'!`);
       }
 
       let filings: FilingDocument[] = [];
-      const filingsCursor = db.findFilings({
+      const filingsCursor = FilingModel.find({
         EntityCentralIndexKey: companyInfo.EntityCentralIndexKey
-      });
+      }).cursor();
 
       await filingsCursor.eachAsync(async (f: FilingDocument) => {
         filings.push(f);
@@ -160,8 +158,7 @@ class CompanyController implements Controller {
   }
 
   private async getEciks(req: Request, res: Response): Promise<Response> {
-    const db: Database = await FinTenDB.getInstance().connect();
-    const eciks = await db.distinctFilingKey('EntityCentralIndexKey');
+    const eciks = await FilingModel.distinct('EntityCentralIndexKey');
     return res.status(200).json({ eciks });
   }
 }
