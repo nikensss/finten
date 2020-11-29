@@ -18,13 +18,16 @@ describe('SecGov routes', function () {
     mongod = new MongoMemoryServer();
     try {
       uri = await mongod.getUri();
-      const db = await FinTenDB.getInstance().connect(uri);
+      if (!FinTenDB.getInstance().isConnected()) {
+        await FinTenDB.getInstance().disconnect();
+        await FinTenDB.getInstance().connect(uri);
+      }
       await UserModel.ensureIndexes();
-      const newUser = await db.createUser({
+      const newUser = await new UserModel({
         username: 'adminuser',
         password: 'adminuser',
         email: 'email@inter.net'
-      });
+      }).save();
 
       newUser.isAdmin = true;
       await newUser.save();

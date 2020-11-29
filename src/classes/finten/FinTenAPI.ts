@@ -4,6 +4,7 @@ import { default as LOGGER } from '../logger/DefaultLogger';
 import cors from 'cors';
 import { Server } from 'http';
 import Controller from './controllers/Controller.interface';
+import FinTenDB from '../db/FinTenDB';
 
 /**
  * Connects our FinTen database to the Internet so that other people can use the
@@ -52,6 +53,9 @@ class FinTenAPI {
   }
 
   listen(): Server {
+    if (!FinTenDB.getInstance().isConnected()) {
+      FinTenDB.getInstance().connect();
+    }
     return this.app.listen(this.port, () =>
       LOGGER.get(this.constructor.name).info(`Listening on port ${this.port}!`)
     );

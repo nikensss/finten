@@ -3,19 +3,27 @@
     "ECIK",
     "Encrypter",
     "Middlewares",
+    "TRSB",
     "TSLA",
     "XBRL",
+    "adminuser",
     "depcruise",
     "downloadables",
     "eciks",
     "finten",
     "fintendb",
+    "minlength",
     "mockito",
     "mongodb",
     "mongodb user",
     "reparse",
     "reparsing",
+    "signup",
+    "testpassword",
+    "testuser",
     "user",
-    "vvwni"
+    "virtuals",
+    "vvwni",
+    "xbrls"
   ]
 }

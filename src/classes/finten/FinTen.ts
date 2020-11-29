@@ -9,6 +9,7 @@ import { Filing } from '../db/models/Filing';
 import Downloadable from '../download/Downloadable.interface';
 import Database from '../db/Database.interface';
 import CompanyInfoModel, { CompanyInfo } from '../db/models/CompanyInfo';
+import FilingModel from '../db/models/Filing';
 import FilingMetadata from '../filings/FilingMetadata';
 
 /**
@@ -69,8 +70,7 @@ class FinTen {
 
   private async createCompanyInfo(companyInfo: CompanyInfo) {
     try {
-      const db = await this.db.connect();
-      return await db.createCompanyInfo(companyInfo);
+      return await new CompanyInfoModel(companyInfo).save();
     } catch (e) {
       throw new Error(e);
     }
@@ -163,9 +163,7 @@ class FinTen {
     this.logger.logLevel = LogLevel.DEBUG;
     try {
       this.logger.info('Getting broken links');
-      const db: Database = await this.db.connect();
-
-      const cursor = db.findVisitedLinks({ status: VisitedLinkStatus.ERROR });
+      const cursor = VisitedLinkModel.find({ status: VisitedLinkStatus.ERROR }).cursor();
       await cursor.eachAsync(async (visitedLink: VisitedLinkDocument) => {
         const downloadable: Downloadable = {
           url: visitedLink.url,
@@ -195,8 +193,7 @@ class FinTen {
 
   private async createFiling(filing: Filing) {
     try {
-      const db = await this.db.connect();
-      return await db.createFiling(filing);
+      return await new FilingModel(filing).save();
     } catch (e) {
       throw new Error(e);
     }
@@ -204,13 +201,12 @@ class FinTen {
 
   private async createVisitedLink(url: string, resultId: Schema.Types.ObjectId) {
     try {
-      const db = await this.db.connect();
-      return await db.createVisitedLink({
+      return await new VisitedLinkModel({
         url,
         status: VisitedLinkStatus.OK,
         error: null,
         filingId: resultId
-      });
+      }).save();
     } catch (e) {
       throw new Error(e);
     }
@@ -218,13 +214,12 @@ class FinTen {
 
   private async handleExceptionDuringFilingCreation(url: string, ex: Error) {
     this.logger.warning(`Error while parsing ${url}:\n${ex.toString()}`);
-    const db = await this.db.connect();
-    return await db.createVisitedLink({
+    return await new VisitedLinkModel({
       url,
       status: VisitedLinkStatus.ERROR,
       error: ex.toString(),
       filingId: null
-    });
+    }).save();
   }
 
   private get logger() {
