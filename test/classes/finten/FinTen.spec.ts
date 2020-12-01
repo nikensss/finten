@@ -235,7 +235,7 @@ describe('FinTen tests', function () {
       })
       .thenReject(new Error('Should not have been called a 4th time!'));
 
-    await addVsitedLinksWithError();
+    await addVisitedLinksWithError();
     const finten = new FinTen(secgov, FinTenDB.getInstance());
 
     await finten.retryProblematicFilings();
@@ -285,7 +285,7 @@ describe('FinTen tests', function () {
         ]);
       })
       .thenReject(new Error('Should not have been called a 4th time!'));
-    await addVsitedLinksWithError();
+    await addVisitedLinksWithError();
     const finten = new FinTen(secgov, FinTenDB.getInstance());
     await finten.retryProblematicFilings();
 
@@ -309,7 +309,7 @@ async function addDummyVisitedLinks(url: string) {
   });
 }
 
-async function addVsitedLinksWithError() {
+async function addVisitedLinksWithError() {
   await FinTenDB.getInstance().connect();
   await VisitedLinkModel.create({
     url: 'url_with_error_1',

@@ -21,7 +21,6 @@ class FinTenAPI {
   private readonly port: number = parseInt(process.env.PORT || '3000');
 
   constructor(controllers: Controller[]) {
-    //establish the connection with the DB at the very beginning
     this.app = express();
     this.initializeMiddlewares();
     this.initializeControllers(controllers);
@@ -53,6 +52,8 @@ class FinTenAPI {
   }
 
   listen(): Server {
+    //connect database
+    //TODO: ensure test cases don't connect to the real database!
     if (!FinTenDB.getInstance().isConnected()) {
       FinTenDB.getInstance().connect();
     }

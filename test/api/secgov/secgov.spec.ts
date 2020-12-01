@@ -14,7 +14,6 @@ let mongod: MongoMemoryServer, uri: string;
 describe('SecGov routes', function () {
   this.timeout(5000);
   before(async () => {
-    request.agent(app);
     mongod = new MongoMemoryServer();
     try {
       uri = await mongod.getUri();
@@ -31,6 +30,7 @@ describe('SecGov routes', function () {
 
       newUser.isAdmin = true;
       await newUser.save();
+      request.agent(app);
     } catch (ex) {
       throw ex;
     }
