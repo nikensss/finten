@@ -30,14 +30,13 @@ class CompanyController implements Controller {
   private initializeRoutes() {
     this.router.get('/tickers', this.getTickers);
     this.router.get('/filings', userAuthentication, this.getFilings);
-    this.router.get('/eciks', this.getEciks);
   }
 
   /**
    * Description: returns the tickers of all available companies. Use this endpoint
    * to figure out which tickers can be used in the /filings endpoint.
    *
-   * URL: https://finten.weirwood.ai/api/company/tickers
+   * URL: https://finten.weirwood.ai/company/tickers
    *
    * Method: GET
    *
@@ -72,9 +71,13 @@ class CompanyController implements Controller {
   /**
    * Description: returns all the filings available for the indicated company.
    *
-   * URL: https://finten.weirwood.ai/api/company/filings?ticker={TICKER}
+   * URL: https://finten.weirwood.ai/company/filings?ticker={TICKER}
    *
    * Method: GET
+   *
+   * Headers:
+   *  -Authorization: as Bearer token
+   *    *this token can be obtained by logging in (see Users.controller::login)
    *
    * URL params:
    *  -ticker=[string]: the ticker of the company whose filings are requested
@@ -155,11 +158,6 @@ class CompanyController implements Controller {
     } catch (ex) {
       return res.status(500).json({ error: ex });
     }
-  }
-
-  private async getEciks(req: Request, res: Response): Promise<Response> {
-    const eciks = await FilingModel.distinct('EntityCentralIndexKey');
-    return res.status(200).json({ eciks });
   }
 }
 
