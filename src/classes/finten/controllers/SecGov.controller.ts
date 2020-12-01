@@ -25,7 +25,10 @@ class SecGovController implements Controller {
   }
 
   /**
-   * URL: https://finten.weirwood.ai/api/secgov/fill?start={START}[&end={END}]
+   *
+   * Description: fill the database with the data available from SecGov
+   *
+   * URL: https://finten.weirwood.ai/secgov/fill?start={START}[&end={END}]
    *
    * Method: GET
    *
@@ -70,6 +73,11 @@ class SecGovController implements Controller {
     });
   }
 
+  /**
+   * Description: go through the documents in the VisitedLinks collection that
+   * have the error property to something different than null, visit the link
+   * again and try to parse that XBRL again.
+   */
   private reparse(req: Request, res: Response): Response {
     LOGGER.get(this.constructor.name).info('reparsing documents from links with errors');
 
@@ -81,6 +89,10 @@ class SecGovController implements Controller {
     });
   }
 
+  /**
+   * Build the CompanyInfo collection from the file available in the same folder
+   * as this file.
+   */
   private buildCompanyInfo(req: Request, res: Response): Response {
     const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
     finten.buildCompanyInfo(path.join(__dirname, 'company_info.csv'));

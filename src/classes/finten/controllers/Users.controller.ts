@@ -20,7 +20,7 @@ class UsersController implements Controller {
   /**
    * Description: signup to be able to use this API.
    *
-   * URL: https://finten.weirwood.ai/api/users/signup
+   * URL: https://finten.weirwood.ai/users/signup
    *
    * Method: POST
    *
@@ -95,7 +95,7 @@ class UsersController implements Controller {
    * Description: login to receive your JWT, necessary to use any of the other
    * endpoints of this API.
    *
-   * URL: https://finten.weirwood.ai/api/users/login
+   * URL: https://finten.weirwood.ai/users/login
    *
    * Method: POST
    *
