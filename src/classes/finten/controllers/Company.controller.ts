@@ -9,26 +9,14 @@ class CompanyController implements Controller {
   public readonly path = '/company';
   public readonly router = Router();
 
-  private static readonly ACCESSIBLE_TICKERS = [
-    'AAPL',
-    'GOOG',
-    'FB',
-    'MSFT',
-    'ORCL',
-    'NVDA',
-    'CRM',
-    'IBM',
-    'AMZN',
-    'TSLA',
-    'JPM'
-  ];
+  private tickers: string[] = [];
 
   constructor() {
     this.initializeRoutes();
   }
 
   private initializeRoutes() {
-    this.router.get('/tickers', this.getTickers);
+    this.router.get('/tickers', this.getTickers.bind(this));
     this.router.get('/filings', userAuthentication, this.getFilings);
   }
 
@@ -55,17 +43,17 @@ class CompanyController implements Controller {
    *    *Invalid authentication token (must be, at least, premium user)
    */
   private async getTickers(req: Request, res: Response): Promise<Response> {
-    // await FinTenDB.getInstance().connect();
-    // const tickers = (
-    //   await CompanyInfoModel.find({}, null, { sort: { TradingSymbol: 1 } })
-    //     .select('TradingSymbol')
-    //     .exec()
-    // )
-    //   .map((d) => d.TradingSymbol)
-    //   .filter((tradingSymbol) => typeof tradingSymbol === 'string');
+    if (this.tickers.length === 0) {
+      this.tickers = (
+        await CompanyInfoModel.find({}, null, { sort: { TradingSymbol: 1 } })
+          .select('TradingSymbol')
+          .exec()
+      )
+        .map((d) => d.TradingSymbol)
+        .filter((tradingSymbol) => typeof tradingSymbol === 'string') as string[];
+    }
 
-    const tickers = CompanyController.ACCESSIBLE_TICKERS;
-    return res.status(200).json({ tickers });
+    return res.status(200).json({ tickers: this.tickers });
   }
 
   /**
@@ -121,12 +109,6 @@ class CompanyController implements Controller {
     if (!ticker || typeof ticker !== 'string' || (ticker as string).length === 0) {
       return res.status(400).json({
         error: 'Invalid ticker'
-      });
-    }
-
-    if (!CompanyController.ACCESSIBLE_TICKERS.includes(ticker as string)) {
-      return res.status(403).json({
-        error: 'Invalid credentials'
       });
     }
 
