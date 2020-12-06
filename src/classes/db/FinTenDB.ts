@@ -29,6 +29,7 @@ class FinTenDB implements Database {
         keepAlive: true,
         keepAliveInitialDelay: 300000
       });
+      console.log('Database connected!');
 
       return this;
     } catch (ex) {

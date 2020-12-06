@@ -1,6 +1,6 @@
 {
   "name": "finten",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "The hypotenuse of the smallest pythagorean triples.",
   "main": "src/main.ts",
   "scripts": {
