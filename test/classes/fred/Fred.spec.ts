@@ -1,18 +1,17 @@
 import Fred from '../../../src/classes/fred/Fred';
 import { expect } from 'chai';
 import Macro from '../../../src/classes/fred/Macro.enum';
-import axios from 'axios';
 
 describe('Fred tests', function () {
   this.slow(1200);
 
   it('should create a Fred', () => {
-    const fred = new Fred(axios);
+    const fred = new Fred();
     expect(fred).to.not.be.undefined;
   });
 
   it('should get MANUFACTURER_DURABLE_GOODS', async () => {
-    const fred = new Fred(axios);
+    const fred = new Fred();
     const durableGoods = await fred.getMacro(Macro.MANUFACTURER_DURABLE_GOODS);
     expect(durableGoods.file_type).to.equal('json');
     expect(durableGoods.count).to.be.greaterThan(-1);
@@ -20,7 +19,7 @@ describe('Fred tests', function () {
   });
 
   it('should get one MANUFACTURER_CONSUMER_DURABLE_GOODS', async () => {
-    const fred = new Fred(axios);
+    const fred = new Fred();
     const durableGoods = await fred.getMacro(Macro.MANUFACTURER_CONSUMER_DURABLE_GOODS);
     expect(durableGoods.file_type).to.equal('json');
     expect(durableGoods.count).to.be.greaterThan(-1);
@@ -28,7 +27,7 @@ describe('Fred tests', function () {
   });
 
   it('should get one PERSONAL_DURABLE_GOODS_MOTOR_VEHICLES_AND_PARTS', async () => {
-    const fred = new Fred(axios);
+    const fred = new Fred();
     const durableGoods = await fred.getMacro(Macro.PERSONAL_DURABLE_GOODS_MOTOR_VEHICLES_AND_PARTS);
     expect(durableGoods.file_type).to.equal('json');
     expect(durableGoods.count).to.be.greaterThan(-1);

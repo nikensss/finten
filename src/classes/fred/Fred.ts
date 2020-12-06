@@ -1,4 +1,4 @@
-import { AxiosInstance } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import FredResponse from './FredResponse.interface';
 import Macro from './Macro.enum';
 
@@ -8,18 +8,14 @@ class Fred {
   public static readonly ORDER_BY: string = 'observation_date';
   public static readonly API_KEY = process.env.FRED_API_KEY;
 
-  private httpClient: AxiosInstance;
+  private http: AxiosInstance;
 
-  constructor(httpClient: AxiosInstance) {
-    if (!httpClient) {
-      throw new TypeError('Please, provide a valid Downloader');
-    }
-    this.httpClient = httpClient;
+  constructor(http: AxiosInstance = axios) {
+    this.http = http;
   }
 
   async getMacro(macro: Macro): Promise<FredResponse> {
-    console.log(`getting ${macro}`);
-    const response = await this.httpClient.get(this.buildUrl(macro));
+    const response = await this.http.get(this.buildUrl(macro));
 
     return response.data as FredResponse;
   }
