@@ -11,6 +11,8 @@ import Database from '../db/Database.interface';
 import CompanyInfoModel, { CompanyInfo } from '../db/models/CompanyInfo';
 import FilingModel from '../db/models/Filing';
 import FilingMetadata from '../filings/FilingMetadata';
+import Macro, { getMacroCollection } from '../fred/Macro.enum';
+import Fred from '../fred/Fred';
 
 /**
  * The FinTen class is the basic driver that builds FinTen. It is the interface
@@ -22,7 +24,7 @@ class FinTen {
   private _secgov: SecGov;
   private _db: Database;
 
-  constructor(secgov: SecGov, db: Database) {
+  constructor(secgov: SecGov = new SecGov(), db: Database) {
     this._secgov = secgov;
     this._db = db;
   }
@@ -73,6 +75,17 @@ class FinTen {
       return await new CompanyInfoModel(companyInfo).save();
     } catch (e) {
       throw new Error(e);
+    }
+  }
+
+  async addMacro(macro: Macro): Promise<void> {
+    const fred = new Fred();
+
+    const data = await fred.getMacro(macro);
+    for (const observation in data.observations) {
+      const collection = getMacroCollection(macro);
+      const macroData = new collection(observation);
+      await macroData.save();
     }
   }
 

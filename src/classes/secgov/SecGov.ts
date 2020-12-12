@@ -6,6 +6,7 @@ import FormType from '../filings/FormType';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import Downloadable from '../download/Downloadable.interface';
 import Downloader from '../download/Downloader.interface';
+import DownloadManager from '../download/DownloadManager';
 
 /**
  * The SecGov class is a wrapper around the SecGov API so that filings can be
@@ -28,7 +29,7 @@ class SecGov {
    */
   public static readonly MS_BETWEEN_REQUESTS = 100;
 
-  constructor(dm: Downloader) {
+  constructor(dm: Downloader = new DownloadManager()) {
     if (!dm) {
       throw new TypeError('Please, provide a valid Downloader');
     }

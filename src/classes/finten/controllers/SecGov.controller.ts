@@ -12,6 +12,8 @@ class SecGovController implements Controller {
   public readonly path = '/secgov';
   public readonly router = Router();
 
+  private interval: NodeJS.Timeout | undefined;
+
   constructor() {
     this.initializeRoutes();
   }
@@ -22,6 +24,7 @@ class SecGovController implements Controller {
     this.router.get('/fill', isAdmin, this.fill.bind(this));
     this.router.get('/reparse', isAdmin, this.reparse.bind(this));
     this.router.get('/buildCompanyInfo', isAdmin, this.buildCompanyInfo.bind(this));
+    this.router.get('/autoupdate', isAdmin, this.autoUpdate.bind(this));
   }
 
   /**
@@ -99,6 +102,90 @@ class SecGovController implements Controller {
 
     return res.status(200).json({
       message: 'building CompanyInfo collection'
+    });
+  }
+
+  /**
+   *
+   * Description: sets up an recurring update of the database
+   *
+   * URL: https://finten.weirwood.ai/secgov/autoupdate?[interval={INTERVAL}][&stop={STOP}]
+   *
+   * Method: GET
+   *
+   * Requires admin authentication
+   *
+   * URL params:
+   *  -Required:
+   *    -at least one optional parameter is required
+   *  -Optional:
+   *    + interval=[number]: the time between updates in milliseconds
+   *    + stop=[boolean]: whether to stop the autoupdate or not
+   *
+   * Success response:
+   *  -Code: 200
+   *  -Content: JSON object with the status of the processing.
+   *
+   * Error responses:
+   *  -Code: 400 Bad Request Error
+   *    *Content: JSON object with the status of the processing.
+   *
+   *  -Code: 401 Unauthorized
+   *    *Invalid authentication token
+   *
+   *  -Code: 500 Internal Server Error
+   *    *Something went bananas on the server side
+   */
+  private autoUpdate(req: Request, res: Response): Response {
+    const { interval, stop } = req.query;
+
+    if (typeof interval !== 'string' && typeof stop !== 'string') {
+      return res.status(400).json({ error: 'no parameters provided' });
+    }
+
+    if (typeof stop === 'string') {
+      if (stop === 'true') {
+        //if stop is specified and its value is the string 'true', stop the interval
+        if (this.interval) {
+          clearInterval(this.interval);
+        }
+      }
+      //if no new interval is specified, return already
+      if (typeof interval !== 'string') {
+        return res.status(200).json({ message: 'interval stopped' });
+      }
+    }
+
+    //if there is an interval specified
+    if (typeof interval === 'string') {
+      //parse it
+      const intervalTime = parseInt(interval, 10);
+      //and check that it is neither NaN not infinite (aka: check the parsing
+      //returned a valid number)
+      if (isNaN(intervalTime) || !isFinite(intervalTime)) {
+        return res.status(400).json({ error: 'invalid interval value' });
+      }
+
+      //if there was an interval already set, clear that one first
+      if (this.interval) {
+        clearInterval(this.interval);
+      }
+
+      //and then set the new one
+      this.interval = setInterval(() => {
+        const finten = new FinTen(new SecGov(), FinTenDB.getInstance());
+        finten.addNewFilings(new Date().getFullYear());
+      }, intervalTime);
+
+      return res.status(200).json({
+        message: 'new update interval configured',
+        interval: intervalTime
+      });
+    }
+
+    return res.status(500).json({
+      error:
+        'Internal server error. Please contact the support team from Weirwood to inform about this issue.'
     });
   }
 }
