@@ -1,4 +1,4 @@
-import FormType from '../filings/FormType';
+import FormType from '../filings/FormType.enum';
 import SecGov from '../secgov/SecGov';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { LogLevel } from '../logger/LogLevel';
@@ -78,14 +78,41 @@ class FinTen {
     }
   }
 
+  /**
+   * Adds the given macro data to the database. Doesn't add duplicates or
+   * non-numeric values (that is the responsibility of the Schema to make sure
+   * the data has the proper type and format).
+   *
+   * @param macro Macro The Macro to add to the database
+   */
   async addMacro(macro: Macro): Promise<void> {
     const fred = new Fred();
 
-    const data = await fred.getMacro(macro);
-    for (const observation in data.observations) {
-      const collection = getMacroCollection(macro);
-      const macroData = new collection(observation);
-      await macroData.save();
+    try {
+      //query the FRED API through our wrapper (aka, the Fred class)
+      const data = await fred.getMacro(macro);
+
+      //go through each observation in the observations array and log info
+      for (let index = 0; index < data.observations.length; index++) {
+        this.logPercentage(index + 1, data.observations.length);
+        const observation = data.observations[index];
+        try {
+          //get the corresponding collection for the data of this macro
+          const MacroCollection = getMacroCollection(macro);
+          const macroDocument = new MacroCollection(observation);
+          await macroDocument.save();
+        } catch (ex) {
+          //if the error talks about duplicate keys in the data field, ignore it
+          //otherwise log it
+          if (!/duplicate key error.*index: date/.test(ex.toString())) {
+            this.logger.error('[when saving to collection]', ex.toString());
+          }
+        }
+      }
+    } catch (ex) {
+      this.logger.error(ex);
+    } finally {
+      this.logger.info(`finished adding ${macro} macro information`);
     }
   }
 

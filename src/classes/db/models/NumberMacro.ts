@@ -22,13 +22,13 @@ const NumberMacroSchema = new Schema({
 
 export interface NumberMacroDocument extends NumberMacro, Document {}
 
-NumberMacroSchema.pre<NumberMacroDocument>('save', function (next) {
-  if (typeof this.value !== 'number') {
-    this.value = parseFloat(this.value);
-  }
+// NumberMacroSchema.pre<NumberMacroDocument>('save', function (next) {
+//   if (typeof this.value !== 'number') {
+//     this.value = parseFloat(this.value);
+//   }
 
-  next();
-});
+//   next();
+// });
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface NumberMacroModel extends Model<NumberMacroDocument> {}

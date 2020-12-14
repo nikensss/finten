@@ -1,4 +1,4 @@
-import FormType, { byName } from './FormType';
+import FormType, { byName } from './FormType.enum';
 import Downloadable from '../download/Downloadable.interface';
 import SecGov from '../secgov/SecGov';
 

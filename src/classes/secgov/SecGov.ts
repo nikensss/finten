@@ -2,7 +2,7 @@ import { Quarter } from './XBRL';
 import TimedQueue from '../download/queues/TimedQueue';
 import fs, { PathLike } from 'fs';
 import FilingMetadata from '../filings/FilingMetadata';
-import FormType from '../filings/FormType';
+import FormType from '../filings/FormType.enum';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import Downloadable from '../download/Downloadable.interface';
 import Downloader from '../download/Downloader.interface';

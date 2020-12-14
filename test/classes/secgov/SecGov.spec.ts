@@ -8,7 +8,7 @@ import Downloader from '../../../src/classes/download/Downloader.interface';
 import TimedQueue from '../../../src/classes/download/queues/TimedQueue';
 import Downloadable from '../../../src/classes/download/Downloadable.interface';
 import { Quarter } from '../../../src/classes/secgov/XBRL';
-import FormType from '../../../src/classes/filings/FormType';
+import FormType from '../../../src/classes/filings/FormType.enum';
 import FilingMetadata from '../../../src/classes/filings/FilingMetadata';
 
 chai.use(chaiAsPromised);

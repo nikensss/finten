@@ -1,4 +1,4 @@
-import FormType, { byName } from '../../../src/classes/filings/FormType';
+import FormType, { byName } from '../../../src/classes/filings/FormType.enum';
 import { expect } from 'chai';
 
 describe('FormType tests', () => {
@@ -16,7 +16,7 @@ describe('FormType tests', () => {
     expect(f8k).to.be.equal(FormType.F8K);
   });
 
-  it('should fail with unkown type', () => {
+  it('should fail with unknown type', () => {
     expect(() => byName('not a filing')).to.throw('Unknown filing type: not a filing');
   });
 });

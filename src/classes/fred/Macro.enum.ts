@@ -4,7 +4,7 @@ import {
   ManufacturerDurableGoods,
   NumberMacroModel,
   PersonalDurableGoodsMotorsVehiclesAndParts
-} from '../db/models/NumberMacro.interface';
+} from '../db/models/NumberMacro';
 
 enum Macro {
   MANUFACTURER_DURABLE_GOODS = 'DGORDER',
@@ -26,4 +26,15 @@ export const getMacroCollection = (macro: Macro): NumberMacroModel => {
     case Macro.INDUSTRIAL_PRODUCTION_DURABLE_CONSUMER_GOODS:
       return IndustrialProductionDurableConsumerGoods;
   }
+};
+
+export const byName = (macro: string): Macro => {
+  type macrosNames = keyof typeof Macro;
+
+  for (const m in Macro) {
+    if (Macro[m as macrosNames] === macro) {
+      return Macro[m as macrosNames];
+    }
+  }
+  throw new Error(`Unknown filing type: ${name}`);
 };

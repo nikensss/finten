@@ -7,6 +7,7 @@ import SecGov from '../../secgov/SecGov';
 import DownloadManager from '../../download/DownloadManager';
 import path from 'path';
 import { isAdmin } from '../../auth/Passport';
+import { byName } from '../../fred/Macro.enum';
 
 class SecGovController implements Controller {
   public readonly path = '/secgov';
@@ -25,6 +26,7 @@ class SecGovController implements Controller {
     this.router.get('/reparse', isAdmin, this.reparse.bind(this));
     this.router.get('/buildCompanyInfo', isAdmin, this.buildCompanyInfo.bind(this));
     this.router.get('/autoupdate', isAdmin, this.autoUpdate.bind(this));
+    this.router.get('/macros', isAdmin, this.addMacro.bind(this));
   }
 
   /**
@@ -187,6 +189,24 @@ class SecGovController implements Controller {
       error:
         'Internal server error. Please contact the support team from Weirwood to inform about this issue.'
     });
+  }
+
+  private addMacro(req: Request, res: Response): void {
+    const { macro } = req.query;
+
+    if (typeof macro !== 'string') {
+      res.status(401).json({ message: 'invalid macro value' });
+      return;
+    }
+
+    try {
+      const macroAsMacro = byName(macro);
+      const finten = new FinTen(new SecGov(), FinTenDB.getInstance());
+      finten.addMacro(macroAsMacro);
+      res.status(200).json({ macro: macroAsMacro, status: 'ongoing' });
+    } catch (ex) {
+      res.status(400).json({ error: ex.toString() });
+    }
   }
 }
 
