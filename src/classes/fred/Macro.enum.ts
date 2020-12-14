@@ -28,6 +28,7 @@ export const getMacroCollection = (macro: Macro): NumberMacroModel => {
   }
 };
 
+//TODO: is there a better way to go through all members of an enum?
 export const byName = (macro: string): Macro => {
   type macrosNames = keyof typeof Macro;
 
@@ -36,5 +37,5 @@ export const byName = (macro: string): Macro => {
       return Macro[m as macrosNames];
     }
   }
-  throw new Error(`Unknown filing type: ${name}`);
+  throw new Error(`Unknown macro name: '${macro}'`);
 };
