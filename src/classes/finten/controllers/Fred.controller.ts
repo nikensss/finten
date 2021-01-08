@@ -23,38 +23,111 @@ class FredController implements Controller {
   }
 
   /**
-   *  POST
-   * {**}/fred/add?macro=[DGORDER|ACDGNO|DMOTRC1Q027SBEA|IPDCONGD]
+   * Description: add the values of the given macro to the db.
+   *
+   * URL: https://finten.weirwood.ai/fred/add?macro={MACRO}
+   *
+   * Method: POST
+   *
+   * Headers:
+   *  -Authorization: as Bearer token
+   *    *this token can be obtained by logging in (see Users.controller::login)
+   *
+   * URL params:
+   *  -macro=[string]: the name of the macro (see
+   *  Fred.controller::getMacrosNames for more the exact values)
+   *
+   * Success response:
+   *  -Code: 200
+   *  -Content: JSON with the following properties
+   *    *macro:
+   *      +type: string
+   *      +value: the received macro name (as ACK)
+   *    *status:
+   *      +type: string
+   *      +value: 'ongoing'
+   *
+   * Error responses:
+   * -Code: 400 Bad Request
+   *    *invalid macro requested
+   * -Code: 401 Unauthorized
+   *    *invalid authentication token (must be admin)
    */
   private addMacro(req: Request, res: Response): void {
-    const { macro } = req.query;
+    const { macro: macroName } = req.query;
 
-    if (typeof macro !== 'string') {
-      res.status(401).json({ message: 'invalid macro name' });
+    if (typeof macroName !== 'string') {
+      res.status(400).json({ error: 'invalid macro name' });
       return;
     }
 
     try {
-      const macroAsMacro = byName(macro);
+      const macro = byName(macroName);
       const finten = new FinTen(new SecGov(), FinTenDB.getInstance());
-      finten.addMacro(macroAsMacro);
-      res.status(200).json({ macro: macroAsMacro, status: 'ongoing' });
+      finten.addMacro(macro);
+      res.status(200).json({ macro, status: 'ongoing' });
     } catch (ex) {
       res.status(400).json({ error: ex.toString() });
     }
   }
 
+  /**
+   * Description: get the names of the macros that can be retrieved.
+   *
+   * URL: https://finten.weirwood.ai/fred/names
+   *
+   * Method: GET
+   *
+   * Headers: none
+   *
+   * URL params: none
+   *
+   * Success response:
+   *  -Code: 200
+   *  -Content: JSON with the following properties
+   *    *names:
+   *      +type: string[]
+   *      +value: the names of the macros available
+   */
   private getMacrosNames(req: Request, res: Response): void {
     res.status(200).json({
       names: Object.values(Macro)
     });
   }
 
+  /**
+   * Description: get the values of the given macro from the db.
+   *
+   * URL: https://finten.weirwood.ai/fred/get?macro={MACRO}
+   *
+   * Method: GET
+   *
+   * Headers:
+   *  -Authorization: as Bearer token
+   *    *this token can be obtained by logging in (see Users.controller::login)
+   *
+   * URL params:
+   *  -macro=[string]: the name of the macro (see
+   *  Fred.controller::getMacrosNames for more the exact values)
+   *
+   * Success response:
+   *  -Code: 200
+   *  -Content: JSON with the following properties
+   *    *values:
+   *      +type: [{date, value}: {Date, number}] (array of date-value pairs)
+   *      +value: the value of the macro at different points in time
+   *
+   * Error responses:
+   * -Code: 400 Bad Request
+   *    *invalid macro requested
+   * -Code: 401 Unauthorized
+   *    *invalid authentication token (must be, at least, premium)
+   */
   private async getMacro(req: Request, res: Response): Promise<void> {
     const { macro: macroName } = req.query;
 
     if (typeof macroName !== 'string') {
-      res.status(401).json({ message: 'invalid macro name' });
+      res.status(400).json({ error: 'invalid macro name' });
       return;
     }
 
