@@ -30,11 +30,11 @@ export const getMacroCollection = (macro: Macro): NumberMacroModel => {
 
 //TODO: is there a better way to go through all members of an enum?
 export const byName = (macro: string): Macro => {
-  type macrosNames = keyof typeof Macro;
+  type macroName = keyof typeof Macro;
 
   for (const m in Macro) {
-    if (Macro[m as macrosNames] === macro) {
-      return Macro[m as macrosNames];
+    if (Macro[m as macroName] === macro) {
+      return Macro[m as macroName];
     }
   }
   throw new Error(`Unknown macro name: '${macro}'`);

@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import { userAuthentication } from '../../auth/Passport';
+import { isRegistered } from '../../auth/Passport';
 import CompanyInfoModel from '../../db/models/CompanyInfo';
 import FilingModel, { FilingDocument } from '../../db/models/Filing';
 import { UserDocument } from '../../db/models/User';
@@ -17,7 +17,7 @@ class CompanyController implements Controller {
 
   private initializeRoutes() {
     this.router.get('/tickers', this.getTickers.bind(this));
-    this.router.get('/filings', userAuthentication, this.getFilings);
+    this.router.get('/filings', isRegistered, this.getFilings);
   }
 
   /**
@@ -122,7 +122,9 @@ class CompanyController implements Controller {
       let filings: FilingDocument[] = [];
       const filingsCursor = FilingModel.find({
         EntityCentralIndexKey: companyInfo.EntityCentralIndexKey
-      }).cursor();
+      })
+        .select({ _id: 0, __v: 0 })
+        .cursor();
 
       await filingsCursor.eachAsync(async (f: FilingDocument) => {
         filings.push(f);

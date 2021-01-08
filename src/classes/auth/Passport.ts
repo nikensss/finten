@@ -15,8 +15,9 @@ const options = {
   secretOrKey: secret
 };
 
+//to allow only registered users
 passport.use(
-  'userAuthentication',
+  'isRegistered',
   new Strategy(options, (payload, next) => {
     FinTenDB.getInstance()
       .connect()
@@ -26,6 +27,7 @@ passport.use(
   })
 );
 
+//to allow only premium users
 passport.use(
   'isPremium',
   new Strategy(options, (payload, next) => {
@@ -51,6 +53,7 @@ passport.use(
   })
 );
 
+//to allow only admins
 passport.use(
   'isAdmin',
   new Strategy(options, (payload, next) => {
@@ -75,7 +78,7 @@ passport.use(
 
 export default passport;
 export { secret };
-export const userAuthentication = passport.authenticate('userAuthentication', {
+export const isRegistered = passport.authenticate('isRegistered', {
   session: false
 });
 export const isPremium = passport.authenticate('isPremium', { session: false });
