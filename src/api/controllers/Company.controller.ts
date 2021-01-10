@@ -1,8 +1,8 @@
 import { Request, Response, Router } from 'express';
-import { isRegistered } from '../../auth/Passport';
-import CompanyInfoModel from '../../db/models/CompanyInfo';
-import FilingModel, { FilingDocument } from '../../db/models/Filing';
-import { UserDocument } from '../../db/models/User';
+import { isRegistered } from '../../classes/auth/Passport';
+import CompanyInfoModel from '../../classes/db/models/CompanyInfo';
+import FilingModel, { FilingDocument } from '../../classes/db/models/Filing';
+import { UserDocument } from '../../classes/db/models/User';
 import Controller from './Controller.interface';
 
 class CompanyController implements Controller {

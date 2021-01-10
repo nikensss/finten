@@ -1,10 +1,10 @@
 import { Request, Response, Router } from 'express';
 import Controller from './Controller.interface';
-import FinTenDB from '../../db/FinTenDB';
-import FinTen from '../FinTen';
-import { isAdmin, isPremium } from '../../auth/Passport';
-import Macro, { byName, getMacroCollection } from '../../fred/Macro.enum';
-import SecGov from '../../secgov/SecGov';
+import FinTenDB from '../../classes/db/FinTenDB';
+import FinTen from '../../classes/finten/FinTen';
+import { isAdmin, isPremium, isRegistered } from '../../classes/auth/Passport';
+import Macro, { byName, getMacroCollection } from '../../classes/fred/Macro.enum';
+import SecGov from '../../classes/secgov/SecGov';
 
 class FredController implements Controller {
   public readonly path = '/fred';
@@ -18,7 +18,7 @@ class FredController implements Controller {
     //we need to bind all these methods again due to the reference to 'this'
     //when getting the logger
     this.router.post('/add', isAdmin, this.addMacro.bind(this));
-    this.router.get('/names', this.getMacrosNames.bind(this));
+    this.router.get('/names', isRegistered, this.getMacrosNames.bind(this));
     this.router.get('/get', isPremium, this.getMacro.bind(this));
   }
 

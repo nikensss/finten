@@ -1,10 +1,10 @@
 import express, { Application } from 'express';
 import bodyParser from 'body-parser';
-import { default as LOGGER } from '../logger/DefaultLogger';
+import { default as LOGGER } from '../classes/logger/DefaultLogger';
 import cors from 'cors';
 import { Server } from 'http';
 import Controller from './controllers/Controller.interface';
-import FinTenDB from '../db/FinTenDB';
+import FinTenDB from '../classes/db/FinTenDB';
 
 /**
  * Connects our FinTen database to the Internet so that other people can use the
@@ -52,7 +52,6 @@ class FinTenAPI {
   }
 
   listen(): Server {
-    //connect database
     //TODO: ensure test cases don't connect to the real database!
     if (!FinTenDB.getInstance().isConnected()) {
       FinTenDB.getInstance().connect();

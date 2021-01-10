@@ -1,8 +1,8 @@
 import { Request, Response, Router } from 'express';
-import TokenFactory from '../../auth/TokenFactory';
+import TokenFactory from '../../classes/auth/TokenFactory';
 import Controller from './Controller.interface';
-import { default as LOGGER } from '../../logger/DefaultLogger';
-import UserModel from '../../db/models/User';
+import { default as LOGGER } from '../../classes/logger/DefaultLogger';
+import UserModel from '../../classes/db/models/User';
 
 class UsersController implements Controller {
   public readonly path = '/users';

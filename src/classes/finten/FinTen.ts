@@ -99,8 +99,8 @@ class FinTen {
         try {
           //get the corresponding collection for the data of this macro
           const MacroCollection = getMacroCollection(macro);
-          const macroDocument = new MacroCollection(observation);
-          await macroDocument.save();
+          const doc = new MacroCollection(observation);
+          await doc.save();
         } catch (ex) {
           //if the error talks about duplicate keys in the data field, ignore it
           //otherwise log it

@@ -1,12 +1,12 @@
 import { Request, Response, Router } from 'express';
 import Controller from './Controller.interface';
-import { default as LOGGER } from '../../logger/DefaultLogger';
-import FinTenDB from '../../db/FinTenDB';
-import FinTen from '../FinTen';
-import SecGov from '../../secgov/SecGov';
-import DownloadManager from '../../download/DownloadManager';
+import { default as LOGGER } from '../../classes/logger/DefaultLogger';
+import FinTenDB from '../../classes/db/FinTenDB';
+import FinTen from '../../classes/finten/FinTen';
+import SecGov from '../../classes/secgov/SecGov';
+import DownloadManager from '../../classes/download/DownloadManager';
 import path from 'path';
-import { isAdmin } from '../../auth/Passport';
+import { isAdmin } from '../../classes/auth/Passport';
 
 class SecGovController implements Controller {
   public readonly path = '/secgov';

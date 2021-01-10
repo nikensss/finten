@@ -1,8 +1,8 @@
-import CompanyController from './classes/finten/controllers/Company.controller';
-import FredController from './classes/finten/controllers/Fred.controller';
-import SecGovController from './classes/finten/controllers/SecGov.controller';
-import UsersController from './classes/finten/controllers/Users.controller';
-import FinTenAPI from './classes/finten/FinTenAPI';
+import CompanyController from './api/controllers/Company.controller';
+import FredController from './api/controllers/Fred.controller';
+import SecGovController from './api/controllers/SecGov.controller';
+import UsersController from './api/controllers/Users.controller';
+import FinTenAPI from './api/FinTenAPI';
 
 const companyController = new CompanyController();
 const usersController = new UsersController();
