@@ -47,6 +47,7 @@ describe('User model tests', function () {
     try {
       await FinTenDB.getInstance().connect(uri);
       const newUser = await new UserModel(user).save();
+      const m = moment.utc().toDate();
 
       expect(newUser.isAdmin).to.be.false;
       expect(newUser.isPremium).to.be.false;
@@ -59,11 +60,11 @@ describe('User model tests', function () {
       expect(newUser.password).to.not.equal(user.password);
       expect(await newUser.checkPassword(user.password)).to.be.true;
 
-      expect(newUser.registrationDate.getFullYear()).to.equal(moment.utc().toDate().getFullYear());
-      expect(newUser.registrationDate.getMonth()).to.equal(moment.utc().toDate().getMonth());
-      expect(newUser.registrationDate.getDay()).to.equal(moment.utc().toDate().getDay());
-      expect(newUser.registrationDate.getHours()).to.equal(moment.utc().toDate().getHours());
-      expect(newUser.registrationDate.getMinutes()).to.equal(moment.utc().toDate().getMinutes());
+      expect(newUser.registrationDate.getFullYear()).to.equal(m.getFullYear());
+      expect(newUser.registrationDate.getMonth()).to.equal(m.getMonth());
+      expect(newUser.registrationDate.getDay()).to.equal(m.getDay());
+      expect(newUser.registrationDate.getHours()).to.equal(m.getHours());
+      expect(newUser.registrationDate.getMinutes()).to.equal(m.getMinutes());
 
       expect(await UserModel.countDocuments().exec()).to.equal(1);
     } catch (ex) {
