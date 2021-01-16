@@ -59,7 +59,7 @@ class XBRLUtilities {
     while (i < lines.length && !lines[i].includes('<XBRL>')) {
       i += 1;
     }
-    //we are now at the opnening tag of the XBRL, move one more line to find the XML
+    //we are now at the opening tag of the XBRL, move one more line to find the XML
     i += 1;
     while (i < lines.length && !lines[i].includes('</XBRL>')) {
       xml.push(lines[i]);

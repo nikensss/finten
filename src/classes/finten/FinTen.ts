@@ -13,6 +13,7 @@ import FilingModel from '../db/models/Filing';
 import FilingMetadata from '../filings/FilingMetadata';
 import Macro, { getMacroCollection } from '../fred/Macro.enum';
 import Fred from '../fred/Fred';
+import { Logger } from '../logger/Logger.interface';
 
 /**
  * The FinTen class is the basic driver that builds FinTen. It is the interface
@@ -23,6 +24,7 @@ import Fred from '../fred/Fred';
 class FinTen {
   private _secgov: SecGov;
   private _db: Database;
+  private logger: Logger = LOGGER.get(this.constructor.name);
 
   constructor(secgov: SecGov = new SecGov(), db: Database) {
     this._secgov = secgov;
@@ -50,7 +52,7 @@ class FinTen {
       const companies = await CompanyInfoModel.parseFile(csv);
       await this.saveAllCompanies(companies);
     } catch (ex) {
-      console.log(`Error building CompanyInfo collection: ${ex.toString()}`);
+      this.logger.error(`Error building CompanyInfo collection: ${ex.toString()}`);
     }
   }
 
@@ -59,11 +61,11 @@ class FinTen {
     for (const company of companies) {
       try {
         const doc = await this.createCompanyInfo(company);
-        console.log(
+        this.logger.info(
           ` [${counter}] Added new CompanyInfo: ${doc.TradingSymbol} (${doc.EntityCentralIndexKey})`
         );
       } catch (ex) {
-        console.log(`Error while saving all companies [${counter}! ${ex.toString()}`);
+        this.logger.error(`Error while saving all companies [${counter}! ${ex.toString()}`);
       } finally {
         counter += 1;
       }
@@ -260,10 +262,6 @@ class FinTen {
       error: ex.toString(),
       filingId: null
     }).save();
-  }
-
-  private get logger() {
-    return LOGGER.get(this.constructor.name);
   }
 
   private logPercentage(currentAmount: number, length: number) {

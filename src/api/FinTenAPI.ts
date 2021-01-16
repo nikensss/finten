@@ -5,6 +5,7 @@ import cors from 'cors';
 import { Server } from 'http';
 import Controller from './controllers/Controller.interface';
 import FinTenDB from '../classes/db/FinTenDB';
+import { Logger } from '../classes/logger/Logger.interface';
 
 /**
  * Connects our FinTen database to the Internet so that other people can use the
@@ -19,6 +20,7 @@ import FinTenDB from '../classes/db/FinTenDB';
 class FinTenAPI {
   private readonly app: Application;
   private readonly port: number = parseInt(process.env.PORT || '3000');
+  private logger: Logger = LOGGER.get(this.constructor.name);
 
   constructor(controllers: Controller[]) {
     this.app = express();
@@ -33,7 +35,7 @@ class FinTenAPI {
 
     //logging middleware
     this.app.use('', (req, res, next) => {
-      console.log(`requested ${req.url}`);
+      this.logger.info(`requested ${req.url} (${req.method})`, req);
       next();
     });
 
@@ -56,9 +58,7 @@ class FinTenAPI {
     if (!FinTenDB.getInstance().isConnected()) {
       FinTenDB.getInstance().connect();
     }
-    return this.app.listen(this.port, () =>
-      LOGGER.get(this.constructor.name).info(`Listening on port ${this.port}!`)
-    );
+    return this.app.listen(this.port, () => this.logger.info(`Listening on port ${this.port}!`));
   }
 }
 

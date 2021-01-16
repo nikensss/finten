@@ -6,12 +6,14 @@ import Queue from './queues/Queue.interface';
 import DefaultQueue from './queues/DefaultQueue';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import Downloader from './Downloader.interface';
+import { Logger } from '../logger/Logger.interface';
 
 class DownloadManager implements Downloader {
   private _directory: PathLike;
   private static _activeDownloads = 0;
   private static _activeFileWrites = 0;
   private q: Queue;
+  private logger: Logger = LOGGER.get(this.constructor.name);
 
   constructor(directory: PathLike = 'finten_downloads') {
     this._directory = directory;
@@ -204,10 +206,6 @@ class DownloadManager implements Downloader {
       }
     });
     fs.rmdirSync(src);
-  }
-
-  private get logger() {
-    return LOGGER.get(this.constructor.name);
   }
 }
 

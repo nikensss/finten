@@ -3,10 +3,12 @@ import TokenFactory from '../../classes/auth/TokenFactory';
 import Controller from './Controller.interface';
 import { default as LOGGER } from '../../classes/logger/DefaultLogger';
 import UserModel from '../../classes/db/models/User';
+import { Logger } from '../../classes/logger/Logger.interface';
 
 class UsersController implements Controller {
   public readonly path = '/users';
   public readonly router = Router();
+  private logger: Logger = LOGGER.get(this.constructor.name);
 
   constructor() {
     this.initializeRoutes();
@@ -61,7 +63,6 @@ class UsersController implements Controller {
    */
   private async signup(req: Request, res: Response) {
     const { username, password, email } = req.body;
-    console.log(req.body);
 
     if (!username || !password || !email) {
       return res.status(400).send({ error: 'missing data' });
@@ -70,9 +71,7 @@ class UsersController implements Controller {
     try {
       const user = await new UserModel({ username, password, email }).save();
 
-      LOGGER.get(this.constructor.name).info(
-        `New user signed up successfully: ${JSON.stringify(user, null, 2)}`
-      );
+      this.logger.info(`New user signed up successfully: ${JSON.stringify(user, null, 2)}`);
       const payload = { id: user._id };
 
       return res.status(200).json({
@@ -151,7 +150,7 @@ class UsersController implements Controller {
       }
 
       const payload = { id: user._id };
-      LOGGER.get(this.constructor.name).info(`User ${username} logged in successfully!`);
+      this.logger.info(`User ${username} logged in successfully!`);
       return res.status(200).json({
         username,
         email: user.email,

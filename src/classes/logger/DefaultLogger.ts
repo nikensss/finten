@@ -3,6 +3,7 @@ import { Logger } from './Logger.interface';
 import { LogLevel } from './LogLevel';
 import { Writable } from 'stream';
 import moment from 'moment';
+import chalk from 'chalk';
 
 class DefaultLogger implements Logger {
   private _logLevel: LogLevel = LogLevel.INFO;
@@ -65,12 +66,41 @@ class DefaultLogger implements Logger {
     }
   }
 
-  private log(type: string, ...args: unknown[]): void {
-    this.output.write(
-      `${moment().format(DefaultLogger.MOMENT_FORMAT)}|{${type}} [${this.label}] ${args.join(
-        ';'
-      )}\n`
-    );
+  private log(type: 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR', ...args: unknown[]): void {
+    const now = moment().format(DefaultLogger.MOMENT_FORMAT);
+    const color = this.getColor(type);
+    const message = args.map((a) => JSON.stringify(a, this.circularReferenceHelper(), 2)).join(';');
+    this.output.write(color(`${now}|{${type}} [${this.label}] ${message}\n`));
+  }
+
+  private getColor(level: 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR'): chalk.Chalk {
+    switch (level) {
+      case 'DEBUG':
+        return chalk.gray;
+      case 'INFO':
+        return chalk.blueBright;
+      case 'WARNING':
+        return chalk.yellow;
+      case 'ERROR':
+        return chalk.red;
+      default:
+        return chalk.gray;
+    }
+  }
+
+  private circularReferenceHelper() {
+    const cache: string[] = [];
+    return (key: string, value: string) => {
+      if (typeof value === 'object' && value !== null) {
+        if (cache.indexOf(value) !== -1) {
+          // Circular reference found, discard key
+          return;
+        }
+        // Store value in our collection
+        cache.push(value);
+      }
+      return value;
+    };
   }
 }
 

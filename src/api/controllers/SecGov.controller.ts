@@ -7,10 +7,12 @@ import SecGov from '../../classes/secgov/SecGov';
 import DownloadManager from '../../classes/download/DownloadManager';
 import path from 'path';
 import { isAdmin } from '../../classes/auth/Passport';
+import { Logger } from '../../classes/logger/Logger.interface';
 
 class SecGovController implements Controller {
   public readonly path = '/secgov';
   public readonly router = Router();
+  private logger: Logger = LOGGER.get(this.constructor.name);
 
   private interval: NodeJS.Timeout | undefined;
 
@@ -63,7 +65,7 @@ class SecGovController implements Controller {
       });
     }
 
-    LOGGER.get(this.constructor.name).info(`filling database from ${start} to ${end}`);
+    this.logger.info(`filling database from ${start} to ${end}`);
 
     const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
     finten
@@ -82,7 +84,7 @@ class SecGovController implements Controller {
    * again and try to parse that XBRL again.
    */
   private reparse(req: Request, res: Response): Response {
-    LOGGER.get(this.constructor.name).info('reparsing documents from links with errors');
+    this.logger.info('reparsing documents from links with errors');
 
     const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
     finten.retryProblematicFilings();

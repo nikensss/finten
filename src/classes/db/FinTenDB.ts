@@ -1,9 +1,12 @@
 import mongoose, { Mongoose } from 'mongoose';
 import Database from './Database.interface';
+import { default as LOGGER } from '../logger/DefaultLogger';
+import { Logger } from '../logger/Logger.interface';
 
 class FinTenDB implements Database {
   private static instance: FinTenDB | null = null;
   private client: Mongoose = mongoose;
+  private logger: Logger = LOGGER.get(this.constructor.name);
 
   static getInstance(): FinTenDB {
     if (FinTenDB.instance === null) {
@@ -19,7 +22,7 @@ class FinTenDB implements Database {
     }
 
     try {
-      console.log('connecting...');
+      this.logger.info('connecting...');
       await this.client.connect(uri || FinTenDB.URI, {
         useNewUrlParser: true,
         useCreateIndex: true,
@@ -29,11 +32,12 @@ class FinTenDB implements Database {
         keepAlive: true,
         keepAliveInitialDelay: 300000
       });
-      console.log('Database connected!');
+      this.logger.info('Database connected!');
 
       return this;
     } catch (ex) {
-      throw new Error('Could not connect to DB: ' + ex);
+      this.logger.error('Could not connect to DB: ' + ex.toString());
+      throw new Error('Could not connect to DB: ' + ex.toString());
     }
   }
 

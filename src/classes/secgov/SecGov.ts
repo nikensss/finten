@@ -7,6 +7,7 @@ import { default as LOGGER } from '../logger/DefaultLogger';
 import Downloadable from '../download/Downloadable.interface';
 import Downloader from '../download/Downloader.interface';
 import DownloadManager from '../download/DownloadManager';
+import { Logger } from '../logger/Logger.interface';
 
 /**
  * The SecGov class is a wrapper around the SecGov API so that filings can be
@@ -28,6 +29,7 @@ class SecGov {
    * calls per second.
    */
   public static readonly MS_BETWEEN_REQUESTS = 100;
+  private logger: Logger = LOGGER.get(this.constructor.name);
 
   constructor(dm: Downloader = new DownloadManager()) {
     if (!dm) {
@@ -79,7 +81,7 @@ class SecGov {
    * @param amount The amount of filings to return
    */
   parseIndex(path: PathLike, formTypes: FormType[]): FilingMetadata[] {
-    LOGGER.get(this.constructor.name).debug(`parsing idx: ${path}`);
+    this.logger.debug(`parsing idx: ${path}`);
 
     const lines = fs.readFileSync(path, 'utf8').split('\n');
     return lines.reduce((t, c) => {
@@ -90,7 +92,7 @@ class SecGov {
         }
       } catch (ex) {
         if (!ex.message.includes('Unknown filing type')) {
-          LOGGER.get(this.constructor.name).error(ex);
+          this.logger.error(ex);
         }
       }
       return t;
