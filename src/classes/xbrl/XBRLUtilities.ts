@@ -15,8 +15,8 @@ class XBRLUtilities {
 
     for (const xml of xmls) {
       try {
-        const xbrl: Filing = await parseStr(xml);
-        return new XBRL(xbrl);
+        const filing: Filing = await parseStr(xml);
+        return new XBRL(filing);
       } catch (ex) {
         exceptions.push(ex.toString());
       }

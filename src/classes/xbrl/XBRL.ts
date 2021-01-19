@@ -1,17 +1,17 @@
 import { Filing } from '../db/models/Filing';
 
 class XBRL {
-  private data: Filing;
+  private filing: Filing;
 
-  constructor(data: Filing) {
-    this.data = data;
+  constructor(filing: Filing) {
+    this.filing = filing;
   }
 
   /**
    * Returns the XBRL data.
    */
   get(): Filing {
-    return this.data;
+    return this.filing;
   }
 }
 
