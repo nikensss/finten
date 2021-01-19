@@ -1,4 +1,4 @@
-import { Quarter } from './XBRL';
+import { Quarter } from '../xbrl/XBRL';
 import TimedQueue from '../download/queues/TimedQueue';
 import fs, { PathLike } from 'fs';
 import FilingMetadata from '../filings/FilingMetadata';

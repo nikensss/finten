@@ -3,7 +3,7 @@ import chaiAsPromised from 'chai-as-promised';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import path from 'path';
 import FinTenDB from '../../../src/classes/db/FinTenDB';
-import XBRLUtilities from '../../../src/classes/secgov/XBRLUtilities';
+import XBRLUtilities from '../../../src/classes/xbrl/XBRLUtilities';
 import { promises as fs } from 'fs';
 import { fail } from 'assert';
 import FilingModel, { FilingDocument } from '../../../src/classes/db/models/Filing';

@@ -1,7 +1,7 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import path from 'path';
-import XBRLUtilities from '../../../src/classes/secgov/XBRLUtilities';
+import XBRLUtilities from '../../../src/classes/xbrl/XBRLUtilities';
 
 chai.use(chaiAsPromised);
 

@@ -2,7 +2,7 @@ import FormType from '../filings/FormType.enum';
 import SecGov from '../secgov/SecGov';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { LogLevel } from '../logger/LogLevel';
-import XBRLUtilities from '../secgov/XBRLUtilities';
+import XBRLUtilities from '../xbrl/XBRLUtilities';
 import VisitedLinkModel, { VisitedLinkDocument, VisitedLinkStatus } from '../db/models/VisitedLink';
 import { Schema } from 'mongoose';
 import { Filing } from '../db/models/Filing';
