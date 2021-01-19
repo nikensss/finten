@@ -6,11 +6,11 @@ import moment from 'moment';
 
 class DefaultLogger implements Logger {
   private _logLevel: LogLevel = LogLevel.INFO;
-  private output: Writable = process.stdout;
   private label: string;
-  // private output: Writable = fs.createWriteStream('logs/.log', {
-  //   flags: 'a'
-  // });
+  // private output: Writable = process.stdout;
+  private output: Writable = fs.createWriteStream('logs/.log', {
+    flags: 'a'
+  });
   private static map: Map<string, Logger> = new Map();
   private static readonly MOMENT_FORMAT: string = 'YYYY/MM/DD HH:mm:ss SSS';
 

@@ -34,12 +34,10 @@ const VisitedLinkSchema = new Schema({
   }
 });
 
-VisitedLinkSchema.methods.hasBeenFixed = function (id: string): Promise<VisitedLinkDocument> {
+VisitedLinkSchema.methods.hasBeenFixed = function (id: string): void {
   this.filingId = id;
   this.error = null;
   this.status = VisitedLinkStatus.OK;
-
-  return this.save();
 };
 
 interface VisitedLinkBaseDocument extends VisitedLink, Document {
