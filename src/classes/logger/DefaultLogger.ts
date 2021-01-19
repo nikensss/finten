@@ -71,7 +71,8 @@ class DefaultLogger implements Logger {
 
   private log(level: LogLevel, ...args: unknown[]): void {
     const now = moment().format(DefaultLogger.MOMENT_FORMAT);
-    const color = level.getColor();
+    //TODO: we don't want colors in files;
+    const color = (s: string) => s; //level.getColor();
     const message = args.map((a) => JSON.stringify(a, this.circularReferenceHelper(), 2)).join(';');
     this.output.write(color(`${now}|{${level.getLevel()}} [${this.label}] ${message}\n`));
   }
