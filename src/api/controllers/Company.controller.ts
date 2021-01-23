@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import { isRegistered } from '../../classes/auth/Passport';
+import { isRegistered } from '../auth/Passport';
 import CompanyInfoModel from '../../classes/db/models/CompanyInfo';
 import FilingModel, { FilingDocument } from '../../classes/db/models/Filing';
 import { UserDocument } from '../../classes/db/models/User';

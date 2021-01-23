@@ -35,7 +35,13 @@ class FinTenAPI {
 
     //logging middleware
     this.app.use('', (req, res, next) => {
-      this.logger.info(`requested ${req.url} (${req.method})`, req);
+      this.logger.info(`requested ${req.url} (${req.method})`, {
+        headers: req.headers,
+        originalUrl: req.originalUrl,
+        body: req.body,
+        params: req.params,
+        query: req.query
+      });
       next();
     });
 

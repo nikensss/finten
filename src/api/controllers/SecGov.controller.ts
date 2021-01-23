@@ -6,7 +6,7 @@ import FinTen from '../../classes/finten/FinTen';
 import SecGov from '../../classes/secgov/SecGov';
 import DownloadManager from '../../classes/download/DownloadManager';
 import path from 'path';
-import { isAdmin } from '../../classes/auth/Passport';
+import { isAdmin } from '../auth/Passport';
 import { Logger } from '../../classes/logger/Logger.interface';
 
 class SecGovController implements Controller {

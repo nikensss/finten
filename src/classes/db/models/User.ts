@@ -2,7 +2,7 @@
 import moment from 'moment';
 import mongoose, { Model, Schema } from 'mongoose';
 import validator from 'validator';
-import Encrypter from '../../auth/Encrypter';
+import Encrypter from '../../../api/auth/Encrypter';
 import { PaymentDocument } from './Payment';
 
 export interface User {

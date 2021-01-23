@@ -1,9 +1,9 @@
 import passport from 'passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import User from '../db/models/User';
+import User from '../../classes/db/models/User';
 import { Secret } from 'jsonwebtoken';
-import FinTenDB from '../db/FinTenDB';
-import { default as LOGGER } from '../logger/DefaultLogger';
+import FinTenDB from '../../classes/db/FinTenDB';
+import { default as LOGGER } from '../../classes/logger/DefaultLogger';
 
 if (typeof process.env.SECRET !== 'string') {
   throw new Error('No SECRET available');

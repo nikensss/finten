@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import TokenFactory from '../../classes/auth/TokenFactory';
+import TokenFactory from '../auth/TokenFactory';
 import Controller from './Controller.interface';
 import { default as LOGGER } from '../../classes/logger/DefaultLogger';
 import UserModel from '../../classes/db/models/User';

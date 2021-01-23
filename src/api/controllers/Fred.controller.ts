@@ -2,7 +2,7 @@ import { Request, Response, Router } from 'express';
 import Controller from './Controller.interface';
 import FinTenDB from '../../classes/db/FinTenDB';
 import FinTen from '../../classes/finten/FinTen';
-import { isAdmin, isPremium, isRegistered } from '../../classes/auth/Passport';
+import { isAdmin, isPremium, isRegistered } from '../auth/Passport';
 import Macro, { byName, getMacroCollection } from '../../classes/fred/Macro.enum';
 import SecGov from '../../classes/secgov/SecGov';
 
