@@ -102,7 +102,7 @@ describe('FinTenDB tests', function () {
       await FinTenDB.getInstance().connect(uri);
       const files = (await fs.readdir(__dirname)).filter((f) => f.endsWith('_10k.txt'));
       const xbrls = await Promise.all(
-        files.map((f) => XBRLUtilities.fromTxt(path.join(__dirname, f)))
+        files.map((f) => XBRLUtilities.fromFile(path.join(__dirname, f)))
       );
       for (let index = 0; index < 10; index++) {
         await Promise.all(xbrls.map((xbrl) => new FilingModel(xbrl.get()).save()));
@@ -126,7 +126,7 @@ describe('FinTenDB tests', function () {
 
       const files = (await fs.readdir(__dirname)).filter((f) => f.endsWith('_10k.txt'));
       const xbrls = await Promise.all(
-        files.map((f) => XBRLUtilities.fromTxt(path.join(__dirname, f)))
+        files.map((f) => XBRLUtilities.fromFile(path.join(__dirname, f)))
       );
       for (let index = 0; index < 10; index++) {
         await Promise.all(xbrls.map((xbrl) => new FilingModel(xbrl.get()).save()));

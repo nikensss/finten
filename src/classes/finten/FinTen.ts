@@ -181,7 +181,7 @@ class FinTen {
 
   private async addFiling(filing: Downloadable): Promise<void> {
     this.logger.info('parsing xbrl...');
-    const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
+    const xbrl = await XBRLUtilities.fromFile(filing.fileName);
     const result = await this.createFiling(xbrl.get());
     this.logger.info('added new filing!');
     await this.createVisitedLink(filing.url, result._id);
@@ -216,7 +216,7 @@ class FinTen {
 
         for (const filing of filings) {
           try {
-            const xbrl = await XBRLUtilities.fromTxt(filing.fileName);
+            const xbrl = await XBRLUtilities.fromFile(filing.fileName);
             const result = await this.createFiling(xbrl.get());
             await visitedLink.hasBeenFixed(result._id);
             await visitedLink.save();

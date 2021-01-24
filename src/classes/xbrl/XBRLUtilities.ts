@@ -5,12 +5,12 @@ import { default as LOGGER } from '../logger/DefaultLogger';
 import XBRL from './XBRL';
 
 class XBRLUtilities {
-  public static async fromTxts(paths: PathLike[]): Promise<XBRL[]> {
-    return await Promise.all(paths.map((p) => XBRLUtilities.fromTxt(p)));
+  public static async fromFiles(paths: PathLike[]): Promise<XBRL[]> {
+    return await Promise.all(paths.map((p) => XBRLUtilities.fromFile(p)));
   }
 
-  public static async fromTxt(path: PathLike): Promise<XBRL> {
-    const xmls: string[] = XBRLUtilities.extractXmlsFromTxt(path);
+  public static async fromFile(path: PathLike): Promise<XBRL> {
+    const xmls: string[] = XBRLUtilities.extractXMLsFromFile(path);
     const exceptions: string[] = [];
 
     for (const xml of xmls) {
@@ -25,15 +25,15 @@ class XBRLUtilities {
     throw new Error(exceptions.join('\n'));
   }
 
-  public static extractXmlsFromTxt(path: PathLike): string[] {
+  public static extractXMLsFromFile(path: PathLike): string[] {
     const xmls: string[] = [];
 
-    let extraction = this.extractXmlFromTxt(path, 0);
+    let extraction = this.extractXMLFromFile(path, 0);
     xmls.push(extraction.xml);
 
     while (!extraction.isDone) {
       try {
-        extraction = this.extractXmlFromTxt(path, extraction.index);
+        extraction = this.extractXMLFromFile(path, extraction.index);
         xmls.push(extraction.xml);
       } catch (ex) {
         if (ex.toString() === 'Error: No XBRL found!') {
@@ -46,7 +46,7 @@ class XBRLUtilities {
     return xmls;
   }
 
-  public static extractXmlFromTxt(
+  public static extractXMLFromFile(
     path: PathLike,
     start = 0
   ): { xml: string; index: number; isDone: boolean } {

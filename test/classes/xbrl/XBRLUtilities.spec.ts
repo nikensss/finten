@@ -7,9 +7,9 @@ chai.use(chaiAsPromised);
 
 describe('XBRL tests', function () {
   this.slow(200);
-  //extractXmlFromTxt
+  //extractXmlFromFile
   it('should extract xml', () => {
-    const xml = XBRLUtilities.extractXmlFromTxt(path.join(__dirname, '1stXBRLvalid.txt'));
+    const xml = XBRLUtilities.extractXMLFromFile(path.join(__dirname, '1stXBRLvalid.txt'));
 
     expect(xml.xml).to.not.be.undefined;
     expect(xml.xml.length).to.be.greaterThan(0);
@@ -17,40 +17,40 @@ describe('XBRL tests', function () {
 
   it('should not extract xml', () => {
     expect(() => {
-      XBRLUtilities.extractXmlFromTxt(path.join(__dirname, 'NoXBRLS.txt'));
+      XBRLUtilities.extractXMLFromFile(path.join(__dirname, 'NoXBRLS.txt'));
     }).to.throw('No XBRL found!');
   });
 
   it('should not extract several xmls', () => {
     expect(() => {
-      XBRLUtilities.extractXmlsFromTxt(path.join(__dirname, 'NoXBRLS.txt'));
+      XBRLUtilities.extractXMLsFromFile(path.join(__dirname, 'NoXBRLS.txt'));
     }).to.throw('No XBRL found!');
   });
 
-  //extractXmlsFromTxt
+  //extractXMLsFromFile
   it('should extract several xmls', () => {
-    const xmls = XBRLUtilities.extractXmlsFromTxt(path.join(__dirname, '3rdXBRLvalid.txt'));
+    const xmls = XBRLUtilities.extractXMLsFromFile(path.join(__dirname, '3rdXBRLvalid.txt'));
 
     expect(xmls.length).to.be.greaterThan(1);
   });
 
-  // fromTxt
+  // fromFile
   it('should return one document', (done) => {
-    XBRLUtilities.fromTxt(path.join(__dirname, '1stXBRLvalid.txt')).then((d) => {
+    XBRLUtilities.fromFile(path.join(__dirname, '1stXBRLvalid.txt')).then((d) => {
       expect(d).to.not.be.undefined;
       done();
     });
   });
 
   it('should return one document again', (done) => {
-    XBRLUtilities.fromTxt(path.join(__dirname, '3rdXBRLvalid.txt')).then((d) => {
+    XBRLUtilities.fromFile(path.join(__dirname, '3rdXBRLvalid.txt')).then((d) => {
       expect(d).to.not.be.undefined;
       done();
     });
   });
 
   it('should reject with "No XBRL found"', () => {
-    expect(XBRLUtilities.fromTxt(path.join(__dirname, 'NoXBRLS.txt'))).to.be.rejectedWith(
+    expect(XBRLUtilities.fromFile(path.join(__dirname, 'NoXBRLS.txt'))).to.be.rejectedWith(
       'No XBRL found'
     );
   });
