@@ -1,9 +1,11 @@
 import { Request, Response, Router } from 'express';
 import { isRegistered } from '../auth/Passport';
 import CompanyInfoModel from '../../classes/db/models/CompanyInfo';
-import FilingModel, { FilingDocument } from '../../classes/db/models/Filing';
+import { FilingDocument } from '../../classes/db/models/Filing';
 import { UserDocument } from '../../classes/db/models/User';
 import Controller from './Controller.interface';
+import DemoController from './Demo.controller';
+import FinTenDB from '../../classes/db/FinTenDB';
 
 class CompanyController implements Controller {
   public readonly path = '/company';
@@ -18,6 +20,9 @@ class CompanyController implements Controller {
   private initializeRoutes() {
     this.router.get('/tickers', this.getTickers.bind(this));
     this.router.get('/filings', isRegistered, this.getFilings);
+
+    const demo: Controller = new DemoController();
+    this.router.use(demo.path, demo.router);
   }
 
   /**
@@ -119,16 +124,7 @@ class CompanyController implements Controller {
         throw new Error(`Unknown company '${ticker}'!`);
       }
 
-      let filings: FilingDocument[] = [];
-      const filingsCursor = FilingModel.find({
-        EntityCentralIndexKey: companyInfo.EntityCentralIndexKey
-      })
-        .select({ _id: 0, __v: 0 })
-        .cursor();
-
-      await filingsCursor.eachAsync(async (f: FilingDocument) => {
-        filings.push(f);
-      });
+      let filings: FilingDocument[] = await FinTenDB.getFilings(ticker);
 
       if (!user.isPremium) {
         filings = filings.slice(-8);

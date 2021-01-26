@@ -2,6 +2,8 @@ import mongoose, { Mongoose } from 'mongoose';
 import Database from './Database.interface';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { Logger } from '../logger/Logger.interface';
+import FilingModel, { FilingDocument } from './models/Filing';
+import CompanyInfoModel from './models/CompanyInfo';
 
 class FinTenDB implements Database {
   private static instance: FinTenDB | null = null;
@@ -74,6 +76,27 @@ class FinTenDB implements Database {
 
   use(client: Mongoose): void {
     this.client = client;
+  }
+
+  static async getFilings(ticker: string): Promise<FilingDocument[]> {
+    const companyInfo = await CompanyInfoModel.findByTradingSymbol(ticker);
+
+    if (companyInfo === null) {
+      throw new Error(`Unknown company '${ticker}'!`);
+    }
+
+    const filings: FilingDocument[] = [];
+    const filingsCursor = FilingModel.find({
+      EntityCentralIndexKey: companyInfo.EntityCentralIndexKey
+    })
+      .select({ _id: 0, __v: 0 })
+      .cursor();
+
+    await filingsCursor.eachAsync(async (f: FilingDocument) => {
+      filings.push(f);
+    });
+
+    return filings;
   }
 }
 
