@@ -7,10 +7,10 @@ import moment from 'moment';
 class DefaultLogger implements Logger {
   private _logLevel: LogLevel = LogLevel.INFO;
   private label: string;
-  // private output: Writable = process.stdout;
-  private output: Writable = fs.createWriteStream('logs/.log', {
-    flags: 'as+' //open for appending (create it if it doesn't exist)
-  });
+  private output: Writable = process.stdout;
+  // private output: Writable = fs.createWriteStream('logs/.log', {
+  //   flags: 'as+' //open for appending (create it if it doesn't exist)
+  // });
   private static map: Map<string, Logger> = new Map();
   private static readonly MOMENT_FORMAT: string = 'YYYY/MM/DD HH:mm:ss SSS';
 
