@@ -9,7 +9,7 @@ describe('XBRL tests', function () {
   this.slow(200);
   //extractXmlFromFile
   it('should extract xml', () => {
-    const xml = XBRLUtilities.extractXMLFromFile(path.join(__dirname, '1stXBRLvalid.txt'));
+    const xml = XBRLUtilities.extractXMLFromFile(path.join(__dirname, '1stXbrlValid.txt'));
 
     expect(xml.xml).to.not.be.undefined;
     expect(xml.xml.length).to.be.greaterThan(0);
@@ -29,21 +29,21 @@ describe('XBRL tests', function () {
 
   //extractXMLsFromFile
   it('should extract several xmls', () => {
-    const xmls = XBRLUtilities.extractXMLsFromFile(path.join(__dirname, '3rdXBRLvalid.txt'));
+    const xmls = XBRLUtilities.extractXMLsFromFile(path.join(__dirname, '3rdXbrlValid.txt'));
 
     expect(xmls.length).to.be.greaterThan(1);
   });
 
   // fromFile
   it('should return one document', (done) => {
-    XBRLUtilities.fromFile(path.join(__dirname, '1stXBRLvalid.txt')).then((d) => {
+    XBRLUtilities.fromFile(path.join(__dirname, '1stXbrlValid.txt')).then((d) => {
       expect(d).to.not.be.undefined;
       done();
     });
   });
 
   it('should return one document again', (done) => {
-    XBRLUtilities.fromFile(path.join(__dirname, '3rdXBRLvalid.txt')).then((d) => {
+    XBRLUtilities.fromFile(path.join(__dirname, '3rdXbrlValid.txt')).then((d) => {
       expect(d).to.not.be.undefined;
       done();
     });
