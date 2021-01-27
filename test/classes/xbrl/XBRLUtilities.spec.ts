@@ -17,13 +17,13 @@ describe('XBRL tests', function () {
 
   it('should not extract xml', () => {
     expect(() => {
-      XBRLUtilities.extractXMLFromFile(path.join(__dirname, 'NoXBRLS.txt'));
+      XBRLUtilities.extractXMLFromFile(path.join(__dirname, 'NoXBRLs.txt'));
     }).to.throw('No XBRL found!');
   });
 
   it('should not extract several xmls', () => {
     expect(() => {
-      XBRLUtilities.extractXMLsFromFile(path.join(__dirname, 'NoXBRLS.txt'));
+      XBRLUtilities.extractXMLsFromFile(path.join(__dirname, 'NoXBRLs.txt'));
     }).to.throw('No XBRL found!');
   });
 
@@ -50,7 +50,7 @@ describe('XBRL tests', function () {
   });
 
   it('should reject with "No XBRL found"', () => {
-    expect(XBRLUtilities.fromFile(path.join(__dirname, 'NoXBRLS.txt'))).to.be.rejectedWith(
+    expect(XBRLUtilities.fromFile(path.join(__dirname, 'NoXBRLs.txt'))).to.be.rejectedWith(
       'No XBRL found'
     );
   });
