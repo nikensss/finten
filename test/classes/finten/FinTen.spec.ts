@@ -106,8 +106,8 @@ describe('FinTen tests', function () {
       ])
       .thenResolve([
         {
-          url: 'google_url',
-          fileName: path.join(__dirname, 'google_10k.txt')
+          url: 'apple_url',
+          fileName: path.join(__dirname, 'apple_10k.txt')
         }
       ]);
 
@@ -149,8 +149,8 @@ describe('FinTen tests', function () {
       ])
       .thenResolve([
         {
-          url: 'google_url',
-          fileName: path.join(__dirname, 'google_10k.txt')
+          url: 'apple_url',
+          fileName: path.join(__dirname, 'apple_10k.txt')
         }
       ])
       .thenReject(new Error('Should not have been called a third time!'));
@@ -222,7 +222,7 @@ describe('FinTen tests', function () {
         return Promise.resolve([
           {
             url: 'url_with_error_2',
-            fileName: path.join(__dirname, 'google_10k.txt')
+            fileName: path.join(__dirname, 'apple_10k.txt')
           }
         ]);
       })
