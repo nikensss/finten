@@ -8,14 +8,15 @@ class DefaultLogger implements Logger {
   private _logLevel: LogLevel = LogLevel.INFO;
   private label: string;
   private output: Writable = process.stdout;
-  // private output: Writable = fs.createWriteStream('logs/.log', {
-  //   flags: 'as+' //open for appending (create it if it doesn't exist)
-  // });
   private static map: Map<string, Logger> = new Map();
   private static readonly MOMENT_FORMAT: string = 'YYYY/MM/DD HH:mm:ss SSS';
 
   private constructor(label: string) {
     this.label = label;
+
+    if (process.env.ENV && process.env.ENV === 'TEST') {
+      this.setOutput('logs/.log');
+    }
   }
 
   public static get(key: string): Logger {
@@ -29,7 +30,7 @@ class DefaultLogger implements Logger {
 
   setOutput(destinationFile: string): void {
     this.output = fs.createWriteStream(destinationFile, {
-      flags: 'a'
+      flags: 'as+'
     });
   }
 
