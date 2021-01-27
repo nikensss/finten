@@ -18,7 +18,10 @@ describe('User model tests', function () {
     mongod = new MongoMemoryServer();
     try {
       uri = await mongod.getUri();
-      await FinTenDB.getInstance().connect(uri);
+      if (!FinTenDB.getInstance().isConnected()) {
+        await FinTenDB.getInstance().disconnect();
+        await FinTenDB.getInstance().connect(uri);
+      }
       await UserModel.ensureIndexes();
     } catch (ex) {
       throw ex;

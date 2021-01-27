@@ -15,6 +15,7 @@ const user: User = {
 };
 
 let newUser: UserDocument;
+
 describe('Payment model tests', function () {
   this.slow(300);
 
@@ -24,7 +25,10 @@ describe('Payment model tests', function () {
     mongod = new MongoMemoryServer();
     try {
       uri = await mongod.getUri();
-      await FinTenDB.getInstance().connect(uri);
+      if (!FinTenDB.getInstance().isConnected()) {
+        await FinTenDB.getInstance().disconnect();
+        await FinTenDB.getInstance().connect(uri);
+      }
       newUser = await new UserModel(user).save();
     } catch (ex) {
       throw ex;

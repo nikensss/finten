@@ -11,8 +11,9 @@ chai.use(chaiHttp);
 
 let mongod: MongoMemoryServer, uri: string;
 
-describe('SecGov routes', function () {
+describe('API SecGov routes', function () {
   this.timeout(5000);
+
   before(async () => {
     mongod = new MongoMemoryServer();
     try {

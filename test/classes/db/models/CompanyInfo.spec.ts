@@ -18,7 +18,10 @@ describe('CompanyInfo model tests', function () {
     mongod = new MongoMemoryServer();
     try {
       uri = await mongod.getUri();
-      await FinTenDB.getInstance().connect(uri);
+      if (!FinTenDB.getInstance().isConnected()) {
+        await FinTenDB.getInstance().disconnect();
+        await FinTenDB.getInstance().connect(uri);
+      }
       await CompanyInfoModel.ensureIndexes();
     } catch (ex) {
       throw ex;

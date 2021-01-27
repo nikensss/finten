@@ -20,8 +20,10 @@ describe('FinTenDB tests', function () {
     mongod = new MongoMemoryServer();
     try {
       uri = await mongod.getUri();
-      await FinTenDB.getInstance().connect(uri);
-
+      if (!FinTenDB.getInstance().isConnected()) {
+        await FinTenDB.getInstance().disconnect();
+        await FinTenDB.getInstance().connect(uri);
+      }
       await CompanyInfoModel.ensureIndexes();
       await FilingModel.ensureIndexes();
     } catch (ex) {

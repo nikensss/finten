@@ -9,7 +9,7 @@
     "nodemon": "nodemon",
     "test": "ENV=TEST PORT=3030 mocha -r dotenv/config -r ts-node/register test/**/*.spec.ts",
     "test-debug": "PORT=3030 mocha -r dotenv/config -r ts-node/register test/**/*.spec.ts --timeout 300000",
-    "full-test": "PORT=3030 mocha --forbid-only -r dotenv/config -r ts-node/register test/**/*.spec.ts",
+    "full-test": "ENV=TEST PORT=3030 mocha --forbid-only -r dotenv/config -r ts-node/register test/**/*.spec.ts",
     "rimraf": "rm -rf node_modules && npm i",
     "lint": "eslint --fix \"src/**/*.ts\" \"test/**/*.spec.ts\"",
     "pretty": "prettier --write \"src/**/*.ts\" \"test/**/*.spec.ts\"",
