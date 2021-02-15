@@ -15,9 +15,9 @@ class Fred {
   }
 
   async getMacro(macro: Macro): Promise<FredResponse> {
-    const response = await this.http.get(this.buildUrl(macro));
+    const response = await this.http.get<FredResponse>(this.buildUrl(macro));
 
-    return response.data as FredResponse;
+    return response.data;
   }
 
   private buildUrl(macro: Macro): string {

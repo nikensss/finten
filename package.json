@@ -8,6 +8,7 @@
     "fix": "ts-node -r dotenv/config src/tests/test.ts",
     "nodemon": "nodemon",
     "test": "ENV=TEST PORT=3030 mocha -r dotenv/config -r ts-node/register test/**/*.spec.ts",
+    "learning-test": "ENV=TEST PORT=3030 mocha -r dotenv/config -r ts-node/register test/**/*.spec.learning.ts",
     "test-debug": "PORT=3030 mocha -r dotenv/config -r ts-node/register test/**/*.spec.ts --timeout 300000",
     "full-test": "ENV=TEST PORT=3030 mocha --forbid-only -r dotenv/config -r ts-node/register test/**/*.spec.ts",
     "rimraf": "rm -rf node_modules && npm i",
@@ -103,6 +104,6 @@
     "ts-mockito": "^2.6.1"
   },
   "engines": {
-    "node": "12.20.1"
+    "node": "^14.15.1"
   }
 }
