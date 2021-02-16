@@ -2,7 +2,7 @@ import Fred from '../../../src/classes/fred/Fred';
 import { expect } from 'chai';
 import Macro from '../../../src/classes/fred/Macro.enum';
 
-describe.only('Fred tests', function () {
+describe('Fred learning tests', function () {
   this.slow(12000);
 
   it('should get MANUFACTURER_DURABLE_GOODS', async () => {

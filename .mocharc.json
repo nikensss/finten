@@ -1,0 +1,8 @@
+{
+  "diff": true,
+  "extension": ["ts"],
+  "package": "./package.json",
+  "recursive": true,
+  "require": ["dotenv/config", "ts-node/register"],
+  "spec": ["test/**/*.spec.ts"]
+}
