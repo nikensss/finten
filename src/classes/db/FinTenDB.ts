@@ -3,7 +3,7 @@ import Database from './Database.interface';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { Logger } from '../logger/Logger.interface';
 import FilingModel, { FilingDocument } from './models/Filing';
-import CompanyInfoModel from './models/CompanyInfo';
+import CompanyInfoModel, { CompanyInfoDocument } from './models/CompanyInfo';
 
 class FinTenDB implements Database {
   private static instance: FinTenDB | null = null;
@@ -78,25 +78,45 @@ class FinTenDB implements Database {
     this.client = client;
   }
 
-  static async getFilings(ticker: string): Promise<FilingDocument[]> {
-    const companyInfo = await CompanyInfoModel.findByTradingSymbol(ticker);
+  async getCompanyInfo(ticker: string): Promise<CompanyInfoDocument | null> {
+    try {
+      if (!this.isConnected()) {
+        await this.connect();
+      }
 
-    if (companyInfo === null) {
-      throw new Error(`Unknown company '${ticker}'!`);
+      return await CompanyInfoModel.findByTradingSymbol(ticker);
+    } catch (ex) {
+      throw new Error(ex);
     }
+  }
 
-    const filings: FilingDocument[] = [];
-    const filingsCursor = FilingModel.find({
-      EntityCentralIndexKey: companyInfo.EntityCentralIndexKey
-    })
-      .select({ _id: 0, __v: 0 })
-      .cursor();
+  async getFilings(ticker: string): Promise<FilingDocument[]> {
+    try {
+      if (!this.isConnected()) {
+        await this.connect();
+      }
 
-    await filingsCursor.eachAsync(async (f: FilingDocument) => {
-      filings.push(f);
-    });
+      const companyInfo = await this.getCompanyInfo(ticker);
 
-    return filings;
+      if (companyInfo === null) {
+        throw new Error(`Unknown company '${ticker}'!`);
+      }
+
+      const filings: FilingDocument[] = [];
+      const cursor = FilingModel.find({
+        EntityCentralIndexKey: companyInfo.EntityCentralIndexKey
+      })
+        .select({ _id: 0, __v: 0 })
+        .cursor();
+
+      await cursor.eachAsync(async (f: FilingDocument) => {
+        filings.push(f);
+      });
+
+      return filings;
+    } catch (ex) {
+      throw new Error(ex);
+    }
   }
 }
 

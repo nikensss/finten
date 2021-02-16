@@ -5,7 +5,7 @@
   "main": "src/main.ts",
   "scripts": {
     "start": "ts-node -r dotenv/config src/main.ts",
-    "fix": "ts-node -r dotenv/config src/tests/test.ts",
+    "temp": "ts-node -r dotenv/config src/temp.ts",
     "nodemon": "nodemon",
     "test": "ENV=TEST PORT=3030 mocha -r dotenv/config -r ts-node/register test/**/*.spec.ts",
     "learning-test": "ENV=TEST PORT=3030 mocha -r dotenv/config -r ts-node/register test/**/*.spec.learning.ts",

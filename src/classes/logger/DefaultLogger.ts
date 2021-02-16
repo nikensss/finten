@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import { Logger } from './Logger.interface';
 import { LogLevel } from './LogLevel';
 import { Writable } from 'stream';
@@ -29,6 +30,10 @@ class DefaultLogger implements Logger {
   }
 
   setOutput(destinationFile: string): void {
+    if (!fs.existsSync(destinationFile)) {
+      fs.mkdirSync(path.dirname(destinationFile), { recursive: true });
+    }
+
     this.output = fs.createWriteStream(destinationFile, {
       flags: 'as+'
     });

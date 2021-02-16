@@ -9,11 +9,9 @@ class DemoController implements Controller {
   private static readonly TICKERS = [
     'AAPL',
     'AMZN',
-    'CRM',
     'FB',
     'GOOG',
     'IBM',
-    'JPM',
     'MSFT',
     'NVDA',
     'ORCL',
@@ -35,8 +33,23 @@ class DemoController implements Controller {
 
   private async getDemoFilings(req: Request, res: Response): Promise<Response> {
     try {
-      const filings = await FinTenDB.getFilings('AAPL');
-      return res.status(200).json({ filings });
+      const { ticker } = req.query;
+
+      if (typeof ticker !== 'string') {
+        throw new Error(`Invalid ticker received: ${ticker}`);
+      }
+
+      if (!DemoController.TICKERS.includes(ticker)) {
+        return res.status(403).json({ error: 'access denied' });
+      }
+
+      const filings = await FinTenDB.getInstance().getFilings(ticker);
+
+      if (ticker === 'AAPL') {
+        return res.status(200).json({ filings });
+      }
+
+      return res.status(200).json({ filings: filings.slice(-4) });
     } catch (error) {
       return res.status(500).json({ error });
     }
