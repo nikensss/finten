@@ -114,8 +114,7 @@ finten_downloads/*.idx
 .DS_Store
 .db
 src/classes/tests
-src/temp.ts
-
+src/temp
 # secrets
 
 secrets

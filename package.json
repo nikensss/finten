@@ -1,11 +1,11 @@
 {
   "name": "finten",
-  "version": "1.7.2",
+  "version": "1.8.0",
   "description": "The hypotenuse of the smallest pythagorean triples.",
   "main": "src/main.ts",
   "scripts": {
     "start": "ts-node -r dotenv/config src/main.ts",
-    "temp": "ts-node -r dotenv/config src/temp.ts",
+    "temp": "ts-node -r dotenv/config src/temp/temp.ts",
     "nodemon": "nodemon",
     "test": "ENV=TEST PORT=3030 mocha",
     "full-test": "npm run test -- --forbid-only",
