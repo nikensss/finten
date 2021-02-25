@@ -132,6 +132,7 @@ class FinTen {
     try {
       const filingsMetadata = await this.getFilingsMetadata(start, end);
       const total = filingsMetadata.length;
+
       for (
         let filingMetadata = filingsMetadata.shift();
         typeof filingMetadata !== 'undefined';
@@ -141,8 +142,8 @@ class FinTen {
         try {
           if (await this.isAlreadyVisited(filingMetadata)) continue;
 
-          const filings = await this.secgov.getFilings(filingMetadata);
-          await this.addFilings(filings);
+          const filing = await this.secgov.getFiling(filingMetadata);
+          await this.addFiling(filing);
         } catch (e) {
           this.logger.error(`Error while getting and adding filings: ${e.toString()}`);
         } finally {
@@ -168,24 +169,17 @@ class FinTen {
     }
   }
 
-  private async addFilings(filings: Downloadable[]) {
-    this.logger.info(`adding ${filings.length} filing(s)`);
-    for (const filing of filings) {
-      try {
-        await this.addFiling(filing);
-      } catch (ex) {
-        await this.handleExceptionDuringFilingCreation(filing.url, ex);
-      }
-    }
-  }
-
   private async addFiling(filing: Downloadable): Promise<void> {
-    this.logger.info('parsing xbrl...');
-    const xbrl = await XBRLUtilities.fromFile(filing.fileName);
-    const result = await this.createFiling(xbrl.get());
-    this.logger.info('added new filing!');
-    await this.createVisitedLink(filing.url, result._id);
-    this.logger.info('saved visited link!');
+    try {
+      this.logger.info('parsing xbrl...');
+      const xbrl = await XBRLUtilities.fromFile(filing.fileName);
+      const result = await this.createFiling(xbrl.get());
+      this.logger.info('added new filing!');
+      await this.createVisitedLink(filing.url, result._id);
+      this.logger.info('saved visited link!');
+    } catch (ex) {
+      await this.handleExceptionDuringFilingCreation(filing.url, ex);
+    }
   }
 
   private async getFilingsMetadata(start: number, end: number): Promise<FilingMetadata[]> {

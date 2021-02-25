@@ -1,10 +1,9 @@
-import Downloadable from './Downloadable.interface';
 import Queue from './queues/Queue.interface';
 
-interface Downloader {
-  get(...d: Downloadable[]): Promise<Downloadable[]>;
+interface Downloader<T> {
+  get(d: T): Promise<T>;
   flush(): void;
-  use(q: Queue): void;
+  use(q: Queue<T>): void;
 }
 
 export default Downloader;

@@ -8,11 +8,11 @@ import { default as LOGGER } from '../logger/DefaultLogger';
 import Downloader from './Downloader.interface';
 import { Logger } from '../logger/Logger.interface';
 
-class DownloadManager implements Downloader {
+class DownloadManager implements Downloader<Downloadable> {
   private _directory: PathLike;
   private static _activeDownloads = 0;
   private static _activeFileWrites = 0;
-  private q: Queue;
+  private q: Queue<Downloadable>;
   private logger: Logger = LOGGER.get(this.constructor.name);
 
   constructor(directory: PathLike = 'finten_downloads') {
@@ -24,10 +24,10 @@ class DownloadManager implements Downloader {
       this.logger.info('creation successful!');
     }
 
-    this.q = new DefaultQueue();
+    this.q = new DefaultQueue<Downloadable>();
   }
 
-  public use(q: Queue): void {
+  public use(q: Queue<Downloadable>): void {
     this.q = q;
   }
 
@@ -88,10 +88,9 @@ class DownloadManager implements Downloader {
    * @returns an array of string indicating the location in which the
    * downloadables were downloaded to.
    */
-  public async get(...d: Downloadable[]): Promise<Downloadable[]> {
-    this.q.flush();
-    this.queue(...d);
-    return this.dequeue();
+  public async get(d: Downloadable): Promise<Downloadable> {
+    this.q.queue(d);
+    return this._get(await this.q.pop());
   }
 
   public queue(...d: Downloadable[]): void {
@@ -126,16 +125,10 @@ class DownloadManager implements Downloader {
    */
   private async _get(d: Downloadable): Promise<Downloadable> {
     this.logger.info(`downloading: ${d.url}`);
-    let response;
 
     try {
-      response = await this.download(d.url);
+      const response = await this.download(d.url);
       if (response.status !== 200) throw new Error(`${d.url} responded with ${response.status}`);
-    } catch (e) {
-      throw new Error(`Download failed! Status: ${e.response.status}. Full message: ${e.message}`);
-    }
-
-    try {
       DownloadManager.fileWrites += 1;
       return await this.writeStream(response.data, d);
     } catch (e) {

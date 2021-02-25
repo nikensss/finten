@@ -21,30 +21,31 @@ describe('SecGov tests', function () {
   });
 
   it('should set TimedQueue for Downloader', () => {
-    const mockedDownloader: Downloader = mock<Downloader>();
-    const downloader: Downloader = instance(mockedDownloader);
+    const mockedDownloader: Downloader<Downloadable> = mock<Downloader<Downloadable>>();
+    const downloader: Downloader<Downloadable> = instance(mockedDownloader);
 
     when(mockedDownloader.use(anything())).thenCall((q: unknown) => {
       expect(q instanceof TimedQueue).to.be.true;
-      expect((q as TimedQueue).getTimer().getTimeout()).to.equal(100);
+      expect((q as TimedQueue<Downloadable>).getTimer().getTimeout()).to.equal(100);
     });
     new SecGov(downloader);
   });
 
   it('should throw error start > end', () => {
-    const mockedDownloader: Downloader = mock<Downloader>();
-    const downloader: Downloader = instance(mockedDownloader);
+    const mockedDownloader: Downloader<Downloadable> = mock<Downloader<Downloadable>>();
+    const downloader: Downloader<Downloadable> = instance(mockedDownloader);
 
     expect(new SecGov(downloader).getIndices(2015, 2014)).to.be.rejectedWith('start > end 🤯');
   });
 
   it('should call "get" 16 times', () => {
-    const mockedDownloader: Downloader = mock<Downloader>();
-    const downloader: Downloader = instance(mockedDownloader);
+    const mockedDownloader: Downloader<Downloadable> = mock<Downloader<Downloadable>>();
+    const downloader: Downloader<Downloadable> = instance(mockedDownloader);
 
-    when(mockedDownloader.get(anything())).thenResolve([
-      { url: 'mock', fileName: 'mockFileName.idx' }
-    ]);
+    when(mockedDownloader.get(anything())).thenResolve({
+      url: 'mock',
+      fileName: 'mockFileName.idx'
+    });
 
     new SecGov(downloader).getIndices(2015, 2018).then(() => {
       verify(mockedDownloader.get(anything())).times(16);
@@ -52,8 +53,8 @@ describe('SecGov tests', function () {
   });
 
   it('should call get index with the proper url', () => {
-    const mockedDownloader: Downloader = mock<Downloader>();
-    const downloader: Downloader = instance(mockedDownloader);
+    const mockedDownloader: Downloader<Downloadable> = mock<Downloader<Downloadable>>();
+    const downloader: Downloader<Downloadable> = instance(mockedDownloader);
     const expectedURL = 'https://www.sec.gov/Archives/edgar/full-index//2018/QTR1/xbrl.idx';
     const expectedFileName = '2018_QTR1_xbrl.idx';
 
@@ -102,8 +103,8 @@ describe('SecGov tests', function () {
   });
 
   it('should get EntityCentralIndexKey map', () => {
-    const mockedDownloader: Downloader = mock<Downloader>();
-    const downloader: Downloader = instance(mockedDownloader);
+    const mockedDownloader: Downloader<Downloadable> = mock<Downloader<Downloadable>>();
+    const downloader: Downloader<Downloadable> = instance(mockedDownloader);
     const expectedUrl = 'https://www.sec.gov/include/ticker.txt';
     const expectedFileName = 'ticker_ecik_map.txt';
 
@@ -117,21 +118,25 @@ describe('SecGov tests', function () {
     verify(mockedDownloader.get(anything())).once();
   });
 
-  it('should get filings through the Downloader', () => {
-    const mockedDownloader: Downloader = mock<Downloader>();
-    const downloader: Downloader = instance(mockedDownloader);
-    new SecGov(downloader).getFilings();
-    verify(mockedDownloader.get()).once();
+  it('should get filings through the Downloader', async () => {
+    const mockedDownloader: Downloader<Downloadable> = mock<Downloader<Downloadable>>();
+    const downloader: Downloader<Downloadable> = instance(mockedDownloader);
+    const secgov = new SecGov(downloader);
+    const filings = secgov.parseIndex(path.join(__dirname, 'xbrl.idx'), [
+      FormType.F10K,
+      FormType.F10Q
+    ]);
+
+    await secgov.getFilings(...filings);
+    verify(mockedDownloader.get(anything())).atLeast(filings.length);
   });
 
-  it('in getFilings(...f), it should map the downloadables with the partial url to the full url using SecGov.FILINGS_ROOT', async () => {
-    const mockedDownloader: Downloader = mock<Downloader>();
-    const downloader: Downloader = instance(mockedDownloader);
-    when(mockedDownloader.get(anything(), anything())).thenCall((...d: Downloadable[]) => {
-      for (const filing of d) {
-        expect(filing.url.startsWith('https://www.sec.gov/Archives/')).to.be.true;
-        expect(filing.url.startsWith(SecGov.FILINGS_ROOT)).to.be.true;
-      }
+  it('should find the proper SecGov url when downloading', async () => {
+    const mockedDownloader: Downloader<Downloadable> = mock<Downloader<Downloadable>>();
+    const downloader: Downloader<Downloadable> = instance(mockedDownloader);
+    when(mockedDownloader.get(anything())).thenCall((d: Downloadable) => {
+      expect(d.url.startsWith('https://www.sec.gov/Archives/')).to.be.true;
+      expect(d.url.startsWith(SecGov.FILINGS_ROOT)).to.be.true;
     });
 
     const secgov = new SecGov(downloader);
@@ -140,13 +145,12 @@ describe('SecGov tests', function () {
       FormType.F10Q
     ]);
 
-    await secgov.getFilings(filings[0], filings[1]);
-    verify(mockedDownloader.get(anything(), anything())).atLeast(1);
+    await secgov.getFilings(...filings);
   });
 
   it('should delegate flush to dm', () => {
-    const mockedDownloader: Downloader = mock<Downloader>();
-    const downloader: Downloader = instance(mockedDownloader);
+    const mockedDownloader: Downloader<Downloadable> = mock<Downloader<Downloadable>>();
+    const downloader: Downloader<Downloadable> = instance(mockedDownloader);
     new SecGov(downloader).flush();
     verify(mockedDownloader.flush()).once();
   });

@@ -91,25 +91,19 @@ describe('FinTen tests', function () {
       new FilingMetadata('320193|Apple Inc.|10-Q|2020-01-29|another_url'),
       new FilingMetadata('320193|Apple Inc.|10-Q|2020-01-29|yet_another_url')
     ]);
-    when(mockedSecGov.getFilings(anything()))
-      .thenResolve([
-        {
-          url: 'twin_disc_url',
-          fileName: path.join(__dirname, 'twin_disc_10q.txt')
-        }
-      ])
-      .thenResolve([
-        {
-          url: 'amazon_url',
-          fileName: path.join(__dirname, 'amazon_10k.txt')
-        }
-      ])
-      .thenResolve([
-        {
-          url: 'apple_url',
-          fileName: path.join(__dirname, 'apple_10k.txt')
-        }
-      ]);
+    when(mockedSecGov.getFiling(anything()))
+      .thenResolve({
+        url: 'twin_disc_url',
+        fileName: path.join(__dirname, 'twin_disc_10q.txt')
+      })
+      .thenResolve({
+        url: 'amazon_url',
+        fileName: path.join(__dirname, 'amazon_10k.txt')
+      })
+      .thenResolve({
+        url: 'apple_url',
+        fileName: path.join(__dirname, 'apple_10k.txt')
+      });
 
     const finten = new FinTen(secgov, FinTenDB.getInstance());
     await finten.addNewFilings(1, 2);
@@ -119,7 +113,7 @@ describe('FinTen tests', function () {
     expect(await VisitedLinkModel.countDocuments({ status: VisitedLinkStatus.OK }).exec()).to.equal(
       3
     );
-    verify(mockedSecGov.getFilings(anything())).times(3);
+    verify(mockedSecGov.getFiling(anything())).times(3);
   });
 
   it('should add less filings because there are visited links', async () => {
@@ -140,19 +134,15 @@ describe('FinTen tests', function () {
       new FilingMetadata('320193|Apple Inc.|10-Q|2020-01-29|yet_another_url')
     ]);
 
-    when(mockedSecGov.getFilings(anything()))
-      .thenResolve([
-        {
-          url: 'amazon_url',
-          fileName: path.join(__dirname, 'amazon_10k.txt')
-        }
-      ])
-      .thenResolve([
-        {
-          url: 'apple_url',
-          fileName: path.join(__dirname, 'apple_10k.txt')
-        }
-      ])
+    when(mockedSecGov.getFiling(anything()))
+      .thenResolve({
+        url: 'amazon_url',
+        fileName: path.join(__dirname, 'amazon_10k.txt')
+      })
+      .thenResolve({
+        url: 'apple_url',
+        fileName: path.join(__dirname, 'apple_10k.txt')
+      })
       .thenReject(new Error('Should not have been called a third time!'));
 
     const finten = new FinTen(secgov, FinTenDB.getInstance());
@@ -164,7 +154,7 @@ describe('FinTen tests', function () {
       3
     );
 
-    verify(mockedSecGov.getFilings(anything())).twice();
+    verify(mockedSecGov.getFiling(anything())).twice();
   });
 
   it('should add a VisitedLink with error when adding new filings and XBRL cannot be parsed', async () => {
@@ -180,12 +170,10 @@ describe('FinTen tests', function () {
     when(mockedSecGov.parseIndices(anything(), anything())).thenReturn([
       new FilingMetadata('320193|Apple Inc.|10-Q|2020-01-29|a_url')
     ]);
-    when(mockedSecGov.getFilings(anything())).thenResolve([
-      {
-        url: 'twin_disc_url',
-        fileName: path.join(__dirname, 'ticker_ecik_map.txt')
-      }
-    ]);
+    when(mockedSecGov.getFiling(anything())).thenResolve({
+      url: 'twin_disc_url',
+      fileName: path.join(__dirname, 'ticker_ecik_map.txt')
+    });
 
     const finten = new FinTen(secgov, FinTenDB.getInstance());
     await finten.addNewFilings(1, 2);
@@ -198,7 +186,7 @@ describe('FinTen tests', function () {
     expect(
       await VisitedLinkModel.countDocuments({ status: VisitedLinkStatus.ERROR }).exec()
     ).to.equal(1);
-    verify(mockedSecGov.getFilings(anything())).times(1);
+    verify(mockedSecGov.getFiling(anything())).times(1);
   });
 
   it('should retry problematic filings', async () => {

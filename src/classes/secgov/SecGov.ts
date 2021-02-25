@@ -23,7 +23,7 @@ class SecGov {
   public static readonly FILINGS_ROOT = 'https://www.sec.gov/Archives/';
   public static readonly ECIK_MAP_URL = 'https://www.sec.gov/include/ticker.txt';
 
-  private dm: Downloader;
+  private dm: Downloader<Downloadable>;
   /**
    * The amount of milliseconds between to API calls. SecGov has a limit of 10
    * calls per second.
@@ -31,12 +31,12 @@ class SecGov {
   public static readonly MS_BETWEEN_REQUESTS = 100;
   private logger: Logger = LOGGER.get(this.constructor.name);
 
-  constructor(dm: Downloader = new DownloadManager()) {
+  constructor(dm: Downloader<Downloadable> = new DownloadManager()) {
     if (!dm) {
       throw new TypeError('Please, provide a valid Downloader');
     }
     this.dm = dm;
-    this.dm.use(new TimedQueue(SecGov.MS_BETWEEN_REQUESTS));
+    this.dm.use(new TimedQueue<Downloadable>(SecGov.MS_BETWEEN_REQUESTS));
   }
 
   /**
@@ -50,16 +50,16 @@ class SecGov {
 
     const downloadedIndices: Downloadable[] = [];
     for (let year = start; year <= end; year++) {
-      downloadedIndices.push(...(await this.getIndex(year, Quarter.QTR1)));
-      downloadedIndices.push(...(await this.getIndex(year, Quarter.QTR2)));
-      downloadedIndices.push(...(await this.getIndex(year, Quarter.QTR3)));
-      downloadedIndices.push(...(await this.getIndex(year, Quarter.QTR4)));
+      downloadedIndices.push(await this.getIndex(year, Quarter.QTR1));
+      downloadedIndices.push(await this.getIndex(year, Quarter.QTR2));
+      downloadedIndices.push(await this.getIndex(year, Quarter.QTR3));
+      downloadedIndices.push(await this.getIndex(year, Quarter.QTR4));
     }
 
     return downloadedIndices;
   }
 
-  async getIndex(year: number, quarter: Quarter): Promise<Downloadable[]> {
+  async getIndex(year: number, quarter: Quarter): Promise<Downloadable> {
     const url = `${SecGov.INDICES_ROOT}/${year}/${quarter}/xbrl.idx`;
     return await this.dm.get({ url, fileName: `${year}_${quarter}_xbrl.idx` });
   }
@@ -99,7 +99,7 @@ class SecGov {
     }, [] as FilingMetadata[]);
   }
 
-  async getEntityCentralIndexKeyMap(): Promise<Downloadable[]> {
+  async getEntityCentralIndexKeyMap(): Promise<Downloadable> {
     this.flush();
     return await this.dm.get({
       url: SecGov.ECIK_MAP_URL,
@@ -108,7 +108,16 @@ class SecGov {
   }
 
   async getFilings(...downloadables: Downloadable[]): Promise<Downloadable[]> {
-    return await this.dm.get(...downloadables);
+    const filings = [];
+    for (const downloadable of downloadables) {
+      filings.push(await this.getFiling(downloadable));
+    }
+
+    return filings;
+  }
+
+  async getFiling(downloadable: Downloadable): Promise<Downloadable> {
+    return await this.dm.get(downloadable);
   }
 
   flush(): void {

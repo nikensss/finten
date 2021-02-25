@@ -1,6 +1,4 @@
-import Downloadable from '../Downloadable.interface';
-
-interface Queue {
+interface Queue<T> {
   /**
    * Indicates whether the queue is empty.
    *
@@ -12,17 +10,19 @@ interface Queue {
    *
    * @param d Element to be added to the queue
    */
-  queue(...d: Downloadable[]): void;
+  queue(...d: T[]): void;
 
   /**
    * Return the first element of the queue.
    */
-  shift(): Promise<Downloadable>;
+  shift(): Promise<T>;
 
   /**
    * Empties the queue
    */
   flush(): void;
+
+  pop(): Promise<T>;
 }
 
 export default Queue;

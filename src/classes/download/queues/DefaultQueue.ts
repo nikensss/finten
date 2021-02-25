@@ -1,14 +1,13 @@
-import Downloadable from '../Downloadable.interface';
 import Queue from './Queue.interface';
 
-class DefaultQueue implements Queue {
-  private q: Downloadable[] = [];
+class DefaultQueue<T> implements Queue<T> {
+  private q: T[] = [];
 
   isEmpty(): boolean {
     return this.q.length === 0;
   }
 
-  queue(...d: Downloadable[]): void {
+  queue(...d: T[]): void {
     this.q.push(...d);
   }
 
@@ -16,12 +15,20 @@ class DefaultQueue implements Queue {
     this.q = [];
   }
 
-  async shift(): Promise<Downloadable> {
+  async shift(): Promise<T> {
     const next = this.q.shift();
     if (typeof next === 'undefined') {
       throw new Error('Empty queue');
     }
     return Promise.resolve(next);
+  }
+
+  async pop(): Promise<T> {
+    const last = this.q.pop();
+    if (typeof last === 'undefined') {
+      throw new Error('Empty queue');
+    }
+    return Promise.resolve(last);
   }
 }
 
