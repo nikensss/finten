@@ -1,4 +1,4 @@
-import SecGovTxtParser from '../../../src/classes/secgov/SecGovTxtParser';
+import SecGovTextParser from '../../../src/classes/secgov/SecGovTextParser';
 import { expect } from 'chai';
 
 describe('SecGov Text file Parser tests', function () {
@@ -14,7 +14,7 @@ describe('SecGov Text file Parser tests', function () {
     ];
 
     for await (const p of paths) {
-      const parser = new SecGovTxtParser(p);
+      const parser = new SecGovTextParser(p);
       const xmls: string[] = [];
 
       while (await parser.hasNext()) {
@@ -28,7 +28,7 @@ describe('SecGov Text file Parser tests', function () {
   it('should parse 0 files', async () => {
     const path = 'test/classes/secgov/samples/NoXBRLs.txt';
 
-    const parser = new SecGovTxtParser(path);
+    const parser = new SecGovTextParser(path);
     const xmls: string[] = [];
 
     while (await parser.hasNext()) {

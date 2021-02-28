@@ -2,7 +2,7 @@ import { PathLike } from 'fs';
 import { parseStr } from 'parse-xbrl';
 import { Filing } from '../db/models/Filing';
 import XBRL from './XBRL';
-import SecGovTxtParser from '../secgov/SecGovTxtParser';
+import SecGovTextParser from '../secgov/SecGovTextParser';
 
 class XBRLUtilities {
   public static async fromFiles(paths: PathLike[]): Promise<XBRL[]> {
@@ -11,7 +11,7 @@ class XBRLUtilities {
 
   public static async fromFile(path: PathLike): Promise<XBRL> {
     const exceptions: string[] = [];
-    const parser: SecGovTxtParser = new SecGovTxtParser(path);
+    const parser: SecGovTextParser = new SecGovTextParser(path);
 
     while (await parser.hasNext()) {
       try {

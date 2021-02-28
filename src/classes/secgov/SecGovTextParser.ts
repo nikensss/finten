@@ -5,7 +5,7 @@ import { resolve } from 'path';
  * Extracts XBRL sections from a .txt file from SecGov.
  *
  */
-class SecGovTxtParser {
+class SecGovTextParser {
   private file: string;
   private fileRead = false;
   private sections: string[] = [];
@@ -49,8 +49,8 @@ class SecGovTxtParser {
     let offset = 0;
 
     while (!this.fileRead) {
-      const start = lines.indexOf(SecGovTxtParser.OPENING_TAG, offset);
-      const end = lines.indexOf(SecGovTxtParser.CLOSING_TAG, start);
+      const start = lines.indexOf(SecGovTextParser.OPENING_TAG, offset);
+      const end = lines.indexOf(SecGovTextParser.CLOSING_TAG, start);
       offset = end;
 
       if (start === -1 || end === -1) {
@@ -63,4 +63,4 @@ class SecGovTxtParser {
   }
 }
 
-export default SecGovTxtParser;
+export default SecGovTextParser;
