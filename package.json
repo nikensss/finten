@@ -6,9 +6,9 @@
   "scripts": {
     "start": "ts-node -r dotenv/config src/main.ts",
     "temp": "ts-node -r dotenv/config src/temp/temp.ts",
-    "nodemon": "nodemon",
+    "nodemon": "nodemon --ignore test",
     "test": "ENV=TEST PORT=3030 DOTENV_CONFIG_PATH=.env.test ts-mocha",
-    "test:watch": "npm run test -- --watch",
+    "test:watch": "nodemon --exec 'npm run test'",
     "full-test": "npm run test -- --forbid-only",
     "learning-test": "npm run test -- 'test/**/*.spec.learning.ts'",
     "test-debug": "npm run test -- --timeout 300000",
@@ -20,13 +20,12 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "**/*.test.ts",
-      "**/*.spec.ts",
       ".git",
       "node_modules"
     ],
     "watch": [
-      "src"
+      "src",
+      "test"
     ],
     "exec": "npm start",
     "ext": "ts"

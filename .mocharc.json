@@ -4,6 +4,5 @@
   "package": "./package.json",
   "recursive": true,
   "require": ["dotenv/config"],
-  "spec": ["test/**/*.spec.ts"],
-  "watch-files":["src/**/*.ts", "test/**/*.spec.ts"]
+  "spec": ["test/**/*.spec.ts"]
 }
