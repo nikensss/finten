@@ -3,6 +3,7 @@
   "extension": ["ts"],
   "package": "./package.json",
   "recursive": true,
-  "require": ["dotenv/config", "ts-node/register"],
-  "spec": ["test/**/*.spec.ts"]
+  "require": ["dotenv/config"],
+  "spec": ["test/**/*.spec.ts"],
+  "watch-files":["src/**/*.ts", "test/**/*.spec.ts"]
 }
