@@ -1,5 +1,4 @@
 import express, { Application } from 'express';
-import bodyParser from 'body-parser';
 import { default as LOGGER } from '../classes/logger/DefaultLogger';
 import cors from 'cors';
 import { Server } from 'http';
@@ -21,6 +20,7 @@ class FinTenAPI {
   private readonly app: Application;
   private readonly port: number = parseInt(process.env.PORT || '3000');
   private logger: Logger = LOGGER.get(this.constructor.name);
+  private server: Server | null = null;
 
   constructor(controllers: Controller[]) {
     this.app = express();
@@ -30,8 +30,8 @@ class FinTenAPI {
 
   private initializeMiddlewares() {
     this.app.use(cors());
-    this.app.use(bodyParser.json());
-    this.app.use(bodyParser.urlencoded({ extended: false }));
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true }));
 
     //logging middleware
     this.app.use('', (req, res, next) => {
@@ -60,11 +60,31 @@ class FinTenAPI {
   }
 
   listen(): Server {
+    if (this.server !== null) {
+      return this.server;
+    }
+
     //TODO: ensure test cases don't connect to the real database!
     if (!FinTenDB.getInstance().isConnected()) {
       FinTenDB.getInstance().connect();
     }
-    return this.app.listen(this.port, () => this.logger.info(`Listening on port ${this.port}!`));
+
+    this.server = this.app.listen(this.port, () =>
+      this.logger.info(`Listening on port ${this.port}!`)
+    );
+
+    return this.server;
+  }
+
+  async stop(): Promise<void> {
+    if (FinTenDB.getInstance().isConnected()) {
+      await FinTenDB.getInstance().disconnect();
+    }
+
+    if (this.server !== null) {
+      this.server.close();
+      this.server = null;
+    }
   }
 }
 

@@ -1,9 +1,7 @@
 import SecGovTextParser from '../../../src/classes/secgov/SecGovTextParser';
 import { expect } from 'chai';
 
-after('after all', () => console.log('after all hook!'));
-
-describe.only('SecGov Text file Parser tests', function () {
+describe('SecGov Text file Parser tests', function () {
   this.slow(2000);
 
   it('should parse 6 files', async () => {
