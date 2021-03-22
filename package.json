@@ -1,6 +1,6 @@
 {
   "name": "finten",
-  "version": "1.8.3",
+  "version": "1.8.4",
   "description": "The hypotenuse of the smallest pythagorean triples.",
   "main": "src/main.ts",
   "scripts": {
@@ -73,7 +73,7 @@
     "mongoose": "^5.10.7",
     "nodemon": "^2.0.4",
     "ora": "^4.0.4",
-    "parse-xbrl": "https://github.com/weirwoodai/parse-xbrl",
+    "parse-xbrl": "git+https://weirwoodai@github.com/weirwoodai/parse-xbrl.git",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "supertest": "^4.0.2",
