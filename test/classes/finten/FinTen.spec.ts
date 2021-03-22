@@ -193,36 +193,30 @@ describe('FinTen tests', function () {
     const mockedSecGov = mock(SecGov);
     const secgov = instance(mockedSecGov);
 
-    when(mockedSecGov.getFilings(anything()))
+    when(mockedSecGov.getFiling(anything()))
       .thenCall((...d: Downloadable[]) => {
         expect(d.length).to.equal(1);
         expect(d[0].url).to.equal('url_with_error_1');
-        return Promise.resolve([
-          {
-            url: 'url_with_error_1',
-            fileName: path.join(__dirname, 'amazon_10k.txt')
-          }
-        ]);
+        return Promise.resolve({
+          url: 'url_with_error_1',
+          fileName: path.join(__dirname, 'amazon_10k.txt')
+        });
       })
       .thenCall((...d: Downloadable[]) => {
         expect(d.length).to.equal(1);
         expect(d[0].url).to.equal('url_with_error_2');
-        return Promise.resolve([
-          {
-            url: 'url_with_error_2',
-            fileName: path.join(__dirname, 'apple_10k.txt')
-          }
-        ]);
+        return Promise.resolve({
+          url: 'url_with_error_2',
+          fileName: path.join(__dirname, 'apple_10k.txt')
+        });
       })
       .thenCall((...d: Downloadable[]) => {
         expect(d.length).to.equal(1);
         expect(d[0].url).to.equal('url_with_error_3');
-        return Promise.resolve([
-          {
-            url: 'url_with_error_3',
-            fileName: path.join(__dirname, 'costco_inc_10k.txt')
-          }
-        ]);
+        return Promise.resolve({
+          url: 'url_with_error_3',
+          fileName: path.join(__dirname, 'costco_inc_10k.txt')
+        });
       })
       .thenReject(new Error('Should not have been called a 4th time!'));
 
@@ -231,39 +225,35 @@ describe('FinTen tests', function () {
 
     await finten.retryProblematicFilings();
 
-    expect(await FilingModel.countDocuments().exec()).to.equal(3);
+    expect(await FilingModel.countDocuments().exec()).to.equal(3, 'Amount of filings differs');
     expect(await VisitedLinkModel.countDocuments().exec()).to.equal(4);
     expect(await VisitedLinkModel.countDocuments({ status: VisitedLinkStatus.OK }).exec()).to.equal(
       4
     );
 
-    verify(mockedSecGov.getFilings(anything())).times(3);
+    verify(mockedSecGov.getFiling(anything())).times(3);
   });
 
   it('should retry problematic filings, fail the parsing and deal with it elegantly', async () => {
     const mockedSecGov: SecGov = mock(SecGov);
     const secgov: SecGov = instance(mockedSecGov);
 
-    when(mockedSecGov.getFilings(anything()))
+    when(mockedSecGov.getFiling(anything()))
       .thenCall((...d: Downloadable[]) => {
         expect(d.length).to.equal(1);
         expect(d[0].url).to.equal('url_with_error_1');
-        return Promise.resolve([
-          {
-            url: 'url_with_error_1',
-            fileName: path.join(__dirname, 'ticker_ecik_map.txt')
-          }
-        ]);
+        return Promise.resolve({
+          url: 'url_with_error_1',
+          fileName: path.join(__dirname, 'ticker_ecik_map.txt')
+        });
       })
       .thenCall((...d: Downloadable[]) => {
         expect(d.length).to.equal(1);
         expect(d[0].url).to.equal('url_with_error_2');
-        return Promise.resolve([
-          {
-            url: 'url_with_error_2',
-            fileName: path.join(__dirname, 'ticker_ecik_map.txt')
-          }
-        ]);
+        return Promise.resolve({
+          url: 'url_with_error_2',
+          fileName: path.join(__dirname, 'ticker_ecik_map.txt')
+        });
       })
       .thenCall((...d: Downloadable[]) => {
         expect(d.length).to.equal(1);
@@ -286,7 +276,7 @@ describe('FinTen tests', function () {
       1
     );
 
-    verify(mockedSecGov.getFilings(anything())).times(3);
+    verify(mockedSecGov.getFiling(anything())).times(3);
   });
 });
 
