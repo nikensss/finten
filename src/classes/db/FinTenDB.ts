@@ -48,7 +48,7 @@ class FinTenDB implements Database {
   }
 
   public isConnected(): boolean {
-    return this.client.connection.readyState === this.client.connection.states.connected;
+    return this.client.connection.readyState === this.client.STATES.connected;
   }
 
   private static get URI(): string {
