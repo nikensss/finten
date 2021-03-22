@@ -75,7 +75,7 @@ UserSchema.virtual('lastPayment').get(function (
 });
 
 UserSchema.methods.checkPassword = function (password: string): Promise<boolean> {
-  return Encrypter.compare(password, ((this as unknown) as UserBaseDocument).password);
+  return Encrypter.compare(password, this.password);
 };
 
 /**
