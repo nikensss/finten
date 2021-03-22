@@ -200,30 +200,37 @@ class FinTen {
     try {
       this.logger.info('Getting broken links');
       const cursor = VisitedLinkModel.find({ status: VisitedLinkStatus.ERROR }).cursor();
-      await cursor.eachAsync(async (visitedLink: VisitedLinkDocument) => {
-        const downloadable: Downloadable = {
-          url: visitedLink.url,
-          fileName: 'filing.txt'
-        };
-
-        const filings = await this.secgov.getFilings(downloadable);
-
-        for (const filing of filings) {
-          try {
-            const xbrl = await XBRLUtilities.fromFile(filing.fileName);
-            const result = await this.createFiling(xbrl.get());
-            await visitedLink.hasBeenFixed(result._id);
-            await visitedLink.save();
-            this.logger.info(`Could now parse from ${filing.url}!`);
-          } catch (ex) {
-            this.logger.info(`Could not parse from ${filing.url}. Error: ${ex}`);
+      await cursor.eachAsync(async (visitedLink: VisitedLinkDocument | VisitedLinkDocument[]) => {
+        if (Array.isArray(visitedLink)) {
+          for (const l of visitedLink) {
+            await this.revisitLink(l);
           }
+        } else {
+          await this.revisitLink(visitedLink);
         }
         this.secgov.flush();
       });
       this.secgov.flush();
     } catch (e) {
       this.logger.error(`Could not retry problematic filings: ${e.toString()}`);
+    }
+  }
+
+  private async revisitLink(visitedLink: VisitedLinkDocument) {
+    const downloadable: Downloadable = {
+      url: visitedLink.url,
+      fileName: 'filing.txt'
+    };
+
+    try {
+      const filing = await this.secgov.getFiling(downloadable);
+      const xbrl = await XBRLUtilities.fromFile(filing.fileName);
+      const result = await this.createFiling(xbrl.get());
+      await visitedLink.hasBeenFixed(result._id);
+      await visitedLink.save();
+      this.logger.info(`Could now parse from ${filing.url}!`);
+    } catch (ex) {
+      this.logger.info(`Could not parse from ${downloadable.url}. Error: ${ex}`);
     }
   }
 

@@ -19,9 +19,7 @@ class FinTenDB implements Database {
   }
 
   async connect(uri?: string): Promise<Database> {
-    if (this.isConnected()) {
-      return this;
-    }
+    if (this.isConnected()) return this;
 
     try {
       this.logger.info('connecting...');
@@ -80,9 +78,7 @@ class FinTenDB implements Database {
 
   async getCompanyInfo(ticker: string): Promise<CompanyInfoDocument | null> {
     try {
-      if (!this.isConnected()) {
-        await this.connect();
-      }
+      if (!this.isConnected()) await this.connect();
 
       return await CompanyInfoModel.findByTradingSymbol(ticker);
     } catch (ex) {
@@ -92,9 +88,7 @@ class FinTenDB implements Database {
 
   async getFilings(ticker: string): Promise<FilingDocument[]> {
     try {
-      if (!this.isConnected()) {
-        await this.connect();
-      }
+      if (!this.isConnected()) await this.connect();
 
       const companyInfo = await this.getCompanyInfo(ticker);
 
@@ -109,8 +103,8 @@ class FinTenDB implements Database {
         .select({ _id: 0, __v: 0 })
         .cursor();
 
-      await cursor.eachAsync(async (f: FilingDocument) => {
-        filings.push(f);
+      await cursor.eachAsync(async (f: FilingDocument | FilingDocument[]) => {
+        Array.isArray(f) ? filings.push(...f) : filings.push(f);
       });
 
       return filings;
