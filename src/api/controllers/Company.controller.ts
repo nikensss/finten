@@ -136,7 +136,7 @@ class CompanyController implements Controller {
         companyInfo
       });
     } catch (ex) {
-      return res.status(500).json({ error: ex });
+      return res.status(500).send(ex.message);
     }
   }
 }
