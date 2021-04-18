@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
-import mongoose, { Model, Schema, Document } from 'mongoose';
-import fs from 'fs';
 import csv from 'csv-parser';
+import fs from 'fs';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 /**
  * Reflects all the fields from the Schema
@@ -105,7 +105,7 @@ export interface CompanyInfoModel extends Model<CompanyInfoDocument> {
 }
 
 /**
- * When importing this, call it TickerModule
+ * When importing this, call it CompanyInfoModel
  */
 export default mongoose.model<CompanyInfoDocument, CompanyInfoModel>(
   'CompanyInfo',

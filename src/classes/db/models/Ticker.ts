@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
-import mongoose, { Model, Schema, Document } from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 /**
  * Reflects all the fields from the Schema
@@ -42,9 +42,7 @@ TickerSchema.statics.findByEntityCentralIndexKey = async function (
 
 TickerSchema.statics.parse = function (s: string) {
   //the file from SecGov has the following structure: "aapl\t320193\n"
-  s; // ?
   const match = s.match(/(?<TradingSymbol>[^\s]+)[^\w]*(?<EntityCentralIndexKey>[0-9]+)/);
-  match; // ?
   if (match === null || typeof match.groups === 'undefined') {
     throw new Error(`Can't parse '${s}'`);
   }

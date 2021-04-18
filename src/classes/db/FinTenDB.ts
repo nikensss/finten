@@ -1,16 +1,24 @@
 import mongoose, { Mongoose } from 'mongoose';
-import Database from './Database.interface';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { Logger } from '../logger/Logger.interface';
-import FilingModel, { FilingDocument } from './models/Filing';
-import CompanyInfoModel, { CompanyInfoDocument } from './models/CompanyInfo';
+import Database from './Database.interface';
+import { CompanyInfoDocument } from './models/CompanyInfo';
+import { FilingDocument } from './models/Filing';
+import { DatabaseState } from './states/DatabaseSate';
+import { OfflineState } from './states/OfflineState';
+import { OnlineState } from './states/OnlineState';
 
 class FinTenDB implements Database {
   private static instance: FinTenDB | null = null;
   private client: Mongoose = mongoose;
   private logger: Logger = LOGGER.get(this.constructor.name);
+  private state: DatabaseState;
 
-  static getInstance(): FinTenDB {
+  private constructor() {
+    this.state = new OfflineState(this);
+  }
+
+  static getInstance(): Database {
     if (FinTenDB.instance === null) {
       FinTenDB.instance = new FinTenDB();
     }
@@ -33,6 +41,9 @@ class FinTenDB implements Database {
         keepAliveInitialDelay: 300000
       });
       this.logger.info('Database connected!');
+      const offline = this.state;
+      this.state = new OnlineState(this);
+      await offline.deactivate();
 
       return this;
     } catch (ex) {
@@ -42,6 +53,9 @@ class FinTenDB implements Database {
   }
 
   async disconnect(): Promise<void> {
+    const online = this.state;
+    this.state = new OfflineState(this);
+    await online.deactivate();
     return await this.client.disconnect();
   }
 
@@ -77,40 +91,11 @@ class FinTenDB implements Database {
   }
 
   async getCompanyInfo(ticker: string): Promise<CompanyInfoDocument | null> {
-    try {
-      if (!this.isConnected()) await this.connect();
-
-      return await CompanyInfoModel.findByTradingSymbol(ticker);
-    } catch (ex) {
-      throw new Error(ex);
-    }
+    return this.state.getCompanyInfo(ticker);
   }
 
   async getFilings(ticker: string): Promise<FilingDocument[]> {
-    try {
-      if (!this.isConnected()) await this.connect();
-
-      const companyInfo = await this.getCompanyInfo(ticker);
-
-      if (companyInfo === null) {
-        throw new Error(`Unknown company '${ticker}'!`);
-      }
-
-      const filings: FilingDocument[] = [];
-      const cursor = FilingModel.find({
-        EntityCentralIndexKey: companyInfo.EntityCentralIndexKey
-      })
-        .select({ _id: 0, __v: 0 })
-        .cursor();
-
-      await cursor.eachAsync(async (f: FilingDocument | FilingDocument[]) => {
-        Array.isArray(f) ? filings.push(...f) : filings.push(f);
-      });
-
-      return filings;
-    } catch (ex) {
-      throw new Error(ex);
-    }
+    return this.state.getFilings(ticker);
   }
 }
 
