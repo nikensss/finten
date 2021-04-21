@@ -1,10 +1,10 @@
-import express, { Application } from 'express';
-import { default as LOGGER } from '../classes/logger/DefaultLogger';
 import cors from 'cors';
+import express, { Application } from 'express';
 import { Server } from 'http';
-import Controller from './controllers/Controller.interface';
 import FinTenDB from '../classes/db/FinTenDB';
+import { default as LOGGER } from '../classes/logger/DefaultLogger';
 import { Logger } from '../classes/logger/Logger.interface';
+import Controller from './controllers/Controller.interface';
 
 /**
  * Connects our FinTen database to the Internet so that other people can use the
@@ -36,7 +36,6 @@ class FinTenAPI {
     //logging middleware
     this.app.use('', (req, res, next) => {
       this.logger.info(`requested ${req.url} (${req.method})`, {
-        headers: req.headers,
         originalUrl: req.originalUrl,
         body: req.body,
         params: req.params,
