@@ -16,6 +16,21 @@ class FinTenDB implements Database {
 
   private constructor() {
     this.state = new OfflineState(this);
+
+    this.client.connection
+      .on('connected', async () => {
+        this.logger.info('Database connected!');
+        const offline = this.state;
+        this.state = new OnlineState(this);
+        await offline.deactivate();
+        this.logger.debug('All pending operations performed!');
+      })
+      .on('disconnected', async () => {
+        this.logger.info('Database disconnected!');
+        const online = this.state;
+        this.state = new OfflineState(this);
+        await online.deactivate();
+      });
   }
 
   static getInstance(): Database {
@@ -40,10 +55,6 @@ class FinTenDB implements Database {
         keepAlive: true,
         keepAliveInitialDelay: 300000
       });
-      this.logger.info('Database connected!');
-      const offline = this.state;
-      this.state = new OnlineState(this);
-      await offline.deactivate();
 
       return this;
     } catch (ex) {
@@ -53,9 +64,6 @@ class FinTenDB implements Database {
   }
 
   async disconnect(): Promise<void> {
-    const online = this.state;
-    this.state = new OfflineState(this);
-    await online.deactivate();
     return await this.client.disconnect();
   }
 
