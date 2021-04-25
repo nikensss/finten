@@ -1,8 +1,8 @@
+import { parseStr } from '@weirwoodai/parse-xbrl';
 import { PathLike } from 'fs';
-import { parseStr } from 'parse-xbrl';
 import { Filing } from '../db/models/Filing';
-import XBRL from './XBRL';
 import SecGovTextParser from '../secgov/SecGovTextParser';
+import XBRL from './XBRL';
 
 class XBRLUtilities {
   public static async fromFiles(paths: PathLike[]): Promise<XBRL[]> {
