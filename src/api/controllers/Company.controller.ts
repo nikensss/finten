@@ -1,11 +1,11 @@
 import { Request, Response, Router } from 'express';
-import { isRegistered } from '../auth/Passport';
+import FinTenDB from '../../classes/db/FinTenDB';
 import CompanyInfoModel from '../../classes/db/models/CompanyInfo';
 import { FilingDocument } from '../../classes/db/models/Filing';
 import { UserDocument } from '../../classes/db/models/User';
+import { isRegistered } from '../auth/Passport';
 import Controller from './Controller.interface';
 import DemoController from './Demo.controller';
-import FinTenDB from '../../classes/db/FinTenDB';
 
 class CompanyController implements Controller {
   public readonly path = '/company';
@@ -55,7 +55,7 @@ class CompanyController implements Controller {
           .exec()
       )
         .map((d) => d.TradingSymbol)
-        .filter((tradingSymbol) => typeof tradingSymbol === 'string') as string[];
+        .filter((tradingSymbol): tradingSymbol is string => typeof tradingSymbol === 'string');
     }
 
     return res.status(200).json({ tickers: this.tickers });
