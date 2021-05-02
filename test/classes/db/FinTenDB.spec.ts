@@ -1,13 +1,13 @@
+import { fail } from 'assert';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import { promises as fs } from 'fs';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import path from 'path';
 import FinTenDB from '../../../src/classes/db/FinTenDB';
-import XBRLUtilities from '../../../src/classes/xbrl/XBRLUtilities';
-import { promises as fs } from 'fs';
-import { fail } from 'assert';
-import FilingModel, { FilingDocument } from '../../../src/classes/db/models/Filing';
 import CompanyInfoModel, { CompanyInfo } from '../../../src/classes/db/models/CompanyInfo';
+import FilingModel, { FilingDocument } from '../../../src/classes/db/models/Filing';
+import XBRLUtilities from '../../../src/classes/xbrl/XBRLUtilities';
 
 chai.use(chaiAsPromised);
 
@@ -136,14 +136,20 @@ describe('FinTenDB tests', function () {
 
       await FilingModel.find({})
         .cursor()
-        .eachAsync(async (filing: FilingDocument) => {
+        .eachAsync(async (filing: FilingDocument | FilingDocument[]) => {
+          if (Array.isArray(filing)) {
+            throw new Error('Received array! Not expecting one!');
+          }
           filing.TradingSymbol = 'FOO';
           return await filing.save();
         });
 
       await FilingModel.find({})
         .cursor()
-        .eachAsync((filing: FilingDocument) => {
+        .eachAsync(async (filing: FilingDocument | FilingDocument[]) => {
+          if (Array.isArray(filing)) {
+            throw new Error('Received array! Not expecting one!');
+          }
           expect(filing.TradingSymbol).to.equal('FOO');
         });
     } catch (ex) {

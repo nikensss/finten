@@ -1,12 +1,12 @@
 import fs from 'fs';
+import moment from 'moment';
 import path from 'path';
+import { Writable } from 'stream';
 import { Logger } from './Logger.interface';
 import { LogLevel } from './LogLevel';
-import { Writable } from 'stream';
-import moment from 'moment';
 
 class DefaultLogger implements Logger {
-  private _logLevel: LogLevel = LogLevel.INFO;
+  private _logLevel: LogLevel = LogLevel.DEBUG;
   private label: string;
   private output: Writable = process.stdout;
   private static map: Map<string, Logger> = new Map();
@@ -15,7 +15,7 @@ class DefaultLogger implements Logger {
   private constructor(label: string) {
     this.label = label;
 
-    if (process.env.ENV && process.env.ENV === 'TEST') {
+    if (process.env.ENV === 'TEST') {
       this.setOutput('logs/.log');
     }
   }
