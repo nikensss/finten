@@ -9,7 +9,7 @@ import TimedQueue from '../../../src/classes/download/queues/TimedQueue';
 import FilingMetadata from '../../../src/classes/filings/FilingMetadata';
 import FormType from '../../../src/classes/filings/FormType.enum';
 import SecGov from '../../../src/classes/secgov/SecGov';
-import { Quarter } from '../../../src/classes/time/Quarter.enum';
+import { Quarter } from '../../../src/classes/time/Quarter';
 
 chai.use(chaiAsPromised);
 

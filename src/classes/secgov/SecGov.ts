@@ -7,7 +7,7 @@ import FilingMetadata from '../filings/FilingMetadata';
 import FormType from '../filings/FormType.enum';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { Logger } from '../logger/Logger.interface';
-import { Quarter } from '../time/Quarter.enum';
+import { Quarter } from '../time/Quarter';
 
 /**
  * The SecGov class is a wrapper around the SecGov API so that filings can be
@@ -49,10 +49,9 @@ class SecGov {
     if (start > end) throw new Error('start > end 🤯');
 
     const downloadedIndices: Downloadable[] = [];
-    const quarters = [Quarter.QTR1, Quarter.QTR2, Quarter.QTR3, Quarter.QTR4];
     for (let year = start; year <= end; year++) {
-      for (const quarter of quarters) {
-        if (this.isInTheFuture(year, quarter)) continue;
+      for (const quarter of Quarter.all()) {
+        if (quarter.isInTheFuture(year)) continue;
         downloadedIndices.push(await this.getIndex(year, quarter));
       }
     }
@@ -61,8 +60,9 @@ class SecGov {
   }
 
   async getIndex(year: number, quarter: Quarter): Promise<Downloadable> {
-    const url = `${SecGov.INDICES_ROOT}/${year}/${quarter}/xbrl.idx`;
-    return await this.dm.get({ url, fileName: `${year}_${quarter}_xbrl.idx` });
+    const url = `${SecGov.INDICES_ROOT}/${year}/${quarter.toString()}/xbrl.idx`;
+    const fileName = `${year}_${quarter.toString()}_xbrl.idx`;
+    return await this.dm.get({ url, fileName });
   }
 
   /**
@@ -123,19 +123,6 @@ class SecGov {
 
   flush(): void {
     this.dm.flush();
-  }
-
-  private isInTheFuture(year: number, quarter: Quarter): boolean {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    if (year > currentYear) return true;
-
-    const quarterIndex = parseInt(quarter.slice(-1));
-    const monthBeginningOfQuarter = quarterIndex * 3 - 2;
-    const month = now.getMonth() + 1;
-
-    if (monthBeginningOfQuarter >= month) return true;
-    return false;
   }
 }
 
