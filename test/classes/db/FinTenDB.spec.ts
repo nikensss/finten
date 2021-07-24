@@ -96,7 +96,7 @@ describe('FinTenDB tests', function () {
     expect(companies.length).to.be.equal(2);
   });
 
-  it('should retrieve all filings', async () => {
+  it.skip('should retrieve all filings', async () => {
     try {
       const EXPECTED_TOTAL = 40;
       let total = 0;
@@ -122,7 +122,7 @@ describe('FinTenDB tests', function () {
     }
   });
 
-  it('should update TradingSymbol', async () => {
+  it.skip('should update TradingSymbol', async () => {
     try {
       await FinTenDB.getInstance().connect(uri);
 
