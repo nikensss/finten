@@ -1,13 +1,13 @@
-import { Quarter } from '../xbrl/XBRL';
-import TimedQueue from '../download/queues/TimedQueue';
 import fs, { PathLike } from 'fs';
-import FilingMetadata from '../filings/FilingMetadata';
-import FormType from '../filings/FormType.enum';
-import { default as LOGGER } from '../logger/DefaultLogger';
 import Downloadable from '../download/Downloadable.interface';
 import Downloader from '../download/Downloader.interface';
 import DownloadManager from '../download/DownloadManager';
+import TimedQueue from '../download/queues/TimedQueue';
+import FilingMetadata from '../filings/FilingMetadata';
+import FormType from '../filings/FormType.enum';
+import { default as LOGGER } from '../logger/DefaultLogger';
 import { Logger } from '../logger/Logger.interface';
+import { Quarter } from '../time/Quarter.enum';
 
 /**
  * The SecGov class is a wrapper around the SecGov API so that filings can be
@@ -49,11 +49,12 @@ class SecGov {
     if (start > end) throw new Error('start > end 🤯');
 
     const downloadedIndices: Downloadable[] = [];
+    const quarters = [Quarter.QTR1, Quarter.QTR2, Quarter.QTR3, Quarter.QTR4];
     for (let year = start; year <= end; year++) {
-      downloadedIndices.push(await this.getIndex(year, Quarter.QTR1));
-      downloadedIndices.push(await this.getIndex(year, Quarter.QTR2));
-      downloadedIndices.push(await this.getIndex(year, Quarter.QTR3));
-      downloadedIndices.push(await this.getIndex(year, Quarter.QTR4));
+      for (const quarter of quarters) {
+        if (this.isInTheFuture(year, quarter)) continue;
+        downloadedIndices.push(await this.getIndex(year, quarter));
+      }
     }
 
     return downloadedIndices;
@@ -122,6 +123,19 @@ class SecGov {
 
   flush(): void {
     this.dm.flush();
+  }
+
+  private isInTheFuture(year: number, quarter: Quarter): boolean {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    if (year > currentYear) return true;
+
+    const quarterIndex = parseInt(quarter.slice(-1));
+    const monthBeginningOfQuarter = quarterIndex * 3 - 2;
+    const month = now.getMonth() + 1;
+
+    if (monthBeginningOfQuarter >= month) return true;
+    return false;
   }
 }
 

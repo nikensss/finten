@@ -1,12 +1,12 @@
+import axios, { AxiosPromise } from 'axios';
 import fs, { PathLike } from 'fs';
 import path from 'path';
-import axios, { AxiosPromise } from 'axios';
-import Downloadable from './Downloadable.interface';
-import Queue from './queues/Queue.interface';
-import DefaultQueue from './queues/DefaultQueue';
 import { default as LOGGER } from '../logger/DefaultLogger';
-import Downloader from './Downloader.interface';
 import { Logger } from '../logger/Logger.interface';
+import Downloadable from './Downloadable.interface';
+import Downloader from './Downloader.interface';
+import DefaultQueue from './queues/DefaultQueue';
+import Queue from './queues/Queue.interface';
 
 class DownloadManager implements Downloader<Downloadable> {
   private _directory: PathLike;
@@ -127,9 +127,9 @@ class DownloadManager implements Downloader<Downloadable> {
     this.logger.info(`downloading: ${d.url}`);
 
     try {
+      DownloadManager.fileWrites += 1;
       const response = await this.download(d.url);
       if (response.status !== 200) throw new Error(`${d.url} responded with ${response.status}`);
-      DownloadManager.fileWrites += 1;
       return await this.writeStream(response.data, d);
     } catch (e) {
       throw new Error(`Error while writing stream: ${e.toString()}`);
@@ -152,8 +152,6 @@ class DownloadManager implements Downloader<Downloadable> {
       this.logger.info(`axios finished with status ${r.status}`);
 
       return r;
-    } catch (e) {
-      throw new Error(e.response);
     } finally {
       DownloadManager.downloads -= 1;
     }

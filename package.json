@@ -15,6 +15,7 @@
     "rimraf": "rm -rf node_modules && npm i",
     "lint": "eslint --fix 'src/**/*.ts' 'test/**/*.spec.ts'",
     "pretty": "prettier --write 'src/**/*.ts' 'test/**/*.spec.ts'",
+    "pretty:check": "prettier --check 'src/**/*.ts' 'test/**/*.spec.ts'",
     "graph": "depcruise --include-only '^src/classes' --output-type dot src | dot -T svg > dependency_graph.svg",
     "stats": "npx sloc src"
   },
@@ -43,13 +44,13 @@
   "homepage": "https://github.com/weirwoodai/finten#readme",
   "husky": {
     "hooks": {
-      "pre-commit": "npm run pretty && npm run lint && git add -A",
+      "pre-commit": "npm run pretty:check && npm run lint",
       "pre-push": "npm run full-test",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
   "dependencies": {
-    "@weirwoodai/parse-xbrl": "^1.1.5",
+    "@weirwoodai/parse-xbrl": "^1.2.1",
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
     "chalk": "^4.0.0",
@@ -67,7 +68,7 @@
     "passport-jwt": "^4.0.0",
     "supertest": "^4.0.2",
     "ts-node": "^8.10.2",
-    "typescript": "^3.9.2",
+    "typescript": "^3.9.10",
     "validator": "^13.1.17"
   },
   "devDependencies": {
