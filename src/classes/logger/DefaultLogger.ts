@@ -80,7 +80,9 @@ class DefaultLogger implements Logger {
     //TODO: we don't want colors in files;
     const color = (s: string) => s; //level.getColor();
     const message = args.map((a) => JSON.stringify(a, this.circularReferenceHelper())).join(';');
-    this.output.write(color(`${now}|{${level.getLevel()}} [${this.label}] ${message}\n`));
+    const lvl = level.getLevel().padStart(7, ' ');
+    const label = this.label.padStart(20, ' ');
+    this.output.write(color(`${now}|${lvl}|${label}|${message}\n`));
   }
 
   private circularReferenceHelper() {
