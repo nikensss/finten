@@ -1,3 +1,4 @@
+import FilingMetadata from '../../filings/FilingMetadata';
 import Database from '../Database.interface';
 import { CompanyInfoDocument } from '../models/CompanyInfo';
 import { FilingDocument } from '../models/Filing';
@@ -14,4 +15,6 @@ export abstract class DatabaseState {
   abstract getCompanyInfo(ticker: string): Promise<CompanyInfoDocument | null>;
 
   abstract getFilings(ticker: string): Promise<FilingDocument[]>;
+
+  abstract isLinkVisited(filingMetadata: FilingMetadata): Promise<boolean>;
 }

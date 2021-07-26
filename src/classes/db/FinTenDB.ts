@@ -1,4 +1,5 @@
 import mongoose, { Mongoose } from 'mongoose';
+import FilingMetadata from '../filings/FilingMetadata';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { Logger } from '../logger/Logger.interface';
 import Database from './Database.interface';
@@ -104,6 +105,10 @@ class FinTenDB implements Database {
 
   async getFilings(ticker: string): Promise<FilingDocument[]> {
     return this.state.getFilings(ticker);
+  }
+
+  async isLinkVisited(filingMetadata: FilingMetadata): Promise<boolean> {
+    return this.state.isLinkVisited(filingMetadata);
   }
 }
 

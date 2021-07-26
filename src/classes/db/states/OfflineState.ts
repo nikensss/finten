@@ -1,3 +1,4 @@
+import FilingMetadata from '../../filings/FilingMetadata';
 import Database from '../Database.interface';
 import { CompanyInfoDocument } from '../models/CompanyInfo';
 import { FilingDocument } from '../models/Filing';
@@ -17,14 +18,20 @@ export class OfflineState extends DatabaseState {
   }
 
   getCompanyInfo(ticker: string): Promise<CompanyInfoDocument | null> {
-    return new Promise((res, rej) => {
-      this.commandQueue.push(() => this.db.getCompanyInfo(ticker).then(res, rej));
-    });
+    return this.wrapCommand(() => this.db.getCompanyInfo(ticker));
   }
 
   getFilings(ticker: string): Promise<FilingDocument[]> {
-    return new Promise((res, rej) => {
-      this.commandQueue.push(() => this.db.getFilings(ticker).then(res, rej));
+    return this.wrapCommand(() => this.db.getFilings(ticker));
+  }
+
+  isLinkVisited(filingMetadata: FilingMetadata): Promise<boolean> {
+    return this.wrapCommand(() => this.db.isLinkVisited(filingMetadata));
+  }
+
+  private wrapCommand<T>(command: () => Promise<T>): Promise<T> {
+    return new Promise<T>((res, rej) => {
+      this.commandQueue.push(() => command().then(res, rej));
     });
   }
 }
