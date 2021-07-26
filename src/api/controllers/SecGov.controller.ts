@@ -1,13 +1,13 @@
 import { Request, Response, Router } from 'express';
-import Controller from './Controller.interface';
-import { default as LOGGER } from '../../classes/logger/DefaultLogger';
-import FinTenDB from '../../classes/db/FinTenDB';
-import FinTen from '../../classes/finten/FinTen';
-import SecGov from '../../classes/secgov/SecGov';
-import DownloadManager from '../../classes/download/DownloadManager';
 import path from 'path';
-import { isAdmin } from '../auth/Passport';
+import FinTenDB from '../../classes/db/FinTenDB';
+import DownloadManager from '../../classes/download/DownloadManager';
+import FinTen from '../../classes/finten/FinTen';
+import { default as LOGGER } from '../../classes/logger/DefaultLogger';
 import { Logger } from '../../classes/logger/Logger.interface';
+import SecGov from '../../classes/secgov/SecGov';
+import { isAdmin } from '../auth/Passport';
+import Controller from './Controller.interface';
 
 class SecGovController implements Controller {
   public readonly path = '/secgov';
@@ -27,6 +27,7 @@ class SecGovController implements Controller {
     this.router.get('/reparse', isAdmin, this.reparse.bind(this));
     this.router.get('/buildCompanyInfo', isAdmin, this.buildCompanyInfo.bind(this));
     this.router.get('/autoupdate', isAdmin, this.autoUpdate.bind(this));
+    this.router.post('/extract-xbrl-documents', isAdmin, this.extractXbrlDocument.bind(this));
   }
 
   /**
@@ -189,6 +190,16 @@ class SecGovController implements Controller {
       error:
         'Internal server error. Please contact the support team from Weirwood to inform about this issue.'
     });
+  }
+
+  private extractXbrlDocument(req: Request, res: Response): void {
+    if (process.env.ENV !== 'dev') return res.sendStatus(403).end();
+    const { url } = req.body;
+    if (!url) return res.status(400).send({ error: 'missing url' }).end();
+
+    const finten = new FinTen(new SecGov(), FinTenDB.getInstance());
+    finten.extractXbrlDocuments(url);
+    return res.sendStatus(200).end();
   }
 }
 

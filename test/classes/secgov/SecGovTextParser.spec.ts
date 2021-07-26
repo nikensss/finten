@@ -1,5 +1,5 @@
-import SecGovTextParser from '../../../src/classes/secgov/SecGovTextParser';
 import { expect } from 'chai';
+import { SecGovTextParser } from '../../../src/classes/secgov/SecGovTextParser';
 
 describe('SecGov Text file Parser tests', function () {
   this.slow(2000);

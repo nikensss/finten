@@ -50,7 +50,7 @@
     }
   },
   "dependencies": {
-    "@weirwoodai/parse-xbrl": "^1.2.1",
+    "@weirwoodai/parse-xbrl": "^1.2.2",
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
     "chalk": "^4.0.0",

@@ -1,19 +1,20 @@
-import FormType from '../filings/FormType.enum';
-import SecGov from '../secgov/SecGov';
-import { default as LOGGER } from '../logger/DefaultLogger';
-import { LogLevel } from '../logger/LogLevel';
-import XBRLUtilities from '../xbrl/XBRLUtilities';
-import VisitedLinkModel, { VisitedLinkDocument, VisitedLinkStatus } from '../db/models/VisitedLink';
+import { promises as fs } from 'fs';
 import { Schema } from 'mongoose';
-import { Filing } from '../db/models/Filing';
-import Downloadable from '../download/Downloadable.interface';
 import Database from '../db/Database.interface';
 import CompanyInfoModel, { CompanyInfo } from '../db/models/CompanyInfo';
-import FilingModel from '../db/models/Filing';
+import FilingModel, { Filing } from '../db/models/Filing';
+import VisitedLinkModel, { VisitedLinkDocument, VisitedLinkStatus } from '../db/models/VisitedLink';
+import Downloadable from '../download/Downloadable.interface';
 import FilingMetadata from '../filings/FilingMetadata';
-import Macro, { getMacroCollection } from '../fred/Macro.enum';
+import FormType from '../filings/FormType.enum';
 import Fred from '../fred/Fred';
+import Macro, { getMacroCollection } from '../fred/Macro.enum';
+import { default as LOGGER } from '../logger/DefaultLogger';
 import { Logger } from '../logger/Logger.interface';
+import { LogLevel } from '../logger/LogLevel';
+import SecGov from '../secgov/SecGov';
+import { SecGovTextParser } from '../secgov/SecGovTextParser';
+import XBRLUtilities from '../xbrl/XBRLUtilities';
 
 /**
  * The FinTen class is the basic driver that builds FinTen. It is the interface
@@ -118,6 +119,40 @@ class FinTen {
     }
   }
 
+  async extractXbrlDocuments(url: string): Promise<void> {
+    try {
+      const fileName = url.split('/').pop() || '_temp.txt';
+
+      const result = await this.secgov.getFiling({ url, fileName });
+      const parser: SecGovTextParser = new SecGovTextParser(result.fileName);
+
+      const exists = await (async () => {
+        try {
+          await fs.access('./extracted_xbrls');
+          return true;
+        } catch (ex) {
+          return false;
+        }
+      })();
+
+      if (!exists) await fs.mkdir('./extracted_xbrls');
+      let count = 0;
+      while (await parser.hasNext()) {
+        try {
+          const xml = await parser.next();
+          await fs.writeFile(`./extracted_xbrls/${count}_${fileName}.xml`, xml);
+          count += 1;
+        } catch (ex) {
+          this.logger.error(ex.message);
+        }
+      }
+    } catch (ex) {
+      this.logger.error(`Could not extract XBRL documents: ${ex.message}`);
+    } finally {
+      this.secgov.flush();
+    }
+  }
+
   /**
    * Fill the database with the data between the start and end years (both
    * included). If no end year is given, the method will fill for only the start
@@ -140,7 +175,7 @@ class FinTen {
       ) {
         this.logPercentage(total - filingsMetadata.length, total);
         try {
-          if (await this.isAlreadyVisited(filingMetadata)) continue;
+          if (await this.db.isLinkVisited(filingMetadata)) continue;
 
           const filing = await this.secgov.getFiling(filingMetadata);
           await this.addFiling(filing);
@@ -155,17 +190,6 @@ class FinTen {
       this.logger.info('Done filling!');
     } catch (e) {
       this.logger.error(`Could not get filings metadata: ${e.toString()}`);
-    }
-  }
-
-  private async isAlreadyVisited(filingMetadata: FilingMetadata): Promise<boolean> {
-    try {
-      await this.db.connect();
-      const result = await VisitedLinkModel.exists({ url: filingMetadata.url });
-      return result;
-    } catch (e) {
-      this.logger.error(`::isAlreadyVisited -> ${e.toString()}`);
-      return true; //default to true just to avoid duplicates in the DB
     }
   }
 

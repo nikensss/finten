@@ -108,6 +108,7 @@ downloads
 downloads-backup
 finten_downloads
 finten_downloads/*.idx
+extracted_xbrls
 
 
 # .ds_store
