@@ -22,7 +22,7 @@ import XBRLUtilities from '../xbrl/XBRLUtilities';
  *
  * The main responsibility of this class is to keep the database updated.
  */
-class FinTen {
+export class FinTen {
   private _secgov: SecGov;
   private _db: Database;
   private logger: Logger = LOGGER.get(this.constructor.name);
@@ -295,5 +295,3 @@ class FinTen {
     this.logger.info(`🛎  ${currentAmount}/${length} (${percentageDownloads.toFixed(3)} %)`);
   }
 }
-
-export default FinTen;

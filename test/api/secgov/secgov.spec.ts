@@ -2,9 +2,9 @@ import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import request from 'supertest';
-import app from '../../../src/main';
-import UserModel from '../../../src/classes/db/models/User';
 import FinTenDB from '../../../src/classes/db/FinTenDB';
+import UserModel from '../../../src/classes/db/models/User';
+import app from '../../../src/main';
 
 chai.should();
 chai.use(chaiHttp);
@@ -57,7 +57,7 @@ describe('API SecGov routes', function () {
   it('should fail with 401 Unauthorized because no token is given', () => {
     chai
       .request(app)
-      .get('/secgov/fill')
+      .post('/secgov/fill')
       .set('Connection', 'close')
       .end((err, res) => {
         res.should.have.status(401);

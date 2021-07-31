@@ -9,7 +9,7 @@ import FilingModel from '../../../src/classes/db/models/Filing';
 import VisitedLinkModel, { VisitedLinkStatus } from '../../../src/classes/db/models/VisitedLink';
 import Downloadable from '../../../src/classes/download/Downloadable.interface';
 import FilingMetadata from '../../../src/classes/filings/FilingMetadata';
-import FinTen from '../../../src/classes/finten/FinTen';
+import { FinTen } from '../../../src/classes/finten/FinTen';
 import SecGov from '../../../src/classes/secgov/SecGov';
 
 chai.should();
