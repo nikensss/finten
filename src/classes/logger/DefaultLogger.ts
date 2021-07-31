@@ -21,7 +21,7 @@ class DefaultLogger implements Logger {
   }
 
   public static get(key: string): Logger {
-    if (DefaultLogger.map.get(key) === undefined) {
+    if (!DefaultLogger.map.get(key)) {
       DefaultLogger.map.set(key, new DefaultLogger(key));
     }
     const logger = DefaultLogger.map.get(key);
