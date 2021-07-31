@@ -63,14 +63,15 @@ class FinTen {
       try {
         const doc = await this.createCompanyInfo(company);
         this.logger.info(
-          ` [${counter}] Added new CompanyInfo: ${doc.TradingSymbol} (${doc.EntityCentralIndexKey})`
+          ` [${counter}/${companies.length}] Added new CompanyInfo: ${doc.TradingSymbol} (${doc.EntityCentralIndexKey})`
         );
       } catch (ex) {
-        this.logger.error(`Error while saving all companies [${counter}! ${ex.toString()}`);
+        this.logger.error(`Error while saving all companies [${counter}]! ${ex.toString()}`);
       } finally {
         counter += 1;
       }
     }
+    this.logger.info('Finished adding CompanyInfo details');
   }
 
   private async createCompanyInfo(companyInfo: CompanyInfo) {

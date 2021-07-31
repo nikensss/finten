@@ -23,10 +23,10 @@ class SecGovController implements Controller {
   private initializeRoutes() {
     //we need to bind all these methods again due to the reference to 'this'
     //when getting the logger
-    this.router.get('/fill', isAdmin, this.fill.bind(this));
-    this.router.get('/reparse', isAdmin, this.reparse.bind(this));
-    this.router.get('/buildCompanyInfo', isAdmin, this.buildCompanyInfo.bind(this));
-    this.router.get('/autoupdate', isAdmin, this.autoUpdate.bind(this));
+    this.router.post('/fill', isAdmin, this.fill.bind(this));
+    this.router.post('/reparse', isAdmin, this.reparse.bind(this));
+    this.router.post('/buildCompanyInfo', isAdmin, this.buildCompanyInfo.bind(this));
+    this.router.post('/autoupdate', isAdmin, this.autoUpdate.bind(this));
     this.router.post('/extract-xbrl-documents', isAdmin, this.extractXbrlDocument.bind(this));
   }
 
@@ -36,7 +36,7 @@ class SecGovController implements Controller {
    *
    * URL: https://finten.weirwood.ai/secgov/fill?start={START}[&end={END}]
    *
-   * Method: GET
+   * Method: POST
    *
    * Requires admin authentication
    *
@@ -110,11 +110,11 @@ class SecGovController implements Controller {
 
   /**
    *
-   * Description: sets up an recurring update of the database
+   * Description: sets up a recurring update of the database
    *
    * URL: https://finten.weirwood.ai/secgov/autoupdate?[interval={INTERVAL}][&stop={STOP}]
    *
-   * Method: GET
+   * Method: POST
    *
    * Requires admin authentication
    *
