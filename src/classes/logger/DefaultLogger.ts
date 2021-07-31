@@ -79,10 +79,12 @@ class DefaultLogger implements Logger {
     const now = moment().format(DefaultLogger.MOMENT_FORMAT);
     //TODO: we don't want colors in files;
     const color = (s: string) => s; //level.getColor();
-    const message = args.map((a) => JSON.stringify(a, this.circularReferenceHelper())).join(';');
+    const messages = args.map((a) => JSON.stringify(a, this.circularReferenceHelper()));
     const lvl = level.getLevel().padStart(7, ' ');
     const label = this.label.padStart(20, ' ');
-    this.output.write(color(`${now}|${lvl}|${label}|${message}\n`));
+    for (const message of messages) {
+      this.output.write(color(`${now}|${lvl}|${label}|${message}\n`));
+    }
   }
 
   private circularReferenceHelper() {
