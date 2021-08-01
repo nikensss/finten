@@ -76,6 +76,7 @@ export class FinTen {
 
   private async createCompanyInfo(companyInfo: CompanyInfo) {
     try {
+      // TODO: create method in FinTenDB to handle this
       return await new CompanyInfoModel(companyInfo).save();
     } catch (e) {
       throw new Error(e);
@@ -178,6 +179,9 @@ export class FinTen {
         try {
           if (await this.db.isLinkVisited(filingMetadata)) continue;
 
+          // TODO: do not await on `addFiling`, only on `secgov.getFiling`
+          // to properly do that, the `secgov.flush` method needs some rework,
+          // else we might be deleting files that still need to be parsed
           const filing = await this.secgov.getFiling(filingMetadata);
           await this.addFiling(filing);
         } catch (e) {
@@ -198,8 +202,10 @@ export class FinTen {
     try {
       this.logger.info('parsing xbrl...');
       const xbrl = await XBRLUtilities.fromFile(filing.fileName);
+
       const result = await this.createFiling(xbrl.get());
       this.logger.info('added new filing!');
+
       await this.createVisitedLink(filing.url, result._id);
       this.logger.info('saved visited link!');
     } catch (ex) {
@@ -226,13 +232,8 @@ export class FinTen {
       this.logger.info('Getting broken links');
       const cursor = VisitedLinkModel.find({ status: VisitedLinkStatus.ERROR }).cursor();
       await cursor.eachAsync(async (visitedLink: VisitedLinkDocument | VisitedLinkDocument[]) => {
-        if (Array.isArray(visitedLink)) {
-          for (const l of visitedLink) {
-            await this.revisitLink(l);
-          }
-        } else {
-          await this.revisitLink(visitedLink);
-        }
+        const links = Array.isArray(visitedLink) ? visitedLink : [visitedLink];
+        for (const link of links) await this.revisitLink(link);
         this.secgov.flush();
       });
       this.secgov.flush();
@@ -260,24 +261,16 @@ export class FinTen {
   }
 
   private async createFiling(filing: Filing) {
-    try {
-      return await new FilingModel(filing).save();
-    } catch (e) {
-      throw new Error(e);
-    }
+    return await new FilingModel(filing).save();
   }
 
   private async createVisitedLink(url: string, resultId: Schema.Types.ObjectId) {
-    try {
-      return await new VisitedLinkModel({
-        url,
-        status: VisitedLinkStatus.OK,
-        error: null,
-        filingId: resultId
-      }).save();
-    } catch (e) {
-      throw new Error(e);
-    }
+    return await new VisitedLinkModel({
+      url,
+      status: VisitedLinkStatus.OK,
+      error: null,
+      filingId: resultId
+    }).save();
   }
 
   private async handleExceptionDuringFilingCreation(url: string, ex: Error) {
