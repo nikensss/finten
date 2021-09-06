@@ -1,6 +1,6 @@
 {
   "name": "finten",
-  "version": "1.8.5",
+  "version": "1.8.6",
   "description": "The hypotenuse of the smallest pythagorean triples.",
   "main": "src/main.ts",
   "scripts": {
@@ -20,14 +20,8 @@
     "stats": "npx sloc src"
   },
   "nodemonConfig": {
-    "ignore": [
-      ".git",
-      "node_modules"
-    ],
-    "watch": [
-      "src",
-      "test"
-    ],
+    "ignore": [".git", "node_modules"],
+    "watch": ["src", "test"],
     "exec": "npm start",
     "ext": "ts"
   },
