@@ -21,7 +21,7 @@ class DefaultLogger implements Logger {
   }
 
   public static get(key: string): Logger {
-    if (DefaultLogger.map.get(key) === undefined) {
+    if (!DefaultLogger.map.get(key)) {
       DefaultLogger.map.set(key, new DefaultLogger(key));
     }
     const logger = DefaultLogger.map.get(key);
@@ -79,8 +79,12 @@ class DefaultLogger implements Logger {
     const now = moment().format(DefaultLogger.MOMENT_FORMAT);
     //TODO: we don't want colors in files;
     const color = (s: string) => s; //level.getColor();
-    const message = args.map((a) => JSON.stringify(a, this.circularReferenceHelper(), 2)).join(';');
-    this.output.write(color(`${now}|{${level.getLevel()}} [${this.label}] ${message}\n`));
+    const messages = args.map((a) => JSON.stringify(a, this.circularReferenceHelper()));
+    const lvl = level.getLevel().padStart(7, ' ');
+    const label = this.label.padStart(20, ' ');
+    for (const message of messages) {
+      this.output.write(color(`${now}|${lvl}|${label}|${message}\n`));
+    }
   }
 
   private circularReferenceHelper() {

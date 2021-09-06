@@ -1,3 +1,4 @@
+import FilingMetadata from '../filings/FilingMetadata';
 import { CompanyInfoDocument } from './models/CompanyInfo';
 import { FilingDocument } from './models/Filing';
 
@@ -7,6 +8,7 @@ interface Database {
   isConnected(): boolean;
   getCompanyInfo(ticker: string): Promise<CompanyInfoDocument | null>;
   getFilings(ticker: string): Promise<FilingDocument[]>;
+  isLinkVisited(filingMetadata: FilingMetadata): Promise<boolean>;
 }
 
 export default Database;

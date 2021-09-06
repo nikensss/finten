@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
-import mongoose, { Model, Schema, Document } from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface Filing {
   EntityRegistrantName: string;
@@ -10,13 +10,7 @@ export interface Filing {
   DocumentPeriodEndDate: string;
   DocumentFiscalYearFocus: string;
   DocumentFiscalPeriodFocus: string;
-  DocumentFiscalYearFocusContext: string;
-  DocumentFiscalPeriodFocusContext: string;
   DocumentType: string;
-  BalanceSheetDate: string;
-  IncomeStatementPeriodYTD: string;
-  ContextForInstants: string;
-  ContextForDurations: string;
   Assets: number;
   CurrentAssets: number;
   NoncurrentAssets: number;
@@ -44,7 +38,7 @@ export interface Filing {
   IncomeTaxExpenseBenefit: number;
   IncomeFromContinuingOperationsAfterTax: number;
   IncomeFromDiscontinuedOperations: number;
-  ExtraordaryItemsGainLoss: number;
+  ExtraordinaryItemsGainLoss: number;
   NetIncomeLoss: number;
   NetIncomeAvailableToCommonStockholdersBasic: number;
   PreferredStockDividendsAndOtherAdjustments: number;
@@ -69,10 +63,6 @@ export interface Filing {
   NetCashFlowsDiscontinued: number;
   ExchangeGainsLosses: number;
   NetCashFlowsContinuing: number;
-  SGR: number;
-  ROA: number | null;
-  ROE: number | null;
-  ROS: number | null;
 }
 
 const FilingSchema = new Schema({
@@ -87,13 +77,7 @@ const FilingSchema = new Schema({
   DocumentPeriodEndDate: String,
   DocumentFiscalYearFocus: String,
   DocumentFiscalPeriodFocus: String,
-  DocumentFiscalYearFocusContext: String,
-  DocumentFiscalPeriodFocusContext: String,
   DocumentType: String,
-  BalanceSheetDate: String,
-  IncomeStatementPeriodYTD: String,
-  ContextForInstants: String,
-  ContextForDurations: String,
   Assets: Number,
   CurrentAssets: Number,
   NoncurrentAssets: Number,
@@ -121,7 +105,7 @@ const FilingSchema = new Schema({
   IncomeTaxExpenseBenefit: Number,
   IncomeFromContinuingOperationsAfterTax: Number,
   IncomeFromDiscontinuedOperations: Number,
-  ExtraordaryItemsGainLoss: Number,
+  ExtraordinaryItemsGainLoss: Number,
   NetIncomeLoss: Number,
   NetIncomeAvailableToCommonStockholdersBasic: Number,
   PreferredStockDividendsAndOtherAdjustments: Number,
@@ -145,17 +129,7 @@ const FilingSchema = new Schema({
   NetCashFlowsFinancingDiscontinued: Number,
   NetCashFlowsDiscontinued: Number,
   ExchangeGainsLosses: Number,
-  NetCashFlowsContinuing: Number,
-  SGR: Number,
-  ROA: Number,
-  ROE: Number,
-  ROS: Number
-});
-
-FilingSchema.pre<FilingBaseDocument>('validate', async function () {
-  if (this.ROA !== null && isNaN(this.ROA)) this.ROA = null;
-  if (this.ROE !== null && isNaN(this.ROE)) this.ROE = null;
-  if (this.ROS !== null && isNaN(this.ROS)) this.ROS = null;
+  NetCashFlowsContinuing: Number
 });
 
 interface FilingBaseDocument extends Filing, Document {}

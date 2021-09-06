@@ -124,11 +124,7 @@ class CompanyController implements Controller {
         throw new Error(`Unknown company '${ticker}'!`);
       }
 
-      let filings: FilingDocument[] = await FinTenDB.getInstance().getFilings(ticker);
-
-      if (!user.isPremium) {
-        filings = filings.slice(-8);
-      }
+      const filings: FilingDocument[] = await FinTenDB.getInstance().getFilings(ticker);
 
       return res.status(200).json({
         ticker,

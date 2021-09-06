@@ -1,6 +1,8 @@
+import FilingMetadata from '../../filings/FilingMetadata';
 import Database from '../Database.interface';
 import CompanyInfoModel, { CompanyInfoDocument } from '../models/CompanyInfo';
 import FilingModel, { FilingDocument } from '../models/Filing';
+import VisitedLinkModel from '../models/VisitedLink';
 import { DatabaseState } from './DatabaseSate';
 
 export class OnlineState extends DatabaseState {
@@ -32,5 +34,9 @@ export class OnlineState extends DatabaseState {
     });
 
     return filings;
+  }
+
+  async isLinkVisited(filingMetadata: FilingMetadata): Promise<boolean> {
+    return await VisitedLinkModel.exists({ url: filingMetadata.url });
   }
 }

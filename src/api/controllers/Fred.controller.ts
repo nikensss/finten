@@ -1,10 +1,10 @@
 import { Request, Response, Router } from 'express';
-import Controller from './Controller.interface';
 import FinTenDB from '../../classes/db/FinTenDB';
-import FinTen from '../../classes/finten/FinTen';
-import { isAdmin, isPremium, isRegistered } from '../auth/Passport';
+import { FinTen } from '../../classes/finten/FinTen';
 import Macro, { byName, getMacroCollection } from '../../classes/fred/Macro.enum';
 import SecGov from '../../classes/secgov/SecGov';
+import { isAdmin, isRegistered } from '../auth/Passport';
+import Controller from './Controller.interface';
 
 class FredController implements Controller {
   public readonly path = '/fred';
@@ -19,7 +19,7 @@ class FredController implements Controller {
     //when getting the logger
     this.router.post('/add', isAdmin, this.addMacro.bind(this));
     this.router.get('/names', isRegistered, this.getMacrosNames.bind(this));
-    this.router.get('/get', isPremium, this.getMacro.bind(this));
+    this.router.get('/get', isRegistered, this.getMacro.bind(this));
   }
 
   /**

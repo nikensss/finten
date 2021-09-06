@@ -1,8 +1,8 @@
+import { Secret } from 'jsonwebtoken';
 import passport from 'passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import User from '../../classes/db/models/User';
-import { Secret } from 'jsonwebtoken';
 import FinTenDB from '../../classes/db/FinTenDB';
+import User from '../../classes/db/models/User';
 import { default as LOGGER } from '../../classes/logger/DefaultLogger';
 
 if (typeof process.env.SECRET !== 'string') {
@@ -61,15 +61,14 @@ passport.use(
       .connect()
       .then(() => User.findOne({ _id: payload.id }))
       .then((user) => {
-        if (user === null) {
-          return next(null, false, { message: 'Invalid credentials' });
-        }
-        if (user.isAdmin === true) {
+        if (user === null) return next(null, false, { message: 'Invalid credentials' });
+
+        if (user.isAdmin) {
           LOGGER.get('isAdmin').info(`user ${user.username} is admin`);
           return next(null, user);
         }
-        LOGGER.get('isAdmin').info(`user ${user.username} not admin`);
 
+        LOGGER.get('isAdmin').info(`user ${user.username} not admin`);
         return next(null, false, { message: 'Invalid credentials' });
       })
       .catch((e) => next(e));
@@ -78,9 +77,6 @@ passport.use(
 
 export default passport;
 export { secret };
-export const isRegistered = passport.authenticate('isRegistered', {
-  session: false
-});
+export const isRegistered = passport.authenticate('isRegistered', { session: false });
 export const isPremium = passport.authenticate('isPremium', { session: false });
-
 export const isAdmin = passport.authenticate('isAdmin', { session: false });

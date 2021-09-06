@@ -2,14 +2,14 @@ import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import path from 'path';
 import { anything, instance, mock, verify, when } from 'ts-mockito';
-import SecGov from '../../../src/classes/secgov/SecGov';
-import DownloadManager from '../../../src/classes/download/DownloadManager';
-import Downloader from '../../../src/classes/download/Downloader.interface';
-import TimedQueue from '../../../src/classes/download/queues/TimedQueue';
 import Downloadable from '../../../src/classes/download/Downloadable.interface';
-import { Quarter } from '../../../src/classes/xbrl/XBRL';
-import FormType from '../../../src/classes/filings/FormType.enum';
+import Downloader from '../../../src/classes/download/Downloader.interface';
+import DownloadManager from '../../../src/classes/download/DownloadManager';
+import TimedQueue from '../../../src/classes/download/queues/TimedQueue';
 import FilingMetadata from '../../../src/classes/filings/FilingMetadata';
+import FormType from '../../../src/classes/filings/FormType.enum';
+import SecGov from '../../../src/classes/secgov/SecGov';
+import { Quarter } from '../../../src/classes/time/Quarter';
 
 chai.use(chaiAsPromised);
 

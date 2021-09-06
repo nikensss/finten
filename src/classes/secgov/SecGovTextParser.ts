@@ -5,7 +5,7 @@ import { resolve } from 'path';
  * Extracts XBRL sections from a .txt file from SecGov.
  *
  */
-class SecGovTextParser {
+export class SecGovTextParser {
   private file: string;
   private fileRead = false;
   private sections: string[] = [];
@@ -18,11 +18,8 @@ class SecGovTextParser {
   }
 
   async hasNext(): Promise<boolean> {
-    if (!this.fileRead) {
-      await this.readFile();
-    }
-
-    return Promise.resolve(this.sections.length > 0);
+    if (!this.fileRead) await this.readFile();
+    return this.sections.length > 0;
   }
 
   reset(): void {
@@ -30,17 +27,9 @@ class SecGovTextParser {
   }
 
   async next(): Promise<string> {
-    if (!(await this.hasNext())) {
-      throw new Error('No more data available!');
-    }
-
     const result = this.sections.shift();
-    // we need to check like this because TypeScript still can't see the
-    // previous check guarantees length to be > 1, which means 'result' will never
-    // be undefined
-    if (typeof result === 'undefined') {
-      throw new Error('No more data available!');
-    }
+    if (!result) throw new Error('No more data available!');
+
     return result;
   }
 
@@ -62,5 +51,3 @@ class SecGovTextParser {
     }
   }
 }
-
-export default SecGovTextParser;

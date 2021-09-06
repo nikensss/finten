@@ -1,13 +1,13 @@
-import { Quarter } from '../xbrl/XBRL';
-import TimedQueue from '../download/queues/TimedQueue';
 import fs, { PathLike } from 'fs';
-import FilingMetadata from '../filings/FilingMetadata';
-import FormType from '../filings/FormType.enum';
-import { default as LOGGER } from '../logger/DefaultLogger';
 import Downloadable from '../download/Downloadable.interface';
 import Downloader from '../download/Downloader.interface';
 import DownloadManager from '../download/DownloadManager';
+import TimedQueue from '../download/queues/TimedQueue';
+import FilingMetadata from '../filings/FilingMetadata';
+import FormType from '../filings/FormType.enum';
+import { default as LOGGER } from '../logger/DefaultLogger';
 import { Logger } from '../logger/Logger.interface';
+import { Quarter } from '../time/Quarter';
 
 /**
  * The SecGov class is a wrapper around the SecGov API so that filings can be
@@ -50,18 +50,19 @@ class SecGov {
 
     const downloadedIndices: Downloadable[] = [];
     for (let year = start; year <= end; year++) {
-      downloadedIndices.push(await this.getIndex(year, Quarter.QTR1));
-      downloadedIndices.push(await this.getIndex(year, Quarter.QTR2));
-      downloadedIndices.push(await this.getIndex(year, Quarter.QTR3));
-      downloadedIndices.push(await this.getIndex(year, Quarter.QTR4));
+      for (const quarter of Quarter.all()) {
+        if (quarter.isInTheFuture(year)) continue;
+        downloadedIndices.push(await this.getIndex(year, quarter));
+      }
     }
 
     return downloadedIndices;
   }
 
   async getIndex(year: number, quarter: Quarter): Promise<Downloadable> {
-    const url = `${SecGov.INDICES_ROOT}/${year}/${quarter}/xbrl.idx`;
-    return await this.dm.get({ url, fileName: `${year}_${quarter}_xbrl.idx` });
+    const url = `${SecGov.INDICES_ROOT}/${year}/${quarter.toString()}/xbrl.idx`;
+    const fileName = `${year}_${quarter.toString()}_xbrl.idx`;
+    return await this.dm.get({ url, fileName });
   }
 
   /**

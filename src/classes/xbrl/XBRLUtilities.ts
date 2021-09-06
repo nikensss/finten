@@ -1,7 +1,7 @@
 import { parseStr } from '@weirwoodai/parse-xbrl';
 import { PathLike } from 'fs';
 import { Filing } from '../db/models/Filing';
-import SecGovTextParser from '../secgov/SecGovTextParser';
+import { SecGovTextParser } from '../secgov/SecGovTextParser';
 import XBRL from './XBRL';
 
 class XBRLUtilities {
