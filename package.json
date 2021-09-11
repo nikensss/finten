@@ -9,7 +9,7 @@
     "nodemon": "nodemon --ignore test",
     "test": "ENV=TEST PORT=3030 DOTENV_CONFIG_PATH=.env.test ts-mocha",
     "test:watch": "nodemon --exec 'npm run test'",
-    "full-test": "npm run test -- --forbid-only",
+    "test:full": "npm run test -- --forbid-only",
     "learning-test": "npm run test -- 'test/**/*.spec.learning.ts'",
     "test-debug": "npm run test -- --timeout 300000",
     "rimraf": "rm -rf node_modules && npm i",
@@ -20,14 +20,8 @@
     "stats": "npx sloc src"
   },
   "nodemonConfig": {
-    "ignore": [
-      ".git",
-      "node_modules"
-    ],
-    "watch": [
-      "src",
-      "test"
-    ],
+    "ignore": [".git", "node_modules"],
+    "watch": ["src", "test"],
     "exec": "npm start",
     "ext": "ts"
   },
@@ -45,7 +39,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "npm run pretty:check && npm run lint",
-      "pre-push": "npm run full-test",
+      "pre-push": "npm run test:full",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
