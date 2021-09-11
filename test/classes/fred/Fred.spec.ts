@@ -5,7 +5,8 @@ import { anyString, instance, mock, when } from 'ts-mockito';
 import { AxiosInstance, AxiosResponse } from 'axios';
 import FredResponse from '../../../src/classes/fred/FredResponse.interface';
 
-const fredResponse = ({} as unknown) as FredResponse;
+const unknown = {} as unknown;
+const fredResponse = unknown as FredResponse;
 const mockResponse = {
   data: fredResponse,
   status: -1,
