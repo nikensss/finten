@@ -19,10 +19,10 @@ export class OnlineState extends DatabaseState {
   }
 
   async getTradingSymbol(cik: number): Promise<string | null> {
-    const companyInfo = await CompanyInfoModel.findByEntityCentralIndexKey(cik);
-    if (!companyInfo) return null;
+    const companyInfos = await CompanyInfoModel.findByEntityCentralIndexKey(cik);
+    if (!companyInfos || companyInfos.length <= 0) return null;
 
-    return companyInfo.TradingSymbol;
+    return companyInfos[0].TradingSymbol;
   }
 
   async getFilings(ticker: string): Promise<FilingDocument[]> {
