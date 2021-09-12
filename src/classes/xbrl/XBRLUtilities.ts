@@ -1,5 +1,6 @@
 import { parseStr } from '@weirwoodai/parse-xbrl';
 import { PathLike } from 'fs';
+import FinTenDB from '../db/FinTenDB';
 import { Filing } from '../db/models/Filing';
 import { SecGovTextParser } from '../secgov/SecGovTextParser';
 import XBRL from './XBRL';
@@ -17,7 +18,15 @@ class XBRLUtilities {
       try {
         const xml = await parser.next();
         const filing: Filing = await parseStr(xml);
-        return new XBRL(filing);
+        const xbrl = new XBRL(filing);
+
+        if (!xbrl.hasTradingSymbol()) {
+          const cik = xbrl.getEntityCentralIndexKey();
+          const tradingSymbol = await FinTenDB.getInstance().getTradingSymbol(cik);
+          if (tradingSymbol) xbrl.setTrandingSymbol(tradingSymbol);
+        }
+
+        return xbrl;
       } catch (ex) {
         exceptions.push(ex.toString());
       }

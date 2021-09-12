@@ -56,13 +56,13 @@ CompanyInfoSchema.pre<CompanyInfoDocument>('save', function (next) {
 });
 
 CompanyInfoSchema.statics.findByEntityCentralIndexKey = async function (
-  EntityCentralIndexKey: number
-): Promise<CompanyInfoDocument[]> {
-  return await this.find({ EntityCentralIndexKey });
+  EntityCentralIndexKey: CompanyInfo['EntityCentralIndexKey']
+): Promise<CompanyInfoDocument> {
+  return await this.findOne({ EntityCentralIndexKey });
 };
 
 CompanyInfoSchema.statics.findByTradingSymbol = async function (
-  TradingSymbol: string
+  TradingSymbol: CompanyInfo['TradingSymbol']
 ): Promise<CompanyInfoDocument | null> {
   return await this.findOne({ TradingSymbol });
 };
@@ -100,8 +100,12 @@ CompanyInfoSchema.statics.parseFile = function (file: string) {
  */
 export interface CompanyInfoModel extends Model<CompanyInfoDocument> {
   parseFile(file: string): Promise<CompanyInfo[]>;
-  findByEntityCentralIndexKey(EntityCentralIndexKey: number): Promise<CompanyInfoDocument[]>;
-  findByTradingSymbol(TradingSymbol: string): Promise<CompanyInfoDocument | null>;
+  findByEntityCentralIndexKey(
+    EntityCentralIndexKey: CompanyInfo['EntityCentralIndexKey']
+  ): Promise<CompanyInfoDocument>;
+  findByTradingSymbol(
+    TradingSymbol: CompanyInfo['TradingSymbol']
+  ): Promise<CompanyInfoDocument | null>;
 }
 
 /**

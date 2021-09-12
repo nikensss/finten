@@ -14,6 +14,8 @@ export abstract class DatabaseState {
 
   abstract getCompanyInfo(ticker: string): Promise<CompanyInfoDocument | null>;
 
+  abstract getTradingSymbol(cik: number): Promise<string | null>;
+
   abstract getFilings(ticker: string): Promise<FilingDocument[]>;
 
   abstract isLinkVisited(filingMetadata: FilingMetadata): Promise<boolean>;

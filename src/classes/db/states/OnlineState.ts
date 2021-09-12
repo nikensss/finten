@@ -18,6 +18,13 @@ export class OnlineState extends DatabaseState {
     return await CompanyInfoModel.findByTradingSymbol(ticker);
   }
 
+  async getTradingSymbol(cik: number): Promise<string | null> {
+    const companyInfo = await CompanyInfoModel.findByEntityCentralIndexKey(cik);
+    if (!companyInfo) return null;
+
+    return companyInfo.TradingSymbol;
+  }
+
   async getFilings(ticker: string): Promise<FilingDocument[]> {
     const companyInfo = await this.getCompanyInfo(ticker);
     if (companyInfo === null) throw new Error(`Unknown company '${ticker}'!`);
