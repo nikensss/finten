@@ -58,13 +58,13 @@ CompanyInfoSchema.pre<CompanyInfoDocument>('save', function (next) {
 CompanyInfoSchema.statics.findByEntityCentralIndexKey = async function (
   EntityCentralIndexKey: CompanyInfo['EntityCentralIndexKey']
 ): Promise<CompanyInfoDocument[]> {
-  return await this.find({ EntityCentralIndexKey });
+  return await this.find({ EntityCentralIndexKey }).select({ _id: 0, __v: 0 });
 };
 
 CompanyInfoSchema.statics.findByTradingSymbol = async function (
   TradingSymbol: CompanyInfo['TradingSymbol']
 ): Promise<CompanyInfoDocument | null> {
-  return await this.findOne({ TradingSymbol });
+  return await this.findOne({ TradingSymbol }).select({ _id: 0, __v: 0 });
 };
 
 CompanyInfoSchema.statics.parseFile = function (file: string) {
