@@ -50,7 +50,7 @@
     }
   },
   "dependencies": {
-    "@weirwoodai/parse-xbrl": "github:weirwoodai/parse-xbrl",
+    "@weirwoodai/parse-xbrl": "https://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@github.com/weirwoodai/parse-xbrl",
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
     "chalk": "^4.0.0",
