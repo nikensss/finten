@@ -22,7 +22,7 @@ export class OnlineState extends DatabaseState {
     const companyInfos = await CompanyInfoModel.findByEntityCentralIndexKey(cik);
     if (!companyInfos || companyInfos.length <= 0) return null;
 
-    return companyInfos[0].TradingSymbol;
+    return companyInfos.map(({ TradingSymbol }) => TradingSymbol).join(';');
   }
 
   async getFilings(ticker: string): Promise<FilingDocument[]> {

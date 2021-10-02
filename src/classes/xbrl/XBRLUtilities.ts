@@ -20,11 +20,14 @@ class XBRLUtilities {
         const filing: Filing = await parseStr(xml);
         const xbrl = new XBRL(filing);
 
-        if (!xbrl.hasTradingSymbol()) {
-          const cik = xbrl.getEntityCentralIndexKey();
-          const tradingSymbol = await FinTenDB.getInstance().getTradingSymbol(cik);
-          if (tradingSymbol) xbrl.setTrandingSymbol(tradingSymbol);
-        }
+        // always add trading symbols; a filing could have been reported with
+        // only one of the company's trading symbols, and with this we ensure we
+        // have all the trading symbols the company uses
+        // A Google filing could only have 'GOOG', but we consistently want
+        // 'GOOG;GOOGL'
+        const cik = xbrl.getEntityCentralIndexKey();
+        const tradingSymbol = await FinTenDB.getInstance().getTradingSymbol(cik);
+        if (tradingSymbol) xbrl.setTradingSymbol(tradingSymbol);
 
         return xbrl;
       } catch (ex) {

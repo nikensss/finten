@@ -19,10 +19,11 @@ class XBRL {
   }
 
   hasTradingSymbol(): boolean {
+    if (!this.filing.TradingSymbol) return false;
     return !/Field not found/.test(this.filing.TradingSymbol);
   }
 
-  setTrandingSymbol(tradingSymbol: string): void {
+  setTradingSymbol(tradingSymbol: string): void {
     this.filing.TradingSymbol = tradingSymbol;
   }
 }
