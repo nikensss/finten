@@ -1,5 +1,6 @@
 import { parseStr } from '@weirwoodai/parse-xbrl';
 import { PathLike } from 'fs';
+import FinTenDB from '../db/FinTenDB';
 import { Filing } from '../db/models/Filing';
 import { SecGovTextParser } from '../secgov/SecGovTextParser';
 import XBRL from './XBRL';
@@ -17,7 +18,18 @@ class XBRLUtilities {
       try {
         const xml = await parser.next();
         const filing: Filing = await parseStr(xml);
-        return new XBRL(filing);
+        const xbrl = new XBRL(filing);
+
+        // always add trading symbols; a filing could have been reported with
+        // only one of the company's trading symbols, and with this we ensure we
+        // have all the trading symbols the company uses
+        // A Google filing could only have 'GOOG', but we consistently want
+        // 'GOOG;GOOGL'
+        const cik = xbrl.getEntityCentralIndexKey();
+        const tradingSymbol = await FinTenDB.getInstance().getTradingSymbol(cik);
+        if (tradingSymbol) xbrl.setTradingSymbol(tradingSymbol);
+
+        return xbrl;
       } catch (ex) {
         exceptions.push(ex.toString());
       }

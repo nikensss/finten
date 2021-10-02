@@ -7,6 +7,7 @@ interface Database {
   disconnect(): Promise<void>;
   isConnected(): boolean;
   getCompanyInfo(ticker: string): Promise<CompanyInfoDocument | null>;
+  getTradingSymbol(cik: number): Promise<string | null>;
   getFilings(ticker: string): Promise<FilingDocument[]>;
   isLinkVisited(filingMetadata: FilingMetadata): Promise<boolean>;
 }

@@ -125,6 +125,9 @@ class CompanyController implements Controller {
       }
 
       const filings: FilingDocument[] = await FinTenDB.getInstance().getFilings(ticker);
+      // for user friendliness, reassign the trading symbol in the filing to
+      // match the one the user asked for
+      filings.forEach((f) => (f.TradingSymbol = ticker));
 
       return res.status(200).json({
         ticker,
