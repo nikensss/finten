@@ -21,6 +21,10 @@ export class OfflineState extends DatabaseState {
     return this.wrapCommand(() => this.db.getCompanyInfo(ticker));
   }
 
+  getTradingSymbol(cik: number): Promise<string | null> {
+    return this.wrapCommand(() => this.db.getTradingSymbol(cik));
+  }
+
   getFilings(ticker: string): Promise<FilingDocument[]> {
     return this.wrapCommand(() => this.db.getFilings(ticker));
   }

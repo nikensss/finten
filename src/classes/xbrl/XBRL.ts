@@ -13,6 +13,19 @@ class XBRL {
   get(): Filing {
     return this.filing;
   }
+
+  getEntityCentralIndexKey(): number {
+    return this.filing.EntityCentralIndexKey;
+  }
+
+  hasTradingSymbol(): boolean {
+    if (!this.filing.TradingSymbol) return false;
+    return !/Field not found/.test(this.filing.TradingSymbol);
+  }
+
+  setTradingSymbol(tradingSymbol: string): void {
+    this.filing.TradingSymbol = tradingSymbol;
+  }
 }
 
 export default XBRL;

@@ -1,0 +1,10 @@
+.git
+.vscode
+extracted_xbrls/
+finten_downloads/
+logs/
+node_modules/
+.env.test
+.gitignore
+Dockerfile
+README.md

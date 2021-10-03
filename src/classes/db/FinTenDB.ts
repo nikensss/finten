@@ -103,6 +103,10 @@ class FinTenDB implements Database {
     return this.state.getCompanyInfo(ticker);
   }
 
+  async getTradingSymbol(cik: number): Promise<string | null> {
+    return this.state.getTradingSymbol(cik);
+  }
+
   async getFilings(ticker: string): Promise<FilingDocument[]> {
     return this.state.getFilings(ticker);
   }
