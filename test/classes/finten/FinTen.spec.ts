@@ -76,7 +76,7 @@ describe('FinTen tests', function () {
     expect(await CompanyInfoModel.countDocuments().exec()).to.equal(7);
   });
 
-  it.skip('should add new filings', async () => {
+  it('should add new filings', async () => {
     const mockedSecGov: SecGov = mock(SecGov);
     const secgov: SecGov = instance(mockedSecGov);
 
@@ -116,7 +116,7 @@ describe('FinTen tests', function () {
     verify(mockedSecGov.getFiling(anything())).times(3);
   });
 
-  it.skip('should add less filings because there are visited links', async () => {
+  it('should add less filings because there are visited links', async () => {
     await addDummyVisitedLinks(`${SecGov.FILINGS_ROOT}a_known_url`);
     const mockedSecGov: SecGov = mock(SecGov);
     const secgov: SecGov = instance(mockedSecGov);
@@ -189,7 +189,7 @@ describe('FinTen tests', function () {
     verify(mockedSecGov.getFiling(anything())).times(1);
   });
 
-  it.skip('should retry problematic filings', async () => {
+  it('should retry problematic filings', async () => {
     const mockedSecGov = mock(SecGov);
     const secgov = instance(mockedSecGov);
 
