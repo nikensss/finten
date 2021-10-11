@@ -63,7 +63,7 @@ export class FinTen {
       try {
         const doc = await this.createCompanyInfo(company);
         this.logger.info(
-          ` [${counter}/${companies.length}] Added new CompanyInfo: ${doc.TradingSymbol} (${doc.EntityCentralIndexKey})`
+          ` [🛎 ${counter}/${companies.length}] Added new CompanyInfo: ${doc.TradingSymbol} (${doc.EntityCentralIndexKey})`
         );
       } catch (ex) {
         this.logger.error(`Error while saving all companies [${counter}]! ${ex.toString()}`);
