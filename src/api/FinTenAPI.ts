@@ -37,7 +37,7 @@ class FinTenAPI {
     this.app.use('', (req, res, next) => {
       this.logger.info(`requested ${req.url} (${req.method})`, {
         originalUrl: req.originalUrl,
-        body: req.body,
+        body: req.body.password ? { ...req.body, password: null } : req.body,
         params: req.params,
         query: req.query
       });

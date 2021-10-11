@@ -1,0 +1,469 @@
+{
+	"info": {
+		"_postman_id": "5217e665-6f47-42d5-86b5-481b4ff6bc91",
+		"name": "FinTen",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "signup",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "{{email}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseurl}}/users/signup",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"users",
+						"signup"
+					]
+				},
+				"description": "Will test the registration route"
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseurl}}/users/login",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"users",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get filings",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{currentAccessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseurl}}/company/filings?ticker=BRK-B",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"company",
+						"filings"
+					],
+					"query": [
+						{
+							"key": "ticker",
+							"value": "BRK-B"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "extract xbrl document",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{currentAccessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "url",
+							"value": "https://www.sec.gov/Archives/edgar/data/887396/0000887396-13-000002.txt",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseurl}}/secgov/extract-xbrl-documents",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"secgov",
+						"extract-xbrl-documents"
+					],
+					"query": [
+						{
+							"key": "url",
+							"value": "https://www.sec.gov/Archives/edgar/data/887396/0000887396-13-000002.txt",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "build CompanyInfo collection",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{currentAccessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "{{baseurl}}/secgov/buildCompanyInfo",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"secgov",
+						"buildCompanyInfo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add new filings",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{currentAccessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseurl}}/secgov/fill?start=2017&end=2021",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"secgov",
+						"fill"
+					],
+					"query": [
+						{
+							"key": "start",
+							"value": "2017"
+						},
+						{
+							"key": "end",
+							"value": "2021"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "set autoupdate",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{currentAccessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseurl}}/secgov/autoupdate?interval=30000",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"secgov",
+						"autoupdate"
+					],
+					"query": [
+						{
+							"key": "interval",
+							"value": "30000"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add macros",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{currentAccessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseurl}}/fred/add?macro=IPDCONGD",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"fred",
+						"add"
+					],
+					"query": [
+						{
+							"key": "macro",
+							"value": "IPDCONGD"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get macros names",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{currentAccessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseurl}}/fred/names",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"fred",
+						"names"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get macro data",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{currentAccessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseurl}}/fred/get?macro=ACDGNO",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"fred",
+						"get"
+					],
+					"query": [
+						{
+							"key": "macro",
+							"value": "ACDGNO"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get tickers",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{currentAccessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseurl}}/company/tickers",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"company",
+						"tickers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get demo tickers",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{currentAccessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseurl}}/company/demo/tickers",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"company",
+						"demo",
+						"tickers"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"const echoPostRequest = {",
+					"  url: `${pm.environment.get('baseurl')}/users/login`,",
+					"  method: 'POST',",
+					"  header: 'Content-Type:application/json',",
+					"  body: {",
+					"    mode: 'application/json',",
+					"    raw: JSON.stringify(",
+					"        {",
+					"        \tusername: pm.environment.get('username'),",
+					"            password: pm.environment.get('password')",
+					"        })",
+					"  }",
+					"};",
+					"",
+					"if (mustRenewToken()) {",
+					"    pm.sendRequest(echoPostRequest, function (err, res) {",
+					"        console.log(err ? err : res.json().token);",
+					"        if (err === null) {",
+					"            console.log('Saving the token and expiry date')",
+					"            var responseJson = res.json();",
+					"            pm.environment.set('currentAccessToken', responseJson.token)",
+					"",
+					"            var expiryDate = new Date();",
+					"            expiryDate.setSeconds(expiryDate.getSeconds() + 12*60*60);",
+					"            pm.environment.set('accessTokenExpiry', expiryDate.getTime());",
+					"        }",
+					"    });",
+					"}",
+					"",
+					"function mustRenewToken(){",
+					"    if(!pm.environment.get('accessTokenExpiry')) return true;",
+					"    return pm.environment.get('accessTokenExpiry') <= new Date().getTime()",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
