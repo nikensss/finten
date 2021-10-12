@@ -40,7 +40,11 @@ export class OnlineState extends DatabaseState {
       Array.isArray(f) ? filings.push(...f) : filings.push(f);
     });
 
-    return filings;
+    return filings.sort((a, b) => {
+      const aTime = new Date(a.DocumentPeriodEndDate).getTime();
+      const bTime = new Date(b.DocumentPeriodEndDate).getTime();
+      return aTime - bTime;
+    });
   }
 
   async isLinkVisited(filingMetadata: FilingMetadata): Promise<boolean> {
