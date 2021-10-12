@@ -6,17 +6,7 @@ class DemoController implements Controller {
   public readonly path = '/demo';
   public readonly router = Router();
 
-  private static readonly TICKERS = [
-    'AAPL',
-    'AMZN',
-    'FB',
-    'GOOG',
-    'IBM',
-    'MSFT',
-    'NVDA',
-    'ORCL',
-    'TSLA'
-  ];
+  private static readonly TICKERS = ['AAPL', 'AMZN', 'GOOG', 'MSFT', 'TSLA'];
 
   constructor() {
     this.initializeRoutes();
@@ -46,11 +36,7 @@ class DemoController implements Controller {
       const filings = await FinTenDB.getInstance().getFilings(ticker);
       filings.forEach((f) => (f.TradingSymbol = ticker));
 
-      if (ticker === 'AAPL') {
-        return res.status(200).json({ filings });
-      }
-
-      return res.status(200).json({ filings: filings.slice(0, 4) });
+      return res.status(200).json({ filings });
     } catch (error) {
       return res.status(500).json({ error });
     }
