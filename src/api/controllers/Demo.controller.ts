@@ -40,14 +40,10 @@ class DemoController implements Controller {
       }
 
       if (!DemoController.TICKERS.includes(ticker)) {
-        return res.status(403).json({ error: 'access denied' });
+        return res.sendStatus(403);
       }
 
       const filings = await FinTenDB.getInstance().getFilings(ticker);
-
-      if (ticker === 'AAPL') {
-        return res.status(200).json({ filings });
-      }
 
       return res.status(200).json({ filings: filings.slice(-4) });
     } catch (error) {
