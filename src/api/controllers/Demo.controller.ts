@@ -44,8 +44,13 @@ class DemoController implements Controller {
       }
 
       const filings = await FinTenDB.getInstance().getFilings(ticker);
+      filings.forEach((f) => (f.TradingSymbol = ticker));
 
-      return res.status(200).json({ filings: filings.slice(-4) });
+      if (ticker === 'AAPL') {
+        return res.status(200).json({ filings });
+      }
+
+      return res.status(200).json({ filings: filings.slice(0, 4) });
     } catch (error) {
       return res.status(500).json({ error });
     }
