@@ -4,6 +4,7 @@ import Controller from './Controller.interface';
 import { default as LOGGER } from '../../classes/logger/DefaultLogger';
 import UserModel from '../../classes/db/models/User';
 import { Logger } from '../../classes/logger/Logger.interface';
+import { RecaptchaEnterpriseServiceClient } from '@google-cloud/recaptcha-enterprise';
 
 class UsersController implements Controller {
   public readonly path = '/users';
@@ -62,13 +63,19 @@ class UsersController implements Controller {
    *    *the error is sent in a JSON response (under the property error)
    */
   private async signup(req: Request, res: Response) {
-    const { username, password, email } = req.body;
+    const { username, password, email, recaptcha } = req.body;
 
-    if (!username || !password || !email) {
+    if (!username || !password || !email || !recaptcha) {
       return res.status(400).send({ error: 'missing data' });
     }
 
     try {
+      if (!this.isRecaptchaValid(recaptcha)) {
+        return res.send(403).send({ error: 'invalid request' });
+      }
+
+      if (username) return res.sendStatus(418).end();
+
       const user = await new UserModel({ username, password, email }).save();
 
       this.logger.info(`New user signed up successfully: ${JSON.stringify(user, null, 2)}`);
@@ -160,6 +167,20 @@ class UsersController implements Controller {
     } catch (e) {
       res.status(500).json({ error: e.toString() });
     }
+  }
+
+  private async isRecaptchaValid(recaptcha: string): Promise<boolean> {
+    if (!process.env.PROJECT_NUMBER) throw new Error('Invalid project number for recaptcha');
+    if (!process.env.RECAPTCHA_KEY) throw new Error('Invalid recaptcha key');
+
+    const client = new RecaptchaEnterpriseServiceClient();
+    const [result] = await client.createAssessment({
+      parent: client.projectPath(process.env.PROJECT_NUMBER),
+      assessment: { event: { token: recaptcha, siteKey: process.env.RECAPTCHA_KEY } }
+    });
+    this.logger.debug(`Recaptcha risk analysis: ${JSON.stringify(result.riskAnalysis, null, 2)}`);
+
+    return (result.riskAnalysis?.score || 0) > 0.7;
   }
 }
 
