@@ -31,6 +31,11 @@ class FinTenAPI {
   private initializeMiddlewares() {
     this.app.use(cors());
     this.app.use(express.json());
+    this.app.use(express.raw());
+    this.app.use((req, res, next) => {
+      console.log({ headers: Object.keys(req.headers) });
+      next();
+    });
     this.app.use(express.urlencoded({ extended: true }));
 
     //logging middleware
