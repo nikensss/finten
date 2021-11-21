@@ -70,7 +70,7 @@ class UsersController implements Controller {
     }
 
     try {
-      if (!this.isRecaptchaValid(recaptcha)) {
+      if (!(await this.isRecaptchaValid(recaptcha))) {
         return res.send(403).send({ error: 'invalid request' });
       }
 
