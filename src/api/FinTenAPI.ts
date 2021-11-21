@@ -33,7 +33,9 @@ class FinTenAPI {
     this.app.use(express.json());
     this.app.use(express.raw());
     this.app.use((req, res, next) => {
-      console.log({ headers: Object.keys(req.headers) });
+      if (process.env.ENV === 'test') {
+        console.log({ headers: Object.keys(req.headers) });
+      }
       next();
     });
     this.app.use(express.urlencoded({ extended: true }));
