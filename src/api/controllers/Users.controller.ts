@@ -70,11 +70,9 @@ class UsersController implements Controller {
     }
 
     try {
-      if (!this.isRecaptchaValid(recaptcha)) {
+      if (!(await this.isRecaptchaValid(recaptcha))) {
         return res.send(403).send({ error: 'invalid request' });
       }
-
-      if (username) return res.sendStatus(418).end();
 
       const user = await new UserModel({ username, password, email }).save();
 
