@@ -71,7 +71,7 @@ class UsersController implements Controller {
 
     try {
       if (!(await this.isRecaptchaValid(recaptcha))) {
-        return res.send(403).send({ error: 'invalid request' });
+        return res.status(403).send({ error: 'invalid request' });
       }
 
       const user = await new UserModel({ username, password, email }).save();
@@ -170,15 +170,27 @@ class UsersController implements Controller {
   private async isRecaptchaValid(recaptcha: string): Promise<boolean> {
     if (!process.env.PROJECT_NUMBER) throw new Error('Invalid project number for recaptcha');
     if (!process.env.RECAPTCHA_KEY) throw new Error('Invalid recaptcha key');
+    if (!process.env.GCP_CLIENT_EMAIL) throw new Error('Invalid GCP email');
+    if (!process.env.GCP_PRIVATE_KEY) throw new Error('Invalid GCP private key');
 
-    const client = new RecaptchaEnterpriseServiceClient();
-    const [result] = await client.createAssessment({
-      parent: client.projectPath(process.env.PROJECT_NUMBER),
-      assessment: { event: { token: recaptcha, siteKey: process.env.RECAPTCHA_KEY } }
-    });
-    this.logger.debug(`Recaptcha risk analysis: ${JSON.stringify(result.riskAnalysis, null, 2)}`);
+    try {
+      const client = new RecaptchaEnterpriseServiceClient({
+        credentials: {
+          client_email: process.env.GCP_CLIENT_EMAIL,
+          private_key: Buffer.from(process.env.GCP_PRIVATE_KEY, 'base64').toString()
+        }
+      });
+      const [result] = await client.createAssessment({
+        parent: client.projectPath(process.env.PROJECT_NUMBER),
+        assessment: { event: { token: recaptcha, siteKey: process.env.RECAPTCHA_KEY } }
+      });
+      this.logger.debug(`Recaptcha risk analysis: ${JSON.stringify(result.riskAnalysis, null, 2)}`);
 
-    return (result.riskAnalysis?.score || 0) > 0.7;
+      return (result.riskAnalysis?.score || 0) > 0.7;
+    } catch (ex) {
+      this.logger.error(`Could not validate recaptcha: ${ex.message}`);
+      return false;
+    }
   }
 }
 
