@@ -142,54 +142,37 @@ class SecGovController implements Controller {
   private autoUpdate(req: Request, res: Response): Response {
     const { interval, stop } = req.query;
 
-    if (typeof interval !== 'string' && typeof stop !== 'string') {
-      return res.status(400).json({ error: 'no parameters provided' });
-    }
+    if (!interval && !stop) return res.status(400).json({ error: 'no parameters provided' });
 
-    if (typeof stop === 'string') {
-      if (stop === 'true') {
-        //if stop is specified and its value is the string 'true', stop the interval
-        if (this.interval) {
-          clearInterval(this.interval);
-        }
-      }
-      //if no new interval is specified, return already
+    try {
+      if (stop === 'true' && this.interval) clearInterval(this.interval);
+
+      if (!interval) return res.status(200).json({ message: 'update interval stopped' });
+
       if (typeof interval !== 'string') {
-        return res.status(200).json({ message: 'interval stopped' });
+        return res.status(400).json({ error: `invalid interval type ${typeof interval}` });
       }
-    }
 
-    //if there is an interval specified
-    if (typeof interval === 'string') {
-      //parse it
       const intervalTime = parseInt(interval, 10);
-      //and check that it is neither NaN not infinite (aka: check the parsing
-      //returned a valid number)
       if (isNaN(intervalTime) || !isFinite(intervalTime)) {
-        return res.status(400).json({ error: 'invalid interval value' });
+        return res.status(400).json({ error: `invalid interval value ${interval}` });
       }
 
-      //if there was an interval already set, clear that one first
-      if (this.interval) {
-        clearInterval(this.interval);
-      }
+      if (this.interval) clearInterval(this.interval);
 
-      //and then set the new one
       this.interval = setInterval(() => {
         const finten = new FinTen(new SecGov(), FinTenDB.getInstance());
         finten.addNewFilings(new Date().getFullYear());
       }, intervalTime);
 
       return res.status(200).json({
-        message: 'new update interval configured',
+        message: 'autoupdate interval time set',
         interval: intervalTime
       });
+    } catch (ex) {
+      // TODO: log the error somewhere
+      return res.status(500).json({ error: 'could not update interval time' });
     }
-
-    return res.status(500).json({
-      error:
-        'Internal server error. Please contact the support team from Weirwood to inform about this issue.'
-    });
   }
 
   private extractXbrlDocument(req: Request, res: Response): void {
