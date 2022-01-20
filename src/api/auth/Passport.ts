@@ -1,7 +1,7 @@
 import { Secret } from 'jsonwebtoken';
 import passport from 'passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import FinTenDB from '../../classes/db/FinTenDB';
+import { FinTenDB } from '../../classes/db/FinTenDB';
 import User from '../../classes/db/models/User';
 import { default as LOGGER } from '../../classes/logger/DefaultLogger';
 

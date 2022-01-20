@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import FinTenDB from '../../classes/db/FinTenDB';
+import { FinTenDB } from '../../classes/db/FinTenDB';
 import { FinTen } from '../../classes/finten/FinTen';
 import Macro, { byName, getMacroCollection } from '../../classes/fred/Macro.enum';
 import SecGov from '../../classes/secgov/SecGov';

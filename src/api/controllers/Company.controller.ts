@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import FinTenDB from '../../classes/db/FinTenDB';
+import { FinTenDB } from '../../classes/db/FinTenDB';
 import CompanyInfoModel from '../../classes/db/models/CompanyInfo';
 import { FilingDocument } from '../../classes/db/models/Filing';
 import { UserDocument } from '../../classes/db/models/User';

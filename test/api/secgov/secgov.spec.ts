@@ -2,7 +2,7 @@ import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import request from 'supertest';
-import FinTenDB from '../../../src/classes/db/FinTenDB';
+import { FinTenDB } from '../../../src/classes/db/FinTenDB';
 import UserModel from '../../../src/classes/db/models/User';
 import app from '../../../src/main';
 

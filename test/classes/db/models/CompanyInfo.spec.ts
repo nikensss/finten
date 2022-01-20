@@ -3,7 +3,7 @@ import { fail } from 'assert';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import FinTenDB from '../../../../src/classes/db/FinTenDB';
+import { FinTenDB } from '../../../../src/classes/db/FinTenDB';
 import CompanyInfoModel, { CompanyInfo } from '../../../../src/classes/db/models/CompanyInfo';
 
 chai.should();
