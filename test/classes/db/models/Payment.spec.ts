@@ -2,7 +2,7 @@ import { fail } from 'assert';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import FinTenDB from '../../../../src/classes/db/FinTenDB';
+import { FinTenDB } from '../../../../src/classes/db/FinTenDB';
 import PaymentModel, { Payment } from '../../../../src/classes/db/models/Payment';
 import UserModel, { User, UserDocument } from '../../../../src/classes/db/models/User';
 

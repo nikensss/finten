@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import FinTenDB from '../../classes/db/FinTenDB';
+import { FinTenDB } from '../../classes/db/FinTenDB';
 import Controller from './Controller.interface';
 
 class DemoController implements Controller {

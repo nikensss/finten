@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import path from 'path';
-import FinTenDB from '../../classes/db/FinTenDB';
+import { FinTenDB } from '../../classes/db/FinTenDB';
 import DownloadManager from '../../classes/download/DownloadManager';
 import { FinTen } from '../../classes/finten/FinTen';
 import { default as LOGGER } from '../../classes/logger/DefaultLogger';

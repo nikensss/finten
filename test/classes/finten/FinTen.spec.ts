@@ -3,7 +3,7 @@ import chaiAsPromised from 'chai-as-promised';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import path from 'path';
 import { anyNumber, anything, instance, mock, verify, when } from 'ts-mockito';
-import FinTenDB from '../../../src/classes/db/FinTenDB';
+import { FinTenDB } from '../../../src/classes/db/FinTenDB';
 import CompanyInfoModel from '../../../src/classes/db/models/CompanyInfo';
 import FilingModel from '../../../src/classes/db/models/Filing';
 import VisitedLinkModel, { VisitedLinkStatus } from '../../../src/classes/db/models/VisitedLink';

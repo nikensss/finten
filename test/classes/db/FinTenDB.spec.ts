@@ -4,7 +4,7 @@ import chaiAsPromised from 'chai-as-promised';
 import { promises as fs } from 'fs';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import path from 'path';
-import FinTenDB from '../../../src/classes/db/FinTenDB';
+import { FinTenDB } from '../../../src/classes/db/FinTenDB';
 import CompanyInfoModel, { CompanyInfo } from '../../../src/classes/db/models/CompanyInfo';
 import FilingModel, { FilingDocument } from '../../../src/classes/db/models/Filing';
 import XBRLUtilities from '../../../src/classes/xbrl/XBRLUtilities';

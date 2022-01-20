@@ -3,7 +3,7 @@ import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import moment from 'moment';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import FinTenDB from '../../../../src/classes/db/FinTenDB';
+import { FinTenDB } from '../../../../src/classes/db/FinTenDB';
 import PaymentModel, { PaymentDocument } from '../../../../src/classes/db/models/Payment';
 import UserModel, { User } from '../../../../src/classes/db/models/User';
 

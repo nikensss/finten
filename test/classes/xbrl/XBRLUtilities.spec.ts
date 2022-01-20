@@ -3,7 +3,7 @@ import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import path from 'path';
-import FinTenDB from '../../../src/classes/db/FinTenDB';
+import { FinTenDB } from '../../../src/classes/db/FinTenDB';
 import CompanyInfoModel from '../../../src/classes/db/models/CompanyInfo';
 import XBRL from '../../../src/classes/xbrl/XBRL';
 import XBRLUtilities from '../../../src/classes/xbrl/XBRLUtilities';

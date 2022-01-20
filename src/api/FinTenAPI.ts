@@ -1,7 +1,7 @@
 import cors from 'cors';
 import express, { Application } from 'express';
 import { Server } from 'http';
-import FinTenDB from '../classes/db/FinTenDB';
+import { FinTenDB } from '../classes/db/FinTenDB';
 import { default as LOGGER } from '../classes/logger/DefaultLogger';
 import { Logger } from '../classes/logger/Logger.interface';
 import Controller from './controllers/Controller.interface';

@@ -1,7 +1,6 @@
 import mongoose, { Mongoose } from 'mongoose';
 import FilingMetadata from '../filings/FilingMetadata';
 import { default as LOGGER } from '../logger/DefaultLogger';
-import { Logger } from '../logger/Logger.interface';
 import Database from './Database.interface';
 import { CompanyInfoDocument } from './models/CompanyInfo';
 import { FilingDocument } from './models/Filing';
@@ -9,10 +8,10 @@ import { DatabaseState } from './states/DatabaseSate';
 import { OfflineState } from './states/OfflineState';
 import { OnlineState } from './states/OnlineState';
 
-class FinTenDB implements Database {
+export class FinTenDB implements Database {
   private static instance: FinTenDB | null = null;
-  private client: Mongoose = mongoose;
-  private logger: Logger = LOGGER.get(this.constructor.name);
+  private client = mongoose;
+  private logger = LOGGER.get(this.constructor.name);
   private state: DatabaseState;
 
   private constructor() {
@@ -35,9 +34,7 @@ class FinTenDB implements Database {
   }
 
   static getInstance(): Database {
-    if (FinTenDB.instance === null) {
-      FinTenDB.instance = new FinTenDB();
-    }
+    if (FinTenDB.instance === null) FinTenDB.instance = new FinTenDB();
 
     return FinTenDB.instance;
   }
@@ -115,5 +112,3 @@ class FinTenDB implements Database {
     return this.state.isLinkVisited(filingMetadata);
   }
 }
-
-export default FinTenDB;
