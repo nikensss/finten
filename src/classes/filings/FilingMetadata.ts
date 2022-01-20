@@ -47,9 +47,9 @@ class FilingMetadata implements Downloadable {
   }
 
   get fileName(): string {
-    const fileName: string | undefined = this.partialPath.split('/').pop();
-    if (typeof fileName === 'undefined') {
-      throw new Error(`Can't retrieve fileName from relative path: ${this.partialPath}`);
+    const fileName = this.partialPath.split('/').pop();
+    if (!fileName) {
+      throw new Error(`Can't retrieve fileName from partial path: ${this.partialPath}`);
     }
     return fileName;
   }
