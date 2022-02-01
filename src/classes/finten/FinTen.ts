@@ -94,24 +94,22 @@ export class FinTen {
     const fred = new Fred();
 
     try {
-      //query the FRED API through our wrapper (aka, the Fred class)
       const data = await fred.getMacro(macro);
 
-      //go through each observation in the observations array and log info
       for (let index = 0; index < data.observations.length; index++) {
         this.logPercentage(index + 1, data.observations.length);
         const observation = data.observations[index];
         try {
-          //get the corresponding collection for the data of this macro
           const MacroCollection = getMacroCollection(macro);
-          const doc = new MacroCollection(observation);
-          await doc.save();
+          if (await MacroCollection.exists({ date: new Date(observation.date) })) continue;
+
+          await new MacroCollection(observation).save();
         } catch (ex) {
-          //if the error talks about duplicate keys in the data field, ignore it
-          //otherwise log it
-          if (!/duplicate key error.*index: date/.test(ex.toString())) {
-            this.logger.error('[when saving to collection]', ex.toString());
-          }
+          this.logger.error(
+            `Could not save ${macro} observation`,
+            ex.toString(),
+            JSON.stringify(observation)
+          );
         }
       }
     } catch (ex) {
@@ -185,7 +183,7 @@ export class FinTen {
           const filing = await this.secgov.getFiling(filingMetadata);
           await this.addFiling(filing);
         } catch (e) {
-          this.logger.error(`Error while getting and adding filings: ${e.toString()}`);
+          this.logger.error(`Error processing ${filingMetadata.partialPath}: ${e.toString()}`);
         } finally {
           this.secgov.flush();
         }
