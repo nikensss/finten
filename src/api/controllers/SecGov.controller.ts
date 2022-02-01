@@ -60,17 +60,15 @@ class SecGovController implements Controller {
   private fill(req: Request, res: Response): Response {
     const { start, end = start } = req.query;
 
-    if (!start) {
-      return res.status(400).json({
-        error: 'missing data: start'
-      });
-    }
+    if (!start) return res.status(400).json({ error: 'missing data: start' });
+    if (typeof start !== 'string') return res.status(403).json({ error: 'start is not a string' });
+    if (typeof end !== 'string') return res.status(403).json({ error: 'end is not a string' });
 
     this.logger.info(`filling database from ${start} to ${end}`);
 
     const finten = new FinTen(new SecGov(new DownloadManager()), FinTenDB.getInstance());
     finten
-      .addNewFilings(parseInt(start as string), parseInt(end as string))
+      .addNewFilings(parseInt(start), parseInt(end))
       .catch((e) => res.status(400).json({ error: e }));
 
     return res.status(200).json({

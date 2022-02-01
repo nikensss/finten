@@ -185,7 +185,7 @@ export class FinTen {
           const filing = await this.secgov.getFiling(filingMetadata);
           await this.addFiling(filing);
         } catch (e) {
-          this.logger.error(`Error while getting and adding filings: ${e.toString()}`);
+          this.logger.error(`Error processing ${filingMetadata.partialPath}: ${e.toString()}`);
         } finally {
           this.secgov.flush();
         }
