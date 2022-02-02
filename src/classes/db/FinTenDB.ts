@@ -1,5 +1,5 @@
 import mongoose, { Mongoose } from 'mongoose';
-import FilingMetadata from '../filings/FilingMetadata';
+import { FilingMetadata } from '../filings/FilingMetadata';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import Database from './Database.interface';
 import { CompanyInfoDocument } from './models/CompanyInfo';
