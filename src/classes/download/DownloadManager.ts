@@ -161,7 +161,8 @@ class DownloadManager implements Downloader<Downloadable> {
   private async writeStream(data: any, downloadable: Downloadable): Promise<Downloadable> {
     const downloadedFile: Downloadable = {
       fileName: path.join(this.dir.toString(), downloadable.fileName),
-      url: downloadable.url
+      url: downloadable.url,
+      toString: () => downloadable.toString()
     };
 
     const writer = fs.createWriteStream(downloadedFile.fileName);

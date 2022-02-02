@@ -204,7 +204,7 @@ export class FinTen {
       const result = await this.createFiling(xbrl.get());
       this.logger.info('added new filing!');
 
-      await this.createVisitedLink(filing.url, result._id);
+      await this.createVisitedLink(filing, result._id);
       this.logger.info('saved visited link!');
     } catch (ex) {
       await this.handleExceptionDuringFilingCreation(filing, ex);
@@ -262,9 +262,10 @@ export class FinTen {
     return await new FilingModel(filing).save();
   }
 
-  private async createVisitedLink(url: string, resultId: Schema.Types.ObjectId) {
+  private async createVisitedLink(filing: Downloadable, resultId: Schema.Types.ObjectId) {
     return await new VisitedLinkModel({
-      url,
+      url: filing.url,
+      details: filing.toString(),
       status: VisitedLinkStatus.OK,
       error: null,
       filingId: resultId
@@ -275,7 +276,7 @@ export class FinTen {
     this.logger.warning(`Error parsing ${filing.toString()} (${filing.url}):\n${ex.toString()}`);
     return await new VisitedLinkModel({
       url: filing.url,
-      info: filing.toString(),
+      details: filing.toString(),
       status: VisitedLinkStatus.ERROR,
       error: ex.toString(),
       filingId: null
