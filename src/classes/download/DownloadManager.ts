@@ -3,7 +3,7 @@ import fs, { PathLike } from 'fs';
 import path from 'path';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { Logger } from '../logger/Logger.interface';
-import Downloadable from './Downloadable.interface';
+import { Downloadable } from './Downloadable.interface';
 import Downloader from './Downloader.interface';
 import DefaultQueue from './queues/DefaultQueue';
 import Queue from './queues/Queue.interface';

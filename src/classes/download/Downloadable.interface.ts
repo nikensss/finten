@@ -1,6 +1,5 @@
-interface Downloadable {
+export interface Downloadable {
   url: string;
   fileName: string;
+  toString: () => string;
 }
-
-export default Downloadable;

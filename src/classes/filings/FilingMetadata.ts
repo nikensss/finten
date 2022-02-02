@@ -1,8 +1,8 @@
 import FormType, { byName } from './FormType.enum';
-import Downloadable from '../download/Downloadable.interface';
+import { Downloadable } from '../download/Downloadable.interface';
 import SecGov from '../secgov/SecGov';
 
-class FilingMetadata implements Downloadable {
+export class FilingMetadata implements Downloadable {
   private _cik: number;
   private _companyName: string;
   private _filing: FormType;
@@ -53,6 +53,8 @@ class FilingMetadata implements Downloadable {
     }
     return fileName;
   }
-}
 
-export default FilingMetadata;
+  toString(): string {
+    return `${this.companyName} - ${this.formType}`;
+  }
+}
