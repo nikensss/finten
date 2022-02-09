@@ -8,6 +8,7 @@ export enum VisitedLinkStatus {
 
 export interface VisitedLink {
   url: string;
+  details: string;
   status: VisitedLinkStatus;
   error: string | null;
   filingId: Schema.Types.ObjectId | null;
@@ -19,6 +20,9 @@ const VisitedLinkSchema = new Schema({
     require: [true, 'URL is required'],
     unique: true,
     index: true
+  },
+  details: {
+    type: String
   },
   status: {
     type: String,

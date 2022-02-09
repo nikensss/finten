@@ -1,4 +1,4 @@
-import FilingMetadata from '../../../src/classes/filings/FilingMetadata';
+import { FilingMetadata } from '../../../src/classes/filings/FilingMetadata';
 import { expect } from 'chai';
 
 describe('FilingMetadata tests', () => {

@@ -1,4 +1,4 @@
-import FilingMetadata from '../../filings/FilingMetadata';
+import { FilingMetadata } from '../../filings/FilingMetadata';
 import Database from '../Database.interface';
 import CompanyInfoModel, { CompanyInfoDocument } from '../models/CompanyInfo';
 import FilingModel, { FilingDocument } from '../models/Filing';

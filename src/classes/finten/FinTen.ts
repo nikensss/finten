@@ -4,8 +4,8 @@ import Database from '../db/Database.interface';
 import CompanyInfoModel, { CompanyInfo } from '../db/models/CompanyInfo';
 import FilingModel, { Filing } from '../db/models/Filing';
 import VisitedLinkModel, { VisitedLinkDocument, VisitedLinkStatus } from '../db/models/VisitedLink';
-import Downloadable from '../download/Downloadable.interface';
-import FilingMetadata from '../filings/FilingMetadata';
+import { Downloadable } from '../download/Downloadable.interface';
+import { FilingMetadata } from '../filings/FilingMetadata';
 import FormType from '../filings/FormType.enum';
 import Fred from '../fred/Fred';
 import Macro, { getMacroCollection } from '../fred/Macro.enum';
@@ -204,10 +204,10 @@ export class FinTen {
       const result = await this.createFiling(xbrl.get());
       this.logger.info('added new filing!');
 
-      await this.createVisitedLink(filing.url, result._id);
+      await this.createVisitedLink(filing, result._id);
       this.logger.info('saved visited link!');
     } catch (ex) {
-      await this.handleExceptionDuringFilingCreation(filing.url, ex);
+      await this.handleExceptionDuringFilingCreation(filing, ex);
     }
   }
 
@@ -262,19 +262,21 @@ export class FinTen {
     return await new FilingModel(filing).save();
   }
 
-  private async createVisitedLink(url: string, resultId: Schema.Types.ObjectId) {
+  private async createVisitedLink(filing: Downloadable, resultId: Schema.Types.ObjectId) {
     return await new VisitedLinkModel({
-      url,
+      url: filing.url,
+      details: filing.toString(),
       status: VisitedLinkStatus.OK,
       error: null,
       filingId: resultId
     }).save();
   }
 
-  private async handleExceptionDuringFilingCreation(url: string, ex: Error) {
-    this.logger.warning(`Error while parsing ${url}:\n${ex.toString()}`);
+  private async handleExceptionDuringFilingCreation(filing: Downloadable, ex: Error) {
+    this.logger.warning(`Error parsing ${filing.toString()} (${filing.url}):\n${ex.toString()}`);
     return await new VisitedLinkModel({
-      url,
+      url: filing.url,
+      details: filing.toString(),
       status: VisitedLinkStatus.ERROR,
       error: ex.toString(),
       filingId: null

@@ -3,7 +3,7 @@ import fs, { PathLike } from 'fs';
 import path from 'path';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { Logger } from '../logger/Logger.interface';
-import Downloadable from './Downloadable.interface';
+import { Downloadable } from './Downloadable.interface';
 import Downloader from './Downloader.interface';
 import DefaultQueue from './queues/DefaultQueue';
 import Queue from './queues/Queue.interface';
@@ -161,7 +161,8 @@ class DownloadManager implements Downloader<Downloadable> {
   private async writeStream(data: any, downloadable: Downloadable): Promise<Downloadable> {
     const downloadedFile: Downloadable = {
       fileName: path.join(this.dir.toString(), downloadable.fileName),
-      url: downloadable.url
+      url: downloadable.url,
+      toString: () => downloadable.toString()
     };
 
     const writer = fs.createWriteStream(downloadedFile.fileName);

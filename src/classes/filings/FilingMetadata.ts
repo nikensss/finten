@@ -1,8 +1,9 @@
 import FormType, { byName } from './FormType.enum';
-import Downloadable from '../download/Downloadable.interface';
+import { Downloadable } from '../download/Downloadable.interface';
 import SecGov from '../secgov/SecGov';
+import moment from 'moment';
 
-class FilingMetadata implements Downloadable {
+export class FilingMetadata implements Downloadable {
   private _cik: number;
   private _companyName: string;
   private _filing: FormType;
@@ -53,6 +54,9 @@ class FilingMetadata implements Downloadable {
     }
     return fileName;
   }
-}
 
-export default FilingMetadata;
+  toString(): string {
+    const date = moment(this.submissionDate).format('YYYY-MM-DD');
+    return `${this.companyName}, ${date} ${this.formType}`;
+  }
+}

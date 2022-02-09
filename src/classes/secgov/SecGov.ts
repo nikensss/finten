@@ -1,9 +1,9 @@
 import fs, { PathLike } from 'fs';
-import Downloadable from '../download/Downloadable.interface';
+import { Downloadable } from '../download/Downloadable.interface';
 import Downloader from '../download/Downloader.interface';
 import DownloadManager from '../download/DownloadManager';
 import TimedQueue from '../download/queues/TimedQueue';
-import FilingMetadata from '../filings/FilingMetadata';
+import { FilingMetadata } from '../filings/FilingMetadata';
 import FormType from '../filings/FormType.enum';
 import { default as LOGGER } from '../logger/DefaultLogger';
 import { Logger } from '../logger/Logger.interface';

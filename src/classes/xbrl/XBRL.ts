@@ -20,7 +20,7 @@ class XBRL {
 
   hasTradingSymbol(): boolean {
     if (!this.filing.TradingSymbol) return false;
-    return !/Field not found/.test(this.filing.TradingSymbol);
+    return !/N\/A/.test(this.filing.TradingSymbol);
   }
 
   setTradingSymbol(tradingSymbol: string): void {
