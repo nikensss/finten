@@ -173,7 +173,10 @@ class SecGovController implements Controller {
     }
   }
 
-  private extractXbrlDocument(req: Request, res: Response): void {
+  private extractXbrlDocument(
+    req: Request,
+    res: Response
+  ): Response<unknown, Record<string, unknown>> {
     if (process.env.ENV !== 'dev') return res.sendStatus(403).end();
     const { url } = req.body;
     if (!url) return res.status(400).send({ error: 'missing url' }).end();
