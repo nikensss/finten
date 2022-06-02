@@ -25,7 +25,7 @@ class SecGovController implements Controller {
     //when getting the logger
     this.router.post('/fill', isAdmin, this.fill.bind(this));
     this.router.post('/reparse', isAdmin, this.reparse.bind(this));
-    this.router.post('/buildCompanyInfo', isAdmin, this.buildCompanyInfo.bind(this));
+    this.router.post('/build-company-info', isAdmin, this.buildCompanyInfo.bind(this));
     this.router.post('/autoupdate', isAdmin, this.autoUpdate.bind(this));
     this.router.post('/extract-xbrl-documents', isAdmin, this.extractXbrlDocument.bind(this));
   }
